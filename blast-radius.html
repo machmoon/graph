@@ -1,730 +1,496 @@
 <title>Blast Radius</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap">
 <style>
-:root {
-  --bg: #080c14;
-  --surface: #0d1219;
-  --surface-hover: #151e2c;
-  --text: #94a3b8;
-  --text-dim: #3e4f66;
-  --text-bright: #e2e8f0;
-  --border: #1a2438;
-  --accent: #38bdf8;
-  --blast-0: #ef4444;
-  --blast-1: #f97316;
-  --blast-2: #eab308;
-  --blast-3: #22c55e;
-  --node-fill: #1e293b;
-  --node-stroke: #334155;
-  --link-color: #1e293b;
-}
+:root { --bg:#070a10; --sf:#0c1018; --tx:#8a99b0; --txd:#3a4a60; --txb:#dce6f0; --bd:#152035; --acc:#38bdf8; --grn:#22c55e; --amb:#f59e0b; --blu:#3b82f6; --red:#ef4444; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-serif;overflow:hidden;height:100vh}
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+#crumb{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:11px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:6px 14px}
+.crumb-item{color:var(--txd);cursor:default;transition:color .2s}
+.crumb-item.clickable{color:var(--acc);cursor:pointer}
+.crumb-item.clickable:hover{color:var(--txb)}
+.crumb-item.active{color:var(--txb)}
+.crumb-sep{color:var(--txd);font-size:13px}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Fira Code', 'Consolas', monospace;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
-}
+#sidebar{position:fixed;top:12px;left:12px;width:250px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:14px;z-index:10;font-size:11px;max-height:calc(100vh - 24px);overflow-y:auto}
+#sidebar::-webkit-scrollbar{width:3px}#sidebar::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+#sidebar h1{font-size:15px;font-weight:700;color:var(--txb);margin-bottom:1px}
+.sub{color:var(--txd);font-size:10px;font-family:'Fira Code',monospace;margin-bottom:10px}
+.div{height:1px;background:var(--bd);margin:8px 0}
+.lbl{font-size:9px;font-weight:600;color:var(--txd);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'Fira Code',monospace}
 
-#sidebar {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  width: 240px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 16px;
-  z-index: 10;
-  font-size: 11px;
-  max-height: calc(100vh - 32px);
-  overflow-y: auto;
-  user-select: none;
-}
+.pr-btn{display:block;width:100%;text-align:left;background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--tx);transition:border-color .2s,background .2s}
+.pr-btn:hover{border-color:#2a3a55;background:#0e1520}
+.pr-btn.active{border-color:var(--acc);background:#0c1a2e}
+.pr-id{font-family:'Fira Code',monospace;font-size:10px;color:var(--txd)}
+.pr-title{color:var(--txb);font-weight:500;margin-top:1px}
+.pr-meta{font-size:9px;color:var(--txd);margin-top:1px;font-family:'Fira Code',monospace}
+.pr-type{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
+.pr-type.feat{background:#052e16;color:var(--grn)}.pr-type.fix{background:#2a1a05;color:var(--amb)}.pr-type.refactor{background:#0f1d3d;color:var(--blu)}
 
-#sidebar h1 {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-bright);
-  letter-spacing: 0.8px;
-  margin-bottom: 2px;
-}
+.stat-row{display:flex;gap:10px;margin-bottom:6px}
+.stat{text-align:center;flex:1}
+.stat-v{font-size:20px;font-weight:700;color:var(--txb);line-height:1}
+.stat-u{font-size:9px;color:var(--txd);font-family:'Fira Code',monospace}
+#analysis{display:none}
+.ci{background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px}
+.ci.indirect{border-style:dashed;opacity:.65}
+.ci-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.ci-n{font-weight:600;color:var(--txb);font-size:12px}
+.ci-b{font-family:'Fira Code',monospace;font-size:9px}
+.ci-b .a{color:var(--grn)}.ci-b .d{color:var(--red)}
+.ci-f{font-size:10px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.4}
+.ci-s{font-size:10px;color:var(--tx);margin-top:3px;line-height:1.3;font-style:italic}
+.ci-it{font-size:9px;color:var(--txd);font-style:italic}
 
-.subtitle {
-  color: var(--text-dim);
-  font-size: 10px;
-  margin-bottom: 14px;
-}
+svg{display:block;width:100vw;height:100vh}
+.tier-label{font-family:'Fira Code',monospace;font-size:9px;fill:#1a2a40;letter-spacing:1.5px}
+.node-group{cursor:pointer}
+.node-box{transition:fill .4s}.node-border{transition:stroke .4s,stroke-width .3s,stroke-dasharray .3s}
+.node-tag,.node-label,.node-info{transition:fill .4s}
+.edge-path{fill:none;stroke:#141e30;stroke-width:1.2;transition:stroke .4s,stroke-width .3s}
+.node-group.dimmed .node-box{fill:#080c12!important}
+.node-group.dimmed .node-border{stroke:#101820!important}
+.node-group.dimmed .node-tag{fill:#1a2535!important}
+.node-group.dimmed .node-label{fill:#2a3a4a!important}
+.node-group.dimmed .node-info{fill:#101820!important}
+.change-badge{transition:opacity .4s}
 
-.legend {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
-  margin-bottom: 14px;
-}
+.zoom-hint{font-family:'Fira Code',monospace;font-size:8px;fill:var(--acc);opacity:0;transition:opacity .2s;cursor:pointer}
+.node-group:hover .zoom-hint{opacity:.8}
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  color: var(--text-dim);
-}
-
-.legend-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: 10px 0;
-}
-
-.section-label {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--text-dim);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.stat-row {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.stat-value {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text-bright);
-  line-height: 1;
-}
-
-.stat-unit {
-  font-size: 10px;
-  color: var(--text-dim);
-}
-
-#selected-file {
-  color: var(--accent);
-  font-size: 11px;
-  word-break: break-all;
-  min-height: 16px;
-}
-
-.prompt-hint {
-  color: var(--text-dim);
-  font-size: 10px;
-  font-style: italic;
-}
-
-#affected-list {
-  font-size: 10px;
-  line-height: 1.8;
-  max-height: 180px;
-  overflow-y: auto;
-}
-
-#affected-list::-webkit-scrollbar { width: 3px; }
-#affected-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-#sidebar::-webkit-scrollbar { width: 3px; }
-#sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-.aff-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.aff-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-button {
-  background: var(--surface-hover);
-  color: var(--text);
-  border: 1px solid var(--border);
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-family: inherit;
-  font-size: 10px;
-  cursor: pointer;
-  width: 100%;
-  transition: background 0.15s, color 0.15s;
-  letter-spacing: 0.3px;
-}
-
-button:hover {
-  background: var(--border);
-  color: var(--text-bright);
-}
-
-svg {
-  display: block;
-  width: 100vw;
-  height: 100vh;
-}
-
-.tooltip {
-  position: fixed;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-family: 'Fira Code', monospace;
-  pointer-events: none;
-  display: none;
-  z-index: 20;
-  color: var(--text);
-  max-width: 220px;
-}
-
-.tooltip .tt-name {
-  color: var(--text-bright);
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.tooltip .tt-stat {
-  color: var(--text-dim);
-  font-size: 9px;
-}
+#gArch,#gMod{transition:opacity .45s ease}
+.tip{position:fixed;background:var(--sf);border:1px solid var(--bd);padding:6px 10px;border-radius:4px;font-size:11px;pointer-events:none;display:none;z-index:20;max-width:240px}
+.tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}
+.tip-f{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd)}
+.tip-s{font-size:10px;color:var(--tx);margin-top:3px;font-style:italic}
 </style>
 
+<div id="crumb">
+  <span class="crumb-item active" id="bc0">System Architecture</span>
+</div>
+
 <div id="sidebar">
-  <h1>BLAST RADIUS</h1>
-  <div class="subtitle" id="graph-info">loading...</div>
-
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--blast-0)"></div>changed</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--blast-1)"></div>1 hop</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--blast-2)"></div>2 hops</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--blast-3)"></div>3+ hops</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--node-fill);border:1px solid var(--node-stroke)"></div>safe</div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="section-label">Impact</div>
-  <div class="stat-row">
-    <div class="stat-value" id="affected-count">0</div>
-    <div class="stat-unit" id="affected-pct">files (0%)</div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="section-label">Selected</div>
-  <div id="selected-file"><span class="prompt-hint">click a node</span></div>
-
-  <div class="divider"></div>
-
-  <div class="section-label">Affected</div>
-  <div id="affected-list"><span class="prompt-hint">—</span></div>
-
-  <div class="divider"></div>
-
-  <button id="clear-btn">clear</button>
+  <h1>Blast Radius</h1>
+  <div class="sub" id="view-sub">e-commerce · 13 components</div>
+  <div class="lbl">Pull Requests</div>
+  <div id="pr-list"></div>
+  <div id="analysis"></div>
 </div>
-
-<div class="tooltip" id="tooltip">
-  <div class="tt-name" id="tt-name"></div>
-  <div class="tt-stat" id="tt-stat"></div>
-</div>
-
-<svg id="graph"></svg>
+<div class="tip" id="tip"></div>
+<svg id="g"></svg>
 
 <script>
-const GRAPH = {
-  "fastify.js":["lib/content-type-parser.js","lib/context.js","lib/decorate.js","lib/error-handler.js","lib/errors.js","lib/four-oh-four.js","lib/hooks.js","lib/initial-config-validation.js","lib/logger-factory.js","lib/plugin-override.js","lib/plugin-utils.js","lib/reply.js","lib/req-id-gen-factory.js","lib/request.js","lib/route.js","lib/schema-controller.js","lib/server.js","lib/symbols.js"],
-  "lib/config-validator.js":[],
-  "lib/content-type-parser.js":["lib/content-type.js","lib/errors.js","lib/symbols.js","lib/warnings.js"],
-  "lib/content-type.js":[],
-  "lib/context.js":["lib/symbols.js"],
-  "lib/decorate.js":["lib/errors.js","lib/symbols.js"],
-  "lib/error-handler.js":["lib/error-serializer.js","lib/error-status.js","lib/errors.js","lib/schemas.js","lib/symbols.js","lib/wrap-thenable.js"],
-  "lib/error-serializer.js":[],
-  "lib/error-status.js":["lib/symbols.js"],
-  "lib/errors.js":[],
-  "lib/four-oh-four.js":["lib/context.js","lib/error-handler.js","lib/errors.js","lib/hooks.js","lib/logger-factory.js","lib/reply.js","lib/req-id-gen-factory.js","lib/request.js","lib/symbols.js"],
-  "lib/handle-request.js":["lib/content-type.js","lib/error-status.js","lib/errors.js","lib/hooks.js","lib/symbols.js","lib/validation.js","lib/wrap-thenable.js"],
-  "lib/head-route.js":[],
-  "lib/hooks.js":["lib/errors.js","lib/symbols.js"],
-  "lib/initial-config-validation.js":["lib/config-validator.js","lib/errors.js"],
-  "lib/log-controller.js":[],
-  "lib/logger-factory.js":["lib/errors.js","lib/log-controller.js","lib/logger-pino.js","lib/symbols.js"],
-  "lib/logger-pino.js":["lib/errors.js"],
-  "lib/noop-set.js":[],
-  "lib/plugin-override.js":["lib/content-type-parser.js","lib/hooks.js","lib/plugin-utils.js","lib/reply.js","lib/request.js","lib/schema-controller.js","lib/symbols.js"],
-  "lib/plugin-utils.js":["lib/decorate.js","lib/errors.js","lib/symbols.js"],
-  "lib/reply.js":["lib/content-type.js","lib/decorate.js","lib/error-handler.js","lib/errors.js","lib/handle-request.js","lib/hooks.js","lib/logger-factory.js","lib/schemas.js","lib/symbols.js"],
-  "lib/req-id-gen-factory.js":["lib/symbols.js"],
-  "lib/request.js":["lib/content-type.js","lib/decorate.js","lib/errors.js","lib/symbols.js"],
-  "lib/route.js":["lib/context.js","lib/error-handler.js","lib/errors.js","lib/handle-request.js","lib/head-route.js","lib/hooks.js","lib/initial-config-validation.js","lib/logger-factory.js","lib/req-id-gen-factory.js","lib/schemas.js","lib/symbols.js","lib/validation.js"],
-  "lib/schema-controller.js":["lib/schemas.js"],
-  "lib/schemas.js":["lib/content-type.js","lib/errors.js","lib/symbols.js"],
-  "lib/server.js":["lib/errors.js","lib/hooks.js","lib/noop-set.js","lib/symbols.js","lib/warnings.js"],
-  "lib/symbols.js":[],
-  "lib/validation.js":["lib/errors.js","lib/symbols.js","lib/warnings.js"],
-  "lib/warnings.js":[],
-  "lib/wrap-thenable.js":["lib/error-status.js","lib/symbols.js"]
-};
+const NS='http://www.w3.org/2000/svg';
+const W=window.innerWidth,H=window.innerHeight;
+const CX=W/2+80;
 
-const BLAST_COLORS = ['#ef4444','#f97316','#eab308','#22c55e'];
-const BLAST_DELAY = 220;
+const TC={feat:'#22c55e',fix:'#f59e0b',refactor:'#3b82f6'};
+const TBG={feat:'#062015',fix:'#1a1505',refactor:'#0c1530'};
+const TS={feat:'#16a34a',fix:'#d97706',refactor:'#2563eb'};
 
-const nodeIds = Object.keys(GRAPH);
-const totalFiles = nodeIds.length;
+const NW=150,NH=54,NR=5;
 
-const reverseAdj = {};
-const linkData = [];
+// ═══════════════ ARCHITECTURE DATA ═══════════════
+const ARCH_NODES=[
+  {id:'clients',label:'Clients',tag:'USERS',x:CX,y:70},
+  {id:'lb',label:'Load Balancer',tag:'INFRA',x:CX,y:170},
+  {id:'gateway',label:'API Gateway',tag:'FASTIFY',x:CX,y:280,zoomable:true,zoomLabel:'9 modules inside'},
+  {id:'auth',label:'Auth',tag:'SERVICE',x:CX-320,y:420},
+  {id:'user',label:'User',tag:'SERVICE',x:CX-160,y:420},
+  {id:'product',label:'Product',tag:'SERVICE',x:CX,y:420},
+  {id:'order',label:'Order',tag:'SERVICE',x:CX+160,y:420},
+  {id:'notif',label:'Notifications',tag:'SERVICE',x:CX+320,y:420},
+  {id:'redis',label:'Redis',tag:'CACHE',x:CX-300,y:570},
+  {id:'postgres',label:'PostgreSQL',tag:'DATABASE',x:CX-100,y:570},
+  {id:'s3',label:'S3 Bucket',tag:'STORAGE',x:CX+80,y:570},
+  {id:'stripe',label:'Stripe',tag:'EXTERNAL',x:CX+240,y:570},
+  {id:'queue',label:'Message Queue',tag:'QUEUE',x:CX+400,y:570},
+];
+const ARCH_EDGES=[
+  ['clients','lb'],['lb','gateway'],
+  ['gateway','auth'],['gateway','user'],['gateway','product'],['gateway','order'],['gateway','notif'],
+  ['auth','redis'],['user','postgres'],['product','postgres'],['product','s3'],
+  ['order','postgres'],['order','stripe'],['notif','queue'],
+];
 
-for (const [src, deps] of Object.entries(GRAPH)) {
-  for (const dep of deps) {
-    if (!reverseAdj[dep]) reverseAdj[dep] = [];
-    reverseAdj[dep].push(src);
-    linkData.push({ sourceId: src, targetId: dep });
-  }
-}
+// ═══════════════ MODULE DATA (inside API Gateway = Fastify) ═══════════════
+const COL=[-220,0,220],ROW=[80,220,370,520];
+const MOD_NODES=[
+  {id:'core',label:'Core',tag:'ENTRY',x:CX,y:ROW[0]},
+  {id:'plugins',label:'Plugins',tag:'EXTENSION',x:CX+COL[0],y:ROW[1]},
+  {id:'server',label:'Server & Hooks',tag:'LIFECYCLE',x:CX+COL[1],y:ROW[1]},
+  {id:'routing',label:'Routing',tag:'HTTP',x:CX+COL[2],y:ROW[1]},
+  {id:'reqres',label:'Request / Reply',tag:'I/O',x:CX+COL[0],y:ROW[2]},
+  {id:'validation',label:'Validation',tag:'SCHEMA',x:CX+COL[1],y:ROW[2]},
+  {id:'errors',label:'Error Handling',tag:'ERRORS',x:CX+COL[2],y:ROW[2]},
+  {id:'logging',label:'Logging',tag:'OBSERVABILITY',x:CX+COL[0],y:ROW[3]},
+  {id:'internals',label:'Internals',tag:'SHARED',x:CX+COL[1],y:ROW[3]},
+];
+const MOD_EDGES=[
+  ['core','plugins'],['core','server'],['core','routing'],
+  ['routing','reqres'],['routing','validation'],['routing','errors'],
+  ['plugins','reqres'],['plugins','validation'],
+  ['server','internals'],['reqres','errors'],['reqres','logging'],
+  ['validation','internals'],['errors','internals'],['logging','internals'],
+];
 
-const revDeg = {};
-for (const id of nodeIds) revDeg[id] = (reverseAdj[id] || []).length;
-const maxRevDeg = Math.max(...Object.values(revDeg), 1);
-
-function nodeR(id) {
-  const t = (revDeg[id] || 0) / maxRevDeg;
-  return 4 + t * 14;
-}
-
-function shortName(id) {
-  return id.replace('lib/', '').replace('.js', '');
-}
-
-const depth = {};
-{
-  const q = ['fastify.js'];
-  depth['fastify.js'] = 0;
-  while (q.length) {
-    const cur = q.shift();
-    for (const dep of (GRAPH[cur] || [])) {
-      if (depth[dep] === undefined) {
-        depth[dep] = depth[cur] + 1;
-        q.push(dep);
-      }
+// ═══════════════ PR DATA — both levels ═══════════════
+const PRS=[
+  { id:'#4521',title:'add rate limiting middleware',type:'feat',author:'alice',
+    arch:{ gateway:{summary:'5 files changed across hooks, routing, reply, errors',add:89,del:5} },
+    mod:{
+      server:{files:['hooks.js'],add:42,del:3,summary:'New onRequest hook slot for rate-limit checks'},
+      reqres:{files:['reply.js'],add:18,del:0,summary:'Added .tooManyRequests() 429 response helper'},
+      errors:{files:['errors.js'],add:5,del:0,summary:'New FST_ERR_RATE_LIMITED error code'},
+      routing:{files:['route.js'],add:23,del:2,summary:'Route config accepts rateLimit option'},
+      internals:{files:['symbols.js'],add:1,del:0,summary:'Added kRateLimit symbol'},
     }
+  },
+  { id:'#4498',title:'fix pino logger timezone offset',type:'fix',author:'bob',
+    arch:{ gateway:{summary:'2 files in logging subsystem',add:10,del:4} },
+    mod:{
+      logging:{files:['logger-pino.js','logger-factory.js'],add:10,del:4,summary:'Fixed UTC offset in timestamp serializer'},
+    }
+  },
+  { id:'#4510',title:'refactor schema compilation',type:'refactor',author:'carol',
+    arch:{ gateway:{summary:'5 files across validation, routing, reply',add:119,del:71} },
+    mod:{
+      validation:{files:['schemas.js','schema-controller.js','validation.js'],add:105,del:65,summary:'Lazy schema compilation with caching'},
+      routing:{files:['route.js'],add:9,del:4,summary:'Routes use deferred schema resolution'},
+      reqres:{files:['reply.js'],add:5,del:2,summary:'Serializer updated for new schema format'},
+    }
+  },
+];
+
+// ═══════════════ REVERSE ADJ (for indirect impact) ═══════════════
+function buildReverse(edges){
+  const r={};
+  edges.forEach(([f,t])=>{ if(!r[t])r[t]=[];r[t].push(f); });
+  return r;
+}
+const archRev=buildReverse(ARCH_EDGES);
+const modRev=buildReverse(MOD_EDGES);
+
+// ═══════════════ STATE ═══════════════
+let level='arch'; // 'arch' | 'mod'
+let activePR=null;
+let activeBtn=null;
+
+// ═══════════════ SVG SETUP ═══════════════
+const svg=document.getElementById('g');
+svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+
+const defs=document.createElementNS(NS,'defs');
+['arr','arr-h'].forEach(id=>{
+  const m=document.createElementNS(NS,'marker');
+  m.setAttribute('id',id);m.setAttribute('viewBox','0 0 8 6');
+  m.setAttribute('refX','8');m.setAttribute('refY','3');
+  m.setAttribute('markerWidth','7');m.setAttribute('markerHeight','5');
+  m.setAttribute('orient','auto');
+  const p=document.createElementNS(NS,'path');
+  p.setAttribute('d','M0,0.5 L7,3 L0,5.5');
+  p.setAttribute('fill',id==='arr'?'#1a2a40':'#ef4444');
+  m.appendChild(p);defs.appendChild(m);
+});
+svg.appendChild(defs);
+
+const gArch=document.createElementNS(NS,'g');gArch.id='gArch';
+const gMod=document.createElementNS(NS,'g');gMod.id='gMod';gMod.style.opacity='0';gMod.style.pointerEvents='none';
+svg.appendChild(gArch);svg.appendChild(gMod);
+
+// ═══════════════ GENERIC RENDERING ═══════════════
+function makePath(from,to){
+  const sy=from.y+NH/2,ey=to.y-NH/2-5,sx=from.x,ex=to.x;
+  if(Math.abs(from.y-to.y)<NH+20){
+    const s=to.x>from.x?from.x+NW/2:from.x-NW/2;
+    const e=to.x>from.x?to.x-NW/2-5:to.x+NW/2+5;
+    return`M${s},${from.y} L${e},${to.y}`;
   }
+  const dy=ey-sy;
+  return`M${sx},${sy} C${sx},${sy+dy*.5} ${ex},${ey-dy*.5} ${ex},${ey}`;
 }
 
-const svg = document.getElementById('graph');
-const W = window.innerWidth;
-const H = window.innerHeight;
-svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-
-const nodes = nodeIds.map(id => ({
-  id, x: 0, y: 0, vx: 0, vy: 0, dragging: false, blastDist: -1
-}));
-const nodeMap = {};
-nodes.forEach(n => { nodeMap[n.id] = n; });
-
-const links = linkData.map(l => ({
-  source: nodeMap[l.sourceId],
-  target: nodeMap[l.targetId],
-}));
-
-{
-  const cx = W / 2, cy = H / 2;
-  const byDepth = {};
-  nodes.forEach(n => {
-    const d = depth[n.id] ?? 3;
-    if (!byDepth[d]) byDepth[d] = [];
-    byDepth[d].push(n);
+function renderGraph(nodes,edges,container){
+  const nMap={};nodes.forEach(n=>nMap[n.id]=n);
+  const eEls=edges.map(([fid,tid])=>{
+    const p=document.createElementNS(NS,'path');
+    p.setAttribute('d',makePath(nMap[fid],nMap[tid]));
+    p.setAttribute('class','edge-path');
+    p.setAttribute('marker-end','url(#arr)');
+    p.dataset.from=fid;p.dataset.to=tid;
+    container.appendChild(p);return p;
   });
-  for (const [d, group] of Object.entries(byDepth)) {
-    if (+d === 0) { group[0].x = cx; group[0].y = cy; }
-    else {
-      const r = +d * 160;
-      group.forEach((n, i) => {
-        const a = (i / group.length) * 2 * Math.PI - Math.PI / 2 + (+d * 0.4);
-        n.x = cx + r * Math.cos(a);
-        n.y = cy + r * Math.sin(a);
-      });
+  const nEls={};
+  nodes.forEach(n=>{
+    const g=document.createElementNS(NS,'g');
+    g.setAttribute('class','node-group');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    g.dataset.id=n.id;
+
+    const box=document.createElementNS(NS,'rect');
+    box.setAttribute('x',-NW/2);box.setAttribute('y',-NH/2);
+    box.setAttribute('width',NW);box.setAttribute('height',NH);
+    box.setAttribute('rx',NR);box.setAttribute('fill','#0e1420');
+    box.setAttribute('class','node-box');g.appendChild(box);
+
+    const bdr=document.createElementNS(NS,'rect');
+    bdr.setAttribute('x',-NW/2);bdr.setAttribute('y',-NH/2);
+    bdr.setAttribute('width',NW);bdr.setAttribute('height',NH);
+    bdr.setAttribute('rx',NR);bdr.setAttribute('fill','none');
+    bdr.setAttribute('stroke','#1e2e45');bdr.setAttribute('stroke-width','1');
+    bdr.setAttribute('class','node-border');g.appendChild(bdr);
+
+    const bar=document.createElementNS(NS,'rect');
+    bar.setAttribute('x',-NW/2+2);bar.setAttribute('y',-NH/2+5);
+    bar.setAttribute('width',3);bar.setAttribute('height',NH-10);
+    bar.setAttribute('rx',1);bar.setAttribute('fill','#2a3a55');bar.setAttribute('opacity','.5');
+    bar.setAttribute('class','node-bar');g.appendChild(bar);
+
+    const tag=document.createElementNS(NS,'text');
+    tag.textContent=n.tag;tag.setAttribute('x',-NW/2+14);tag.setAttribute('y',-NH/2+16);
+    tag.setAttribute('fill','#3a5070');tag.setAttribute('font-size','8');
+    tag.setAttribute('font-family',"'Fira Code',monospace");
+    tag.setAttribute('letter-spacing','.6');tag.setAttribute('class','node-tag');g.appendChild(tag);
+
+    const lbl=document.createElementNS(NS,'text');
+    lbl.textContent=n.label;lbl.setAttribute('x',-NW/2+14);lbl.setAttribute('y',-NH/2+33);
+    lbl.setAttribute('fill','#8a99b0');lbl.setAttribute('font-size','13');
+    lbl.setAttribute('font-family',"'DM Sans',sans-serif");lbl.setAttribute('font-weight','600');
+    lbl.setAttribute('class','node-label');g.appendChild(lbl);
+
+    const info=document.createElementNS(NS,'text');
+    info.textContent=n.zoomLabel||'';info.setAttribute('x',-NW/2+14);info.setAttribute('y',-NH/2+47);
+    info.setAttribute('fill','#2a3a50');info.setAttribute('font-size','9');
+    info.setAttribute('font-family',"'Fira Code',monospace");
+    info.setAttribute('class','node-info');g.appendChild(info);
+
+    if(n.zoomable){
+      const zh=document.createElementNS(NS,'text');
+      zh.textContent='EXPLORE ▸';zh.setAttribute('x',NW/2-8);zh.setAttribute('y',-NH/2+47);
+      zh.setAttribute('text-anchor','end');zh.setAttribute('class','zoom-hint');
+      g.appendChild(zh);
+      g.style.cursor='zoom-in';
     }
-  }
-}
 
-let alpha = 1;
-const REPULSION = -700;
-const SPRING = 0.035;
-const IDEAL_LEN = 130;
-const CENTER_G = 0.006;
-const DAMPING = 0.5;
-const ALPHA_DECAY = 0.012;
+    const bdg=document.createElementNS(NS,'g');bdg.setAttribute('class','change-badge');bdg.setAttribute('opacity','0');
+    bdg.setAttribute('transform',`translate(${NW/2-8},${-NH/2-6})`);
+    const bb=document.createElementNS(NS,'rect');bb.setAttribute('x',-30);bb.setAttribute('y',-8);
+    bb.setAttribute('width',38);bb.setAttribute('height',16);bb.setAttribute('rx',3);
+    bb.setAttribute('fill','#0a0f18');bb.setAttribute('stroke','#1e2e45');bb.setAttribute('stroke-width','1');
+    bdg.appendChild(bb);
+    const bt=document.createElementNS(NS,'text');bt.setAttribute('x',-11);bt.setAttribute('y',3);
+    bt.setAttribute('text-anchor','middle');bt.setAttribute('font-size','9');bt.setAttribute('fill','#8a99b0');
+    bt.setAttribute('font-family',"'Fira Code',monospace");
+    bdg.appendChild(bt);g.appendChild(bdg);
 
-function simulate() {
-  if (alpha < 0.001) return;
+    g.addEventListener('mouseenter',e=>showTip(e,n));
+    g.addEventListener('mouseleave',hideTip);
 
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      const a = nodes[i], b = nodes[j];
-      let dx = b.x - a.x, dy = b.y - a.y;
-      let d2 = dx * dx + dy * dy;
-      if (d2 < 4) { dx += 1; dy += 1; d2 = 2; }
-      const d = Math.sqrt(d2);
-      const f = REPULSION * alpha / d2;
-      const fx = f * dx / d, fy = f * dy / d;
-      a.vx -= fx; a.vy -= fy;
-      b.vx += fx; b.vy += fy;
-    }
-  }
-
-  for (const l of links) {
-    const dx = l.target.x - l.source.x, dy = l.target.y - l.source.y;
-    const d = Math.sqrt(dx * dx + dy * dy) || 1;
-    const f = (d - IDEAL_LEN) * SPRING * alpha;
-    const fx = f * dx / d, fy = f * dy / d;
-    l.source.vx += fx; l.source.vy += fy;
-    l.target.vx -= fx; l.target.vy -= fy;
-  }
-
-  const cx = W / 2, cy = H / 2;
-  for (const n of nodes) {
-    n.vx += (cx - n.x) * CENTER_G * alpha;
-    n.vy += (cy - n.y) * CENTER_G * alpha;
-  }
-
-  for (const n of nodes) {
-    if (n.dragging) continue;
-    n.vx *= DAMPING; n.vy *= DAMPING;
-    n.x += n.vx; n.y += n.vy;
-  }
-
-  alpha *= (1 - ALPHA_DECAY);
-}
-
-let transform = { x: 0, y: 0, k: 1 };
-const gRoot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-svg.appendChild(gRoot);
-
-const gLinks = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-const gNodes = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-gRoot.appendChild(gLinks);
-gRoot.appendChild(gNodes);
-
-const linkEls = links.map(l => {
-  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  line.setAttribute('stroke', 'var(--link-color)');
-  line.setAttribute('stroke-width', '0.8');
-  line.setAttribute('stroke-opacity', '0.5');
-  gLinks.appendChild(line);
-  return line;
-});
-
-const nodeEls = nodes.map(n => {
-  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  g.style.cursor = 'pointer';
-
-  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  const r = nodeR(n.id);
-  circle.setAttribute('r', r);
-  circle.setAttribute('fill', 'var(--node-fill)');
-  circle.setAttribute('stroke', 'var(--node-stroke)');
-  circle.setAttribute('stroke-width', '1');
-  circle.style.transition = 'fill 0.35s, stroke 0.35s';
-  g.appendChild(circle);
-
-  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  text.textContent = shortName(n.id);
-  text.setAttribute('dy', -(r + 5));
-  text.setAttribute('text-anchor', 'middle');
-  text.setAttribute('fill', 'var(--text)');
-  text.setAttribute('font-size', revDeg[n.id] >= 5 ? '9' : '8');
-  text.setAttribute('font-family', "'Fira Code', monospace");
-  text.setAttribute('opacity', revDeg[n.id] >= 5 ? '0.7' : '0');
-  text.style.transition = 'opacity 0.2s';
-  text.style.pointerEvents = 'none';
-  g.appendChild(text);
-
-  g.addEventListener('mouseenter', () => {
-    if (text.getAttribute('opacity') !== '1') text.setAttribute('opacity', '1');
-    circle.setAttribute('stroke', 'var(--accent)');
-    circle.setAttribute('stroke-width', '2');
-    showTooltip(n);
+    container.appendChild(g);
+    nEls[n.id]={g,box,bdr,bar,tag,lbl,info,bdg,bb,bt};
   });
-  g.addEventListener('mouseleave', () => {
-    if (revDeg[n.id] < 5 && n.blastDist < 0) text.setAttribute('opacity', '0');
-    else text.setAttribute('opacity', '0.7');
-    if (n.blastDist < 0) {
-      circle.setAttribute('stroke', 'var(--node-stroke)');
-    } else {
-      circle.setAttribute('stroke', blastStroke(n.blastDist));
-    }
-    circle.setAttribute('stroke-width', '1');
-    hideTooltip();
-  });
-
-  gNodes.appendChild(g);
-  return { g, circle, text };
-});
-
-function blastColor(dist) {
-  if (dist < 0) return 'var(--node-fill)';
-  if (dist < BLAST_COLORS.length) return BLAST_COLORS[dist];
-  return BLAST_COLORS[BLAST_COLORS.length - 1];
+  return{nEls,eEls,nMap};
 }
 
-function blastStroke(dist) {
-  if (dist < 0) return 'var(--node-stroke)';
-  if (dist === 0) return '#fca5a5';
-  if (dist === 1) return '#fdba74';
-  if (dist === 2) return '#fde047';
-  return '#86efac';
+const arch=renderGraph(ARCH_NODES,ARCH_EDGES,gArch);
+const mod=renderGraph(MOD_NODES,MOD_EDGES,gMod);
+
+// ═══════════════ TOOLTIP ═══════════════
+const tip=document.getElementById('tip');
+function showTip(e,n){
+  let h=`<div class="tip-n">${n.label}</div>`;
+  if(n.zoomable)h+=`<div class="tip-f">click to explore internal modules</div>`;
+  if(activePR){
+    const data=level==='arch'?activePR.arch:activePR.mod;
+    const c=data[n.id];
+    if(c)h+=`<div class="tip-s">${c.summary}</div>`;
+  }
+  tip.innerHTML=h;tip.style.display='block';
+  tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
+}
+function hideTip(){tip.style.display='none'}
+document.addEventListener('mousemove',e=>{if(tip.style.display==='block'){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px'}});
+
+// ═══════════════ ZOOM ═══════════════
+const bc0=document.getElementById('bc0');
+const crumb=document.getElementById('crumb');
+
+function zoomIn(){
+  level='mod';
+  const gw=arch.nMap['gateway'];
+  gArch.style.transformOrigin=`${gw.x}px ${gw.y}px`;
+  gArch.style.transform='scale(3.5)';gArch.style.opacity='0';
+  gArch.style.pointerEvents='none';
+  setTimeout(()=>{
+    gMod.style.opacity='1';gMod.style.pointerEvents='auto';
+  },250);
+  bc0.classList.add('clickable');bc0.classList.remove('active');
+  let bc1=document.getElementById('bc1');
+  if(!bc1){
+    const sep=document.createElement('span');sep.className='crumb-sep';sep.textContent='›';sep.id='bcsep';
+    crumb.appendChild(sep);
+    bc1=document.createElement('span');bc1.className='crumb-item active';bc1.id='bc1';bc1.textContent='API Gateway';
+    crumb.appendChild(bc1);
+  }
+  bc0.onclick=zoomOut;
+  document.getElementById('view-sub').textContent='fastify · 9 modules';
+  if(activePR)showAnalysis(activePR);
 }
 
-function blastLinkColor(dist) {
-  if (dist === 0) return 'rgba(239,68,68,0.45)';
-  if (dist === 1) return 'rgba(249,115,22,0.35)';
-  if (dist === 2) return 'rgba(234,179,8,0.3)';
-  return 'rgba(34,197,94,0.25)';
+function zoomOut(){
+  level='arch';
+  gMod.style.opacity='0';gMod.style.pointerEvents='none';
+  setTimeout(()=>{
+    gArch.style.transform='scale(1)';gArch.style.opacity='1';gArch.style.pointerEvents='auto';
+  },200);
+  bc0.classList.remove('clickable');bc0.classList.add('active');bc0.onclick=null;
+  const s=document.getElementById('bcsep'),b=document.getElementById('bc1');
+  if(s)s.remove();if(b)b.remove();
+  document.getElementById('view-sub').textContent='e-commerce · 13 components';
+  if(activePR)showAnalysis(activePR);
 }
 
-const tooltip = document.getElementById('tooltip');
-const ttName = document.getElementById('tt-name');
-const ttStat = document.getElementById('tt-stat');
-
-function showTooltip(n) {
-  ttName.textContent = shortName(n.id);
-  const deps = (GRAPH[n.id] || []).length;
-  const rdeps = (reverseAdj[n.id] || []).length;
-  let stat = `imports ${deps} · imported by ${rdeps}`;
-  if (n.blastDist >= 0) stat += ` · ${n.blastDist === 0 ? 'changed' : n.blastDist + ' hop' + (n.blastDist > 1 ? 's' : '')}`;
-  ttStat.textContent = stat;
-  tooltip.style.display = 'block';
-}
-
-function hideTooltip() {
-  tooltip.style.display = 'none';
-}
-
-svg.addEventListener('mousemove', e => {
-  if (tooltip.style.display === 'block') {
-    tooltip.style.left = (e.clientX + 14) + 'px';
-    tooltip.style.top = (e.clientY - 10) + 'px';
+// Click handler for zoomable nodes
+ARCH_NODES.forEach(n=>{
+  if(n.zoomable){
+    arch.nEls[n.id].g.addEventListener('click',()=>{ if(level==='arch')zoomIn(); });
   }
 });
 
-function render() {
-  gRoot.setAttribute('transform', `translate(${transform.x},${transform.y}) scale(${transform.k})`);
+// ═══════════════ PR LIST ═══════════════
+const prList=document.getElementById('pr-list');
+PRS.forEach(pr=>{
+  const btn=document.createElement('button');btn.className='pr-btn';
+  const ta=pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.add,0):0;
+  const td=pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.del,0):0;
+  btn.innerHTML=`<div class="pr-id"><span class="pr-type ${pr.type}">${pr.type}</span>${pr.id}</div>
+    <div class="pr-title">${pr.title}</div>
+    <div class="pr-meta">${pr.author} · +${ta} -${td}</div>`;
+  btn.addEventListener('click',()=>analyzePR(pr,btn));
+  prList.appendChild(btn);
+});
 
-  links.forEach((l, i) => {
-    linkEls[i].setAttribute('x1', l.source.x);
-    linkEls[i].setAttribute('y1', l.source.y);
-    linkEls[i].setAttribute('x2', l.target.x);
-    linkEls[i].setAttribute('y2', l.target.y);
-  });
+// ═══════════════ ANALYSIS ═══════════════
+let timers=[];
 
-  nodes.forEach((n, i) => {
-    nodeEls[i].g.setAttribute('transform', `translate(${n.x},${n.y})`);
+function resetHighlights(){
+  timers.forEach(t=>clearTimeout(t));timers=[];
+  [arch,mod].forEach(v=>{
+    Object.values(v.nEls).forEach(el=>{
+      el.g.classList.remove('dimmed');
+      el.box.setAttribute('fill','#0e1420');el.bdr.setAttribute('stroke','#1e2e45');
+      el.bdr.setAttribute('stroke-width','1');el.bdr.setAttribute('stroke-dasharray','');
+      el.bar.setAttribute('fill','#2a3a55');el.bar.setAttribute('opacity','.5');
+      el.tag.setAttribute('fill','#3a5070');el.lbl.setAttribute('fill','#8a99b0');
+      el.info.setAttribute('fill','#2a3a50');el.bdg.setAttribute('opacity','0');
+      el.bb.setAttribute('stroke','#1e2e45');
+    });
+    v.eEls.forEach(p=>{p.setAttribute('stroke','#141e30');p.setAttribute('stroke-width','1.2');p.setAttribute('marker-end','url(#arr)')});
   });
 }
 
-let animating = true;
-function tick() {
-  simulate();
-  render();
-  if (alpha > 0.001 || nodes.some(n => n.dragging)) {
-    requestAnimationFrame(tick);
-  } else {
-    animating = false;
-  }
-}
+function highlightNodes(view,data,prType,revAdj){
+  const direct=new Set(Object.keys(data));
+  const indirect=new Set();
+  const q=[...direct];
+  while(q.length){const c=q.shift();for(const d of(revAdj[c]||[])){if(!direct.has(d)&&!indirect.has(d)){indirect.add(d);q.push(d)}}}
 
-function reheat() {
-  alpha = 0.3;
-  if (!animating) { animating = true; tick(); }
-}
+  const nodes=Object.keys(view.nEls);
+  nodes.forEach(id=>{if(!direct.has(id)&&!indirect.has(id))view.nEls[id].g.classList.add('dimmed')});
 
-let dragNode = null;
-let dragStart = null;
-let panStart = null;
-let didDrag = false;
-
-svg.addEventListener('mousedown', e => {
-  const target = e.target.closest('g[transform]');
-  if (target && gNodes.contains(target)) {
-    const idx = Array.from(gNodes.children).indexOf(target);
-    if (idx >= 0) {
-      dragNode = nodes[idx];
-      dragNode.dragging = true;
-      dragStart = { x: e.clientX, y: e.clientY };
-      didDrag = false;
-      e.preventDefault();
-      return;
-    }
-  }
-  panStart = { x: e.clientX - transform.x, y: e.clientY - transform.y };
-});
-
-svg.addEventListener('mousemove', e => {
-  if (dragNode) {
-    const dx = e.clientX - dragStart.x;
-    const dy = e.clientY - dragStart.y;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag = true;
-    dragNode.x = (e.clientX - transform.x) / transform.k;
-    dragNode.y = (e.clientY - transform.y) / transform.k;
-    dragNode.vx = 0; dragNode.vy = 0;
-    reheat();
-  } else if (panStart) {
-    transform.x = e.clientX - panStart.x;
-    transform.y = e.clientY - panStart.y;
-    render();
-  }
-});
-
-svg.addEventListener('mouseup', e => {
-  if (dragNode) {
-    if (!didDrag) {
-      triggerBlast(dragNode.id);
-    }
-    dragNode.dragging = false;
-    dragNode = null;
-    reheat();
-  }
-  panStart = null;
-});
-
-svg.addEventListener('wheel', e => {
-  e.preventDefault();
-  const scale = e.deltaY > 0 ? 0.9 : 1.1;
-  const newK = Math.max(0.2, Math.min(4, transform.k * scale));
-  const mx = e.clientX, my = e.clientY;
-  transform.x = mx - (mx - transform.x) * (newK / transform.k);
-  transform.y = my - (my - transform.y) * (newK / transform.k);
-  transform.k = newK;
-  render();
-}, { passive: false });
-
-let blastTimers = [];
-
-function triggerBlast(fileId) {
-  clearBlast();
-
-  const dist = {};
-  const q = [fileId];
-  dist[fileId] = 0;
-  while (q.length) {
-    const cur = q.shift();
-    const d = dist[cur];
-    const dependents = reverseAdj[cur] || [];
-    for (const dep of dependents) {
-      if (dist[dep] === undefined) {
-        dist[dep] = d + 1;
-        q.push(dep);
-      }
-    }
-  }
-
-  const maxDist = Math.max(...Object.values(dist), 0);
-
-  for (let hop = 0; hop <= maxDist; hop++) {
-    const timer = setTimeout(() => {
-      for (const [id, d] of Object.entries(dist)) {
-        if (d !== hop) continue;
-        const n = nodeMap[id];
-        const idx = nodes.indexOf(n);
-        n.blastDist = d;
-        nodeEls[idx].circle.setAttribute('fill', blastColor(d));
-        nodeEls[idx].circle.setAttribute('stroke', blastStroke(d));
-        nodeEls[idx].text.setAttribute('opacity', '0.9');
-        nodeEls[idx].text.setAttribute('fill', blastColor(d));
-      }
-
-      links.forEach((l, i) => {
-        const sd = dist[l.source.id], td = dist[l.target.id];
-        if (td !== undefined && sd !== undefined && td === hop && sd === hop - 1) {
-          linkEls[i].setAttribute('stroke', blastLinkColor(Math.min(sd, td)));
-          linkEls[i].setAttribute('stroke-width', '2');
-          linkEls[i].setAttribute('stroke-opacity', '1');
-        }
-        if (sd !== undefined && td !== undefined && sd === hop && td === hop - 1) {
-          linkEls[i].setAttribute('stroke', blastLinkColor(Math.min(sd, td)));
-          linkEls[i].setAttribute('stroke-width', '2');
-          linkEls[i].setAttribute('stroke-opacity', '1');
+  const color=TC[prType],bg=TBG[prType],stroke=TS[prType];
+  const dArr=[...direct];
+  dArr.forEach((cid,i)=>{
+    timers.push(setTimeout(()=>{
+      const el=view.nEls[cid];if(!el)return;
+      el.box.setAttribute('fill',bg);el.bdr.setAttribute('stroke',stroke);el.bdr.setAttribute('stroke-width','1.5');
+      el.bar.setAttribute('fill',color);el.bar.setAttribute('opacity','.8');
+      el.tag.setAttribute('fill',color);el.lbl.setAttribute('fill','#f0f4f8');el.info.setAttribute('fill',color);
+      const c=data[cid];
+      el.bt.textContent=`+${c.add} -${c.del}`;el.bb.setAttribute('stroke',stroke);el.bdg.setAttribute('opacity','1');
+      view.eEls.forEach(p=>{
+        if((direct.has(p.dataset.from)&&p.dataset.to===cid)||(direct.has(p.dataset.to)&&p.dataset.from===cid)){
+          p.setAttribute('stroke',color);p.setAttribute('stroke-width','2');
         }
       });
-
-      updateSidebar(fileId, dist);
-    }, hop * BLAST_DELAY);
-    blastTimers.push(timer);
-  }
-
-  if (Object.keys(dist).length === 1) {
-    updateSidebar(fileId, dist);
-  }
-}
-
-function clearBlast() {
-  blastTimers.forEach(t => clearTimeout(t));
-  blastTimers = [];
-
-  nodes.forEach((n, i) => {
-    n.blastDist = -1;
-    nodeEls[i].circle.setAttribute('fill', 'var(--node-fill)');
-    nodeEls[i].circle.setAttribute('stroke', 'var(--node-stroke)');
-    nodeEls[i].text.setAttribute('fill', 'var(--text)');
-    nodeEls[i].text.setAttribute('opacity', revDeg[n.id] >= 5 ? '0.7' : '0');
+    },200+i*220));
   });
 
-  linkEls.forEach(el => {
-    el.setAttribute('stroke', 'var(--link-color)');
-    el.setAttribute('stroke-width', '0.8');
-    el.setAttribute('stroke-opacity', '0.5');
+  const iDelay=200+dArr.length*220+150;
+  [...indirect].forEach((cid,i)=>{
+    timers.push(setTimeout(()=>{
+      const el=view.nEls[cid];if(!el)return;
+      el.g.classList.remove('dimmed');
+      el.bdr.setAttribute('stroke','#475569');el.bdr.setAttribute('stroke-dasharray','4 3');
+      el.lbl.setAttribute('fill','#64748b');el.tag.setAttribute('fill','#475569');
+    },iDelay+i*120));
   });
-
-  document.getElementById('affected-count').textContent = '0';
-  document.getElementById('affected-pct').textContent = 'files (0%)';
-  document.getElementById('selected-file').innerHTML = '<span class="prompt-hint">click a node</span>';
-  document.getElementById('affected-list').innerHTML = '<span class="prompt-hint">—</span>';
 }
 
-function updateSidebar(selectedId, dist) {
-  const affected = Object.entries(dist).filter(([id]) => id !== selectedId);
-  const count = affected.length;
-  const pct = Math.round((count / totalFiles) * 100);
+function showAnalysis(pr){
+  resetHighlights();
+  const data=level==='arch'?pr.arch:pr.mod;
+  const view=level==='arch'?arch:mod;
+  const rev=level==='arch'?archRev:modRev;
+  if(!data){document.getElementById('analysis').innerHTML='<div class="div"></div><div class="ci-it">no changes at this level</div>';document.getElementById('analysis').style.display='block';return}
+  highlightNodes(view,data,pr.type,rev);
 
-  document.getElementById('affected-count').textContent = count;
-  document.getElementById('affected-pct').textContent = `files (${pct}%)`;
-  document.getElementById('selected-file').textContent = shortName(selectedId);
+  const color=TC[pr.type];
+  const direct=Object.keys(data);
+  const indirect=new Set();
+  const q=[...direct];while(q.length){const c=q.shift();for(const d of(rev[c]||[])){if(!direct.includes(d)&&!indirect.has(d)){indirect.add(d);q.push(d)}}}
 
-  if (affected.length === 0) {
-    document.getElementById('affected-list').innerHTML = '<span class="prompt-hint">no downstream impact</span>';
-    return;
+  const ta=Object.values(data).reduce((s,c)=>s+c.add,0);
+  const td=Object.values(data).reduce((s,c)=>s+c.del,0);
+  const nf=Object.values(data).reduce((s,c)=>s+(c.files?c.files.length:0),0)||Object.keys(data).length;
+
+  let html=`<div class="div"></div><div class="lbl">Impact</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-v">${direct.length}</div><div class="stat-u">direct</div></div>
+      <div class="stat"><div class="stat-v">${indirect.size}</div><div class="stat-u">indirect</div></div>
+      <div class="stat"><div class="stat-v">${ta+td}</div><div class="stat-u">lines</div></div>
+    </div><div class="div"></div><div class="lbl">Direct Changes</div>`;
+
+  for(const cid of direct){
+    const c=data[cid];
+    const nameMap=level==='arch'?arch.nMap:mod.nMap;
+    const name=nameMap[cid]?nameMap[cid].label:cid;
+    html+=`<div class="ci" style="border-left:3px solid ${color}">
+      <div class="ci-h"><span class="ci-n">${name}</span><span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span></div>
+      ${c.files?`<div class="ci-f">${c.files.join(', ')}</div>`:''}
+      <div class="ci-s">${c.summary}</div></div>`;
   }
 
-  affected.sort((a, b) => a[1] - b[1]);
-  const html = affected.map(([id, d]) =>
-    `<div class="aff-item"><div class="aff-dot" style="background:${blastColor(d)}"></div>${shortName(id)}</div>`
-  ).join('');
-  document.getElementById('affected-list').innerHTML = html;
+  if(indirect.size>0){
+    html+=`<div class="div"></div><div class="lbl">Indirect Impact</div>`;
+    const nameMap=level==='arch'?arch.nMap:mod.nMap;
+    for(const cid of indirect){
+      const name=nameMap[cid]?nameMap[cid].label:cid;
+      html+=`<div class="ci indirect"><div class="ci-n" style="font-size:11px">${name}</div><div class="ci-it">depends on changed components</div></div>`;
+    }
+  }
+
+  if(level==='arch'&&pr.mod){
+    html+=`<div class="div"></div><div style="text-align:center;padding:6px 0">
+      <span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomIn()">zoom into API Gateway ▸</span></div>`;
+  }
+
+  document.getElementById('analysis').innerHTML=html;
+  document.getElementById('analysis').style.display='block';
 }
 
-document.getElementById('clear-btn').addEventListener('click', clearBlast);
+function analyzePR(pr,btn){
+  if(activeBtn)activeBtn.classList.remove('active');
+  btn.classList.add('active');activeBtn=btn;
+  activePR=pr;
+  showAnalysis(pr);
+}
 
-document.getElementById('graph-info').textContent =
-  `fastify · ${totalFiles} files · ${linkData.length} imports`;
-
-tick();
+// ═══════════════ PAN ═══════════════
+let pan={x:0,y:0},panning=false,ps=null;
+svg.addEventListener('mousedown',e=>{if(!e.target.closest('.node-group')){panning=true;ps={x:e.clientX-pan.x,y:e.clientY-pan.y}}});
+svg.addEventListener('mousemove',e=>{if(panning){pan.x=e.clientX-ps.x;pan.y=e.clientY-ps.y;const t=level==='arch'?gArch:gMod;t.style.transform=level==='arch'?`translate(${pan.x}px,${pan.y}px)`:`translate(${pan.x}px,${pan.y}px)`;if(level==='mod')gMod.style.transform=`translate(${pan.x}px,${pan.y}px)`}});
+svg.addEventListener('mouseup',()=>{panning=false});
+svg.addEventListener('mouseleave',()=>{panning=false});
 </script>
