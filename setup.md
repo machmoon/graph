@@ -152,11 +152,24 @@ Everything in the visualization comes from real Fastify data:
 - **9 module groups** based on file naming conventions (routing, errors, validation, etc.)
 - **3 demo PRs** reference real Fastify file names with plausible change descriptions
 
-## Greptile Integration (live)
+## Greptile Integration
 
+Two directions, and they answer different questions.
+
+**Passive (polled).** Reacts to whatever Greptile decided to say about a PR diff:
 ```
 PR pushed → Greptile reviews & comments on GitHub → server polls GitHub → public/index.html updates
 ```
+
+**Active (on demand).** The graph does the asking, so the review covers modules the diff never touched:
+```
+pick a module → blast engine computes the downstream set → POST /api/review → Greptile answers about
+those specific modules → findings render on the graph
+```
+A PR review only reads files with changed lines. The interesting question — *does the module three hops
+downstream actually break?* — is one no diff review ever asks, because that module has no diff. Active
+review asks it, and also asks about coupling the import graph structurally cannot see (dynamic requires,
+event names, hook ordering, shared symbols).
 
 Nothing is hardcoded. `server.js` polls the GitHub API for PRs on `GITHUB_REPO`, pulls Greptile's
 inline comments + summary back out, maps changed files to graph nodes, and serves the result at
@@ -170,16 +183,28 @@ panel (real patches from the GitHub API) from it. Open the page at
    downstream files in a "Downstream impact" section — the parser relies on both.
 2. Create `.env` (git-ignored) so the server isn't stuck on GitHub's 60 req/h anonymous limit:
    ```
-   GITHUB_TOKEN=github_pat_...   # fine-grained: Pull requests: read, Contents: read
-   GITHUB_REPO=machmoon/graph    # optional, this is the default
-   POLL_MS=60000                 # optional; default 60s with token, 5min without
+   GITHUB_TOKEN=github_pat_...       # fine-grained: Pull requests: read, Contents: read
+   GITHUB_REPO=machmoon/graph        # repo the poller watches for PRs
+   POLL_MS=60000                     # optional; default 60s with token, 5min without
+
+   GREPTILE_API_KEY=...              # required for active review — app.greptile.com/settings/api
+   GREPTILE_REPO=machmoon/fastify    # repo Greptile reads source from (the fork, not this one)
+   GREPTILE_BRANCH=main
    ```
-3. `npm start`
+   `GREPTILE_REPO` is the Fastify fork because that is what the graph is built from. Leave it unset
+   and active review will ask questions about the wrong codebase.
+3. Index the fork once — Greptile can only answer about repos it has indexed:
+   ```
+   curl -XPOST localhost:8777/api/review/index
+   curl localhost:8777/api/review/index      # poll until status is COMPLETED
+   ```
+4. `npm start`, open a module in the visualizer, hit **⚡ Review Blast Radius**.
 
 ### Files
 ```
 greptile.json                          # Greptile review config
-lib/greptile.js                        # GitHub API → node-keyed report
+lib/greptile.js                        # PASSIVE: GitHub API → node-keyed report
+lib/greptile-query.js                  # ACTIVE: blast radius → Greptile query → same report shape
 scripts/component-map.json             # path prefix -> ARCH_NODES / MOD_NODES id
 docs/fastify-75d74e1a.md               # write-up of the Fastify #6580 stress case
 ```
@@ -189,6 +214,9 @@ docs/fastify-75d74e1a.md               # write-up of the Fastify #6580 stress ca
 |--------|------|-------------|
 | `GET` | `/api/reports` | All PR reports the server knows about (+ poll status) |
 | `GET` | `/api/reports/:pr?refresh=1` | One report; `refresh` forces a rebuild from GitHub |
+| `POST` | `/api/review` | **Active.** Ask Greptile about a blast radius. Body picks the change: `{node}` (a module's files), `{pr}`, `{files}`, or `{base,head}` (local git diff in `fastify/`) |
+| `POST` | `/api/review/index` | Start/reload Greptile indexing of `GREPTILE_REPO` |
+| `GET` | `/api/review/index` | Indexing status |
 
 ### Report shape
 `impact.arch` / `impact.mod` are keyed by the visualizer's node IDs:
