@@ -8,7 +8,7 @@
 git clone <repo-url>
 cd graph
 npm install
-git clone --depth 1 https://github.com/fastify/fastify.git
+git submodule update --init --recursive
 npm start
 ```
 
@@ -55,7 +55,7 @@ graph/
     fastify-75d74e1a.md  # Analysis backing the Fastify #6580 demo
   scripts/
     greptile-report.mjs  # GitHub API → node-keyed review report
-  fastify/               # Local Fastify clone (git-ignored)
+  fastify/               # Fastify submodule, pinned to the demo commit
 ```
 
 ## API Endpoints
