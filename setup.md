@@ -14,15 +14,21 @@ Open http://localhost:8777
 
 ## What You'll See
 
-A system architecture diagram (gateway, services, databases). Click a PR in the sidebar to see the blast radius animate — glowing balls travel along edges showing which components are affected. Click the API Gateway node to zoom into the Fastify module graph (loaded from real dependency data via madge).
+A module dependency graph of the real Fastify codebase — 9 modules, 32 files, all edges from actual import relationships extracted via madge. Click any module to zoom into its files. Select a PR to see the blast radius animate across the graph.
 
-## Pipeline
+## How It Works
 
 ```
-PR comes in → madge extracts dependency graph → map changed files to modules → BFS blast radius → render + animate
+PR comes in → madge extracts file imports → group files into modules →
+BFS reverse-adjacency blast radius → render + animate in SVG
 ```
 
-Right now the architecture level is hardcoded (system design diagram) and the module level is live from the API (real Fastify imports via madge). The demo PRs are mock data.
+The frontend embeds the real madge data from Fastify (32 files, ~80 import edges). Module-level edges are computed from file-level imports. Utility dependencies (to Errors/Internals) are noted on the nodes but not drawn as edges to keep the graph clean — they're still included in blast radius computation.
+
+## Two-Level Zoom
+
+1. **Module level**: 9 modules with structural dependency edges. Every module shows "EXPLORE ▸" on hover.
+2. **File level**: Click any module to see its actual files and internal import edges. External deps shown in footer.
 
 ## Project Structure
 
@@ -35,8 +41,7 @@ graph/
     pr-analyzer.js       # git diff parsing, file → module mapping
     blast-engine.js      # BFS blast radius computation
   public/
-    index.html           # Frontend: graph viz, animation, controls
-  blast-radius.html      # Standalone offline demo (no server needed)
+    index.html           # Frontend: real Fastify graph viz, animation, zoom
   fastify/               # Cloned Fastify repo (git-ignored, clone it yourself)
 ```
 
@@ -47,12 +52,6 @@ graph/
 | `GET` | `/api/graph` | Returns module dependency graph (runs madge on Fastify) |
 | `POST` | `/api/analyze` | Analyzes a git diff between branches, returns blast radius |
 | `POST` | `/api/analyze-mock` | Pass file names directly, get blast radius back |
-
-### `/api/analyze` body
-
-```json
-{ "repo": "path/to/repo", "base": "main", "head": "feature-branch" }
-```
 
 ### `/api/analyze-mock` body
 
@@ -67,7 +66,7 @@ graph/
 | `lib/graph-builder.js` | **Graph** | More repo profiles, auto-detect project type, TS/Python/Go support |
 | `lib/pr-analyzer.js` | **PR** | GitHub PR URL fetching, LLM-powered summaries |
 | `lib/blast-engine.js` | **Engine** | Weighted edges, config-change detection, multi-level blast |
-| `public/index.html` | **Frontend** | More zoom levels, animation effects, layout tuning |
+| `public/index.html` | **Frontend** | More animation effects, layout tuning, live PR input |
 | `server.js` | **Infra** | WebSocket live updates, GitHub webhook, caching |
 
 ## Adding a New Repo Profile
@@ -83,19 +82,10 @@ const MY_REPO_GROUPS = {
 };
 ```
 
-The `match` function decides which files belong to which module. Madge handles dependency extraction.
+## Data Sources
 
-## Adding GitHub PR Support
-
-In `lib/pr-analyzer.js`:
-1. Accept a PR URL like `https://github.com/org/repo/pull/123`
-2. Use GitHub API: `GET /repos/{owner}/{repo}/pulls/{number}/files`
-3. Extract the file list → feed into `mapFilesToGroups()` (already works)
-
-## Future Ideas
-
-- **GitHub webhook**: auto-analyze on PR open, post blast radius as PR comment
-- **Config-type PRs**: scaling pods, env var changes — infra impact without code changes
-- **AI summaries**: LLM generates "what changed and why" per module
-- **Level 3 zoom**: file-level or function-level graphs inside a module
-- **Multi-repo**: cross-repo dependency visualization
+Everything in the visualization comes from real Fastify data:
+- **32 files** extracted via `npx madge --json fastify.js`
+- **~80 import edges** from actual `require()` calls
+- **9 module groups** based on file naming conventions (routing, errors, validation, etc.)
+- **3 demo PRs** reference real Fastify file names with plausible change descriptions
