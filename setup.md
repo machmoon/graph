@@ -20,9 +20,10 @@ graph/
 
 `blast-radius.html` is a single self-contained HTML file with inline CSS/JS. No npm, no bundler, no server required. Just open it in a browser.
 
-It renders two levels:
+It renders three levels of detail:
 - **Level 1 (Architecture)**: System design diagram — gateway, services, databases, etc.
 - **Level 2 (Modules)**: Fastify internal modules — click the API Gateway node to zoom in
+- **Final leaf (Code diff)**: Click a changed Fastify module to inspect real file-level diff hunks
 
 When you pick a PR from the sidebar, it runs BFS through a reverse dependency graph to compute direct + indirect impact, then animates the blast radius with glowing balls traveling along edges.
 
@@ -36,11 +37,13 @@ The code is organized into labeled sections. Search for `SECTION:` to find them:
 | **ARCHITECTURE DATA** | System nodes + edges | New services, databases, external APIs |
 | **MODULE DATA** | Fastify internal modules | More zoomable services with their own module graphs |
 | **PR DEFINITIONS** | Mock PRs with change data | New PR scenarios, different change types |
+| **CODE_DIFFS** | File-level unified diff hunks for a PR/module | More files or richer code excerpts |
 | **GRAPH ENGINE** | SVG rendering, layout, reverse adjacency | Custom layouts, node shapes, edge routing |
 | **ANIMATION ENGINE** | Ball animation, highlighting, step queue | New animation effects, trails, particles |
 | **BLAST ANALYSIS** | Impact computation, animation orchestration | New analysis modes (config changes, scaling) |
 | **SIDEBAR & PANEL** | PR list, analysis panel, tooltips | Filters, search, summary cards |
 | **ZOOM / DRILL-DOWN** | Level transitions | More zoom levels (Level 3: files/functions) |
+| **CODE DIFF PANEL** | File tabs, line numbers, diff rendering | Full patches, comments, syntax highlighting |
 
 ## Adding a New PR
 
@@ -64,6 +67,29 @@ Add an entry to the `PRS` array:
 
 Indirect impact is computed automatically — you only define direct changes.
 
+To make a changed module open the final code leaf, add matching entries to
+`CODE_DIFFS`, keyed by PR ID and module ID. Each file supplies its totals and a
+small unified-diff array:
+
+```javascript
+const CODE_DIFFS = {
+  '#1234': {
+    routing: [{
+      file: 'lib/route.js',
+      add: 8,
+      del: 2,
+      diff: [
+        '@@ -10,3 +10,4 @@',
+        ' function route () {',
+        '-  return oldHandler()',
+        '+  return newHandler()',
+        ' }',
+      ]
+    }]
+  }
+}
+```
+
 ## Adding a New Zoomable Service
 
 1. Add `zoomable: true` and `zoomLabel: 'N modules'` to the node in `ARCH_NODES`
@@ -86,7 +112,7 @@ This works for any JS/TS repo. The output is an adjacency list: `{ "file.js": ["
 ## Future Ideas (not implemented yet)
 
 - **Config-type PRs**: e.g. scaling pods 2 to 4, show infra changes without code changes
-- **Level 3 zoom**: File-level or function-level graphs inside a module
+- **Function-level graph**: Navigate from the code diff into symbols and call sites
 - **Live GitHub integration**: Fetch real PR diffs and auto-map to components
 - **AI summary**: Use an LLM to generate change descriptions from diffs
 - **Multi-repo support**: Visualize cross-repo dependencies

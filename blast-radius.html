@@ -25,6 +25,8 @@ body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-s
 .stat-v{font-size:20px;font-weight:700;color:var(--txb);line-height:1}.stat-u{font-size:9px;color:var(--txd);font-family:'Fira Code',monospace}
 #analysis{display:none}
 .ci{background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px}
+.ci.has-diff{cursor:pointer;transition:border-color .15s,background .15s}.ci.has-diff:hover{border-color:#31506e;background:#0d1622}
+.ci-open{margin-top:5px;color:var(--acc);font-family:'Fira Code',monospace;font-size:9px;font-style:normal}
 .ci.indirect{border-style:dashed;opacity:.65}
 .ci-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
 .ci-n{font-weight:600;color:var(--txb);font-size:12px}
@@ -32,6 +34,26 @@ body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-s
 .ci-f{font-size:10px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.4}
 .ci-s{font-size:10px;color:var(--tx);margin-top:3px;line-height:1.3;font-style:italic}
 .ci-it{font-size:9px;color:var(--txd);font-style:italic}
+
+/* ══ CODE DIFF PANEL ══ */
+#code-panel{position:fixed;top:12px;right:12px;width:min(640px,calc(100vw - 298px));height:calc(100vh - 24px);z-index:40;display:none;flex-direction:column;background:#090d14;border:1px solid #22324a;border-radius:7px;box-shadow:0 24px 80px rgba(0,0,0,.55);overflow:hidden}
+.code-head{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid var(--bd);background:#0c111a}
+.code-kicker{font-family:'Fira Code',monospace;font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--acc);margin-bottom:4px}
+.code-title{font-size:16px;font-weight:700;color:var(--txb)}
+.code-sub{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd);margin-top:3px}
+#code-close{border:1px solid var(--bd);background:#0a0f18;color:var(--tx);width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:16px;line-height:1}#code-close:hover{border-color:var(--acc);color:var(--txb)}
+#file-tabs{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--bd);overflow-x:auto;background:#0a0f17;flex-shrink:0}
+#file-tabs::-webkit-scrollbar{height:3px}#file-tabs::-webkit-scrollbar-thumb{background:#25344a}
+.file-tab{border:1px solid transparent;background:transparent;color:#65758c;padding:5px 8px;border-radius:4px;cursor:pointer;font-family:'Fira Code',monospace;font-size:9px;white-space:nowrap}.file-tab:hover{color:var(--txb);background:#101824}.file-tab.active{color:var(--txb);border-color:#29415e;background:#101b29}
+#diff-meta{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--bd);font-family:'Fira Code',monospace;font-size:9px;color:var(--txd);flex-shrink:0}.dm-add{color:#4ade80}.dm-del{color:#f87171}.dm-note{margin-left:auto;color:#53647b}
+#diff-view{overflow:auto;flex:1;background:#070a10;font-family:'Fira Code',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.55;padding:8px 0 24px}
+#diff-view::-webkit-scrollbar{width:7px;height:7px}#diff-view::-webkit-scrollbar-thumb{background:#25344a;border-radius:4px}
+.diff-row{display:grid;grid-template-columns:45px 45px 22px minmax(max-content,1fr);min-height:18px;border-left:3px solid transparent}
+.diff-row.add{background:rgba(34,197,94,.10);border-left-color:#22c55e}.diff-row.del{background:rgba(239,68,68,.10);border-left-color:#ef4444}.diff-row.hunk{display:block;background:#0b1724;color:#60a5fa;border-left-color:#2563eb;padding:5px 12px;margin:7px 0 3px}
+.diff-num{color:#34445a;text-align:right;padding:0 8px;border-right:1px solid #111b2a;user-select:none}.diff-mark{text-align:center;color:#45566d;user-select:none}.add .diff-mark{color:#4ade80}.del .diff-mark{color:#f87171}
+.diff-code{white-space:pre;padding:0 12px;color:#9aa9bb}.add .diff-code{color:#bbf7d0}.del .diff-code{color:#fecaca}
+.diff-empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;color:var(--txd);font-size:11px;line-height:1.6}.diff-empty strong{display:block;color:var(--txb);font-size:13px;margin-bottom:5px}
+@media(max-width:900px){#code-panel{left:12px;width:calc(100vw - 24px)}}
 
 /* ══ CONTROLS ══ */
 #controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;display:none;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:6px 10px}
@@ -71,6 +93,20 @@ svg{display:block;width:100vw;height:100vh}
   <button id="btn-stop">&#9632; Stop</button>
   <button id="btn-reset">&#8634; Reset</button>
 </div>
+
+<aside id="code-panel" aria-label="Code diff">
+  <div class="code-head">
+    <div>
+      <div class="code-kicker" id="code-kicker">Code changes</div>
+      <div class="code-title" id="code-title">Module diff</div>
+      <div class="code-sub" id="code-sub"></div>
+    </div>
+    <button id="code-close" aria-label="Close code panel">&times;</button>
+  </div>
+  <div id="file-tabs"></div>
+  <div id="diff-meta"></div>
+  <div id="diff-view"></div>
+</aside>
 
 <div class="tip" id="tip"></div>
 <svg id="g"></svg>
@@ -149,6 +185,19 @@ const MOD_EDGES=[
 // The blast engine auto-computes indirect impact via reverse adjacency.
 // ════════════════════════════════════════════════════════════
 const PRS=[
+  // Real Fastify PR used as a local demo scenario. Nothing is fetched or submitted.
+  { id:'#6580',title:'introduce log controller layer',type:'feat',author:'Manuel Spigolon',
+    arch:{ gateway:{summary:'24 files rewiring logging across the request lifecycle',add:782,del:127} },
+    mod:{
+      core:{files:['fastify.js'],add:21,del:21,summary:'Creates and exports the LogController extension point'},
+      server:{files:['context.js','four-oh-four.js'],add:8,del:13,summary:'Moves lifecycle and 404 logging behind the controller'},
+      routing:{files:['route.js'],add:6,del:21,summary:'Routes incoming requests and shutdown logs through the controller'},
+      reqres:{files:['reply.js'],add:9,del:33,summary:'Centralizes response completion and stream error logging'},
+      errors:{files:['error-handler.js','errors.js'],add:14,del:26,summary:'Delegates error, serializer, and writeHead logs'},
+      logging:{files:['log-controller.js','logger-factory.js'],add:191,del:2,summary:'Adds the controller and validates custom implementations'},
+      internals:{files:['symbols.js','warnings.js'],add:20,del:2,summary:'Adds shared controller state and migration warnings'},
+    }
+  },
   { id:'#4533',title:'fix connection pool exhaustion',type:'fix',author:'dave',
     arch:{
       postgres:{summary:'Pool max 20→50, added idle timeout',add:12,del:3},
@@ -181,6 +230,293 @@ const PRS=[
     }
   },
 ];
+
+// Curated, real hunks from Fastify PR #6580. The demo keeps the most useful
+// sections in-page so it remains a single-file experience with no GitHub access.
+const CODE_DIFFS={
+  '#6580':{
+    core:[
+      {file:'fastify.js',add:21,del:21,diff:[
+        '@@ -44,7 +45,7 @@',
+        " const ContentTypeParser = require('./lib/content-type-parser.js')",
+        " const SchemaController = require('./lib/schema-controller')",
+        " const { Hooks, hookRunnerApplication, supportedHooks } = require('./lib/hooks')",
+        "-const { createChildLogger, defaultChildLoggerFactory, createLogger } = require('./lib/logger-factory')",
+        "+const { createChildLogger, defaultChildLoggerFactory, createLogger, createLogController, LogController } = require('./lib/logger-factory')",
+        " const pluginUtils = require('./lib/plugin-utils.js')",
+        '@@ -216,6 +217,7 @@',
+        '     },',
+        '     // expose logger instance',
+        '     log: options.logger,',
+        '+    [kLogController]: logController,',
+        '     // type provider',
+        '     withTypeProvider,',
+        '@@ -894,6 +891,10 @@',
+        ' ',
+        '   const { logger, hasLogger } = createLogger(options)',
+        ' ',
+        '+  // the internal logger uses the input logger to execute the logging. This allows the user',
+        '+  // to customize every internal log line',
+        '+  const logController = createLogController(options)',
+        '+',
+        '   // Update the options with the fixed values',
+        '@@ -1010,5 +1009,6 @@',
+        ' module.exports = fastify',
+        ' module.exports.errorCodes = errorCodes',
+        '+module.exports.LogController = LogController',
+        ' module.exports.fastify = fastify',
+        ' module.exports.default = fastify',
+      ]},
+    ],
+    server:[
+      {file:'lib/context.js',add:0,del:3,diff:[
+        '@@ -53,8 +51,7 @@',
+        '   this.onRequestAbort = null',
+        '   this.config = config',
+        '   this.errorHandler = errorHandler || server[kErrorHandler]',
+        '-  this.requestIdLogLabel = requestIdLogLabel || server[kOptions].requestIdLogLabel',
+        '   this.childLoggerFactory = childLoggerFactory || server[kChildLoggerFactory]',
+        '   this._middie = null',
+      ]},
+      {file:'lib/four-oh-four.js',add:8,del:10,diff:[
+        '@@ -51,14 +52,10 @@',
+        ' ',
+        '   function basic404 (request, reply) {',
+        '+    request.server[kLogController].routeNotFound(request, reply)',
+        '     const { url, method } = request.raw',
+        '-    const message = `Route ${method}:${url} not found`',
+        '-    const resolvedDisableRequestLogging = typeof disableRequestLogging === \'function\' ? disableRequestLogging(request.raw) : disableRequestLogging',
+        '-    if (!resolvedDisableRequestLogging) {',
+        '-      request.log.info(message)',
+        '-    }',
+        '     reply.code(404).send({',
+        '-      message,',
+        '+      message: `Route ${method}:${url} not found`,',
+        "       error: 'Not Found',",
+        '       statusCode: 404',
+      ]},
+    ],
+    routing:[
+      {file:'lib/route.js',add:6,del:21,diff:[
+        '@@ -471,8 +465,6 @@',
+        '       loggerOpts.serializers = context.logSerializers',
+        '     }',
+        '     const childLogger = createChildLogger(context, logger, req, id, loggerOpts)',
+        '-    // Set initial value; will be re-evaluated after FastifyRequest is constructed if it is a function',
+        '-    childLogger[kDisableRequestLogging] = disableRequestLoggingFn ? false : disableRequestLogging',
+        ' ',
+        '     if (closing === true) {',
+        '@@ -518,16 +512,7 @@',
+        '     const request = new context.Request(id, params, req, query, childLogger, context)',
+        '     const reply = new context.Reply(res, request, childLogger)',
+        ' ',
+        '-    // Evaluate disableRequestLogging after FastifyRequest is constructed',
+        '-    // so the caller has access to decorations and customizations',
+        '-    const resolvedDisableRequestLogging = disableRequestLoggingFn',
+        '-      ? disableRequestLoggingFn(request)',
+        '-      : disableRequestLogging',
+        '-    childLogger[kDisableRequestLogging] = resolvedDisableRequestLogging',
+        '-',
+        '-    if (resolvedDisableRequestLogging === false) {',
+        "-      childLogger.info({ req: request }, 'incoming request')",
+        '-    }',
+        '+    context.server[kLogController].incomingRequest(request, reply)',
+        ' ',
+        '     // Handler timeout setup — only when configured (zero overhead otherwise)',
+      ]},
+    ],
+    reqres:[
+      {file:'lib/reply.js',add:9,del:33,diff:[
+        '@@ -735,14 +735,8 @@',
+        ' }',
+        ' ',
+        '-function logStreamError (logger, err, res) {',
+        "-  if (err.code === 'ERR_STREAM_PREMATURE_CLOSE') {",
+        '-    if (!logger[kDisableRequestLogging]) {',
+        "-      logger.info({ res }, 'stream closed prematurely')",
+        '-    }',
+        '-  } else {',
+        "-    logger.warn({ err }, 'response terminated with an error with headers already sent')",
+        '-  }',
+        '+function logStreamError (err, reply, res) {',
+        '+  reply.server[kLogController].streamError(err, reply.request, reply)',
+        ' }',
+        '@@ -995,25 +989,7 @@',
+        ' ',
+        ' function onResponseCallback (err, request, reply) {',
+        '-  if (reply.log[kDisableRequestLogging]) {',
+        '-    return',
+        '-  }',
+        '-',
+        '-  const responseTime = reply.elapsedTime',
+        '-',
+        '-  if (err != null) {',
+        "-    reply.log.error({ res: reply, err, responseTime }, 'request errored')",
+        '-    return',
+        '-  }',
+        '-',
+        "-  reply.log.info({ res: reply, responseTime }, 'request completed')",
+        '+  reply.server[kLogController].requestCompleted(err, request, reply)',
+        ' }',
+      ]},
+    ],
+    errors:[
+      {file:'lib/error-handler.js',add:7,del:26,diff:[
+        '@@ -83,21 +78,7 @@',
+        ' function defaultErrorHandler (error, request, reply) {',
+        '   setErrorHeaders(error, reply)',
+        '   setErrorStatusCode(reply, error)',
+        '-  if (reply.statusCode < 500) {',
+        '-    if (!reply.log[kDisableRequestLogging]) {',
+        '-      reply.log.info({ res: reply, err: error }, error?.message)',
+        '-    }',
+        '-  } else {',
+        '-    if (!reply.log[kDisableRequestLogging]) {',
+        '-      reply.log.error({ req: request, res: reply, err: error }, error?.message)',
+        '-    }',
+        '-  }',
+        '+  request.server[kLogController].defaultErrorLog(error, request, reply)',
+        '   reply.send(error)',
+        ' }',
+        '@@ -123,10 +104,10 @@',
+        '       }))',
+        '     }',
+        '   } catch (err) {',
+        '-    if (!reply.log[kDisableRequestLogging]) {',
+        "-      reply.log.error({ err, statusCode: res.statusCode }, 'The serializer for the given status code failed')",
+        '-    }',
+        '+    reply.server[kLogController].serializerError(err, reply.request, reply, { statusCode: res.statusCode })',
+        '+',
+        '     reply.code(500)',
+      ]},
+      {file:'lib/errors.js',add:7,del:0,diff:[
+        '@@ -243,6 +243,13 @@',
+        '     TypeError',
+        '   ),',
+        ' ',
+        '+  FST_ERR_LOG_INVALID_LOG_CONTROLLER: createError(',
+        "+    'FST_ERR_LOG_INVALID_LOG_CONTROLLER',",
+        "+    \"logController option must be an instance of LogController, got '%s'.\",",
+        '+    500,',
+        '+    TypeError',
+        '+  ),',
+        '+',
+        '   /**',
+        '    * reply',
+      ]},
+    ],
+    logging:[
+      {file:'lib/log-controller.js',add:169,del:0,diff:[
+        '@@ -0,0 +1,32 @@',
+        "+'use strict'",
+        '+',
+        "+const { defaultInitOptions } = require('./initial-config-validation')",
+        '+',
+        '+/**',
+        "+ * Internal logger layer that wraps Fastify's log calls with",
+        '+ * request-lifecycle awareness (disable-check, level selection).',
+        '+ * Keeps the surface intentionally small so hot paths stay fast.',
+        '+ *',
+        '+ * Users can extend this class to customize internal log lines.',
+        '+ */',
+        '+class LogController {',
+        '+  constructor (options) {',
+        '+    const opts = options || {}',
+        '+    this.disableRequestLogging = opts.disableRequestLogging || defaultInitOptions.disableRequestLogging',
+        "+    this.isDisableRequestLoggingFunction = typeof this.disableRequestLogging === 'function'",
+        '+    this.requestIdLogLabel = opts.requestIdLogLabel || defaultInitOptions.requestIdLogLabel',
+        '+  }',
+        '+',
+        '+  isLogDisabled (req) {',
+        '+    return this.isDisableRequestLoggingFunction',
+        '+      ? this.disableRequestLogging(req)',
+        '+      : this.disableRequestLogging',
+        '+  }',
+        '@@ -0,0 +40,19 @@',
+        '+  incomingRequest (request, reply, metadata) {',
+        '+    if (this.isLogDisabled(request)) { return }',
+        '+',
+        "+    request.log.info({ req: request }, 'incoming request')",
+        '+  }',
+        '+',
+        '+  requestCompleted (error, request, reply, metadata) {',
+        '+    if (this.isLogDisabled(request)) { return }',
+        '+',
+        '+    if (error) {',
+        "+      reply.log.error({ res: reply, err: error, responseTime: reply.elapsedTime }, 'request errored')",
+        '+    } else {',
+        "+      reply.log.info({ res: reply, responseTime: reply.elapsedTime }, 'request completed')",
+        '+    }',
+        '+  }',
+        '@@ -0,0 +161,9 @@',
+        '+  serviceUnavailable (logger, server) {',
+        "+    logger.info({ res: { statusCode: 503 } }, 'request aborted - refusing to accept new requests as server is closing')",
+        '+  }',
+        '+}',
+        '+',
+        '+module.exports = { LogController }',
+      ]},
+      {file:'lib/logger-factory.js',add:22,del:2,diff:[
+        '@@ -122,6 +127,19 @@',
+        '   return { logger, hasLogger: true }',
+        ' }',
+        ' ',
+        '+function createLogController (options) {',
+        '+  const userController = options.logController',
+        '+  if (!userController) {',
+        '+    return new LogController(options)',
+        '+  }',
+        '+',
+        '+  if (userController instanceof LogController) {',
+        '+    return userController',
+        '+  }',
+        '+',
+        '+  throw new FST_ERR_LOG_INVALID_LOG_CONTROLLER(typeof userController)',
+        '+}',
+        '+',
+        ' function now () {',
+        '   const ts = process.hrtime()',
+      ]},
+    ],
+    internals:[
+      {file:'lib/symbols.js',add:1,del:1,diff:[
+        '@@ -13,7 +13,6 @@',
+        "   kContentTypeParser: Symbol('fastify.contentTypeParser'),",
+        "   kState: Symbol('fastify.state'),",
+        "   kOptions: Symbol('fastify.options'),",
+        "-  kDisableRequestLogging: Symbol('fastify.disableRequestLogging'),",
+        "   kPluginNameChain: Symbol('fastify.pluginNameChain'),",
+        '@@ -67,6 +66,7 @@',
+        "   kKeepAliveConnections: Symbol('fastify.keepAliveConnections'),",
+        "   kRouteByFastify: Symbol('fastify.routeByFastify'),",
+        "+  kLogController: Symbol('fastify.logController'),",
+        "   kDiagnosticsStore: Symbol('fastify.diagnosticsStore')",
+      ]},
+      {file:'lib/warnings.js',add:19,del:1,diff:[
+        '@@ -48,10 +50,26 @@',
+        '   unlimited: true',
+        ' })',
+        ' ',
+        '+const FSTDEP023 = createWarning({',
+        "+  name: 'FastifyDeprecation',",
+        "+  code: 'FSTDEP023',",
+        "+  message: 'disableRequestLogging option is deprecated. Use the logController option instead.',",
+        '+  unlimited: true',
+        '+})',
+        '+',
+        '+const FSTDEP024 = createWarning({',
+        "+  name: 'FastifyDeprecation',",
+        "+  code: 'FSTDEP024',",
+        "+  message: 'requestIdLogLabel option is deprecated. Use the logController option instead.',",
+        '+  unlimited: true',
+        '+})',
+        '+',
+        ' module.exports = {',
+        '   FSTWRN001,',
+      ]},
+    ],
+  },
+};
 
 // ════════════════════════════════════════════════════════════
 // SECTION: GRAPH ENGINE
@@ -469,6 +805,7 @@ function resetAnimation(){
   clearTimeout(animTimer);
   animState='idle';animSteps=[];animIdx=0;
   resetHighlights();
+  closeCodePanel();
   document.getElementById('analysis').style.display='none';
   updateControlUI();
 }
@@ -510,10 +847,12 @@ function updatePanel(pr,dist,direct){
   for(const cid of direct){
     const c=data[cid];if(!c)continue;
     const name=view.nMap[cid]?view.nMap[cid].label:cid;
-    html+=`<div class="ci" style="border-left:3px solid ${color}">
+    const canDiff=level==='mod'&&hasCodeDiff(pr,cid);
+    html+=`<div class="ci${canDiff?' has-diff':''}" style="border-left:3px solid ${color}"${canDiff?` onclick="openCodePanel('${cid}')"`:''}>
       <div class="ci-h"><span class="ci-n">${name}</span><span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span></div>
       ${c.files?`<div class="ci-f">${c.files.join(', ')}</div>`:''}
-      <div class="ci-s">${c.summary}</div></div>`;
+      <div class="ci-s">${c.summary}</div>
+      ${canDiff?'<div class="ci-open">view code diff →</div>':''}</div>`;
   }
   if(indirectSet.size>0){
     html+=`<div class="div"></div><div class="lbl">Indirect Impact</div>`;
@@ -550,6 +889,99 @@ PRS.forEach(pr=>{
 });
 
 // ════════════════════════════════════════════════════════════
+// SECTION: CODE DIFF PANEL
+// Final leaf: module → changed file → unified diff.
+// ════════════════════════════════════════════════════════════
+const codePanel=document.getElementById('code-panel');
+const fileTabs=document.getElementById('file-tabs');
+const diffMeta=document.getElementById('diff-meta');
+const diffView=document.getElementById('diff-view');
+let openDiffFiles=[];
+
+function hasCodeDiff(pr,moduleId){
+  return Boolean(pr&&CODE_DIFFS[pr.id]&&CODE_DIFFS[pr.id][moduleId]);
+}
+
+function closeCodePanel(){
+  codePanel.style.display='none';
+  openDiffFiles=[];
+}
+
+function openCodePanel(moduleId){
+  if(level!=='mod'||!activePR)return;
+  const node=mod.nMap[moduleId];
+  const moduleChange=activePR.mod&&activePR.mod[moduleId];
+  openDiffFiles=(CODE_DIFFS[activePR.id]&&CODE_DIFFS[activePR.id][moduleId])||[];
+
+  document.getElementById('code-kicker').textContent=`${activePR.type} ${activePR.id} · FASTIFY`;
+  document.getElementById('code-title').textContent=node?node.label:moduleId;
+  document.getElementById('code-sub').textContent=moduleChange
+    ? moduleChange.summary
+    : 'Indirect impact only — this module has no lines changed in the PR';
+  codePanel.style.display='flex';
+
+  if(openDiffFiles.length===0){
+    fileTabs.style.display='none';
+    diffMeta.style.display='none';
+    const reason=moduleChange
+      ? 'This mock scenario does not have an embedded source patch yet.'
+      : 'This module depends on changed code, but the PR does not modify it directly.';
+    diffView.innerHTML=`<div class="diff-empty"><div><strong>No direct diff</strong>${reason}</div></div>`;
+    return;
+  }
+
+  fileTabs.style.display='flex';
+  diffMeta.style.display='flex';
+  renderDiffFile(0);
+}
+
+function renderDiffFile(index){
+  const file=openDiffFiles[index];if(!file)return;
+  fileTabs.innerHTML='';
+  openDiffFiles.forEach((f,i)=>{
+    const btn=document.createElement('button');
+    btn.className=`file-tab${i===index?' active':''}`;
+    btn.textContent=f.file;
+    btn.title=f.file;
+    btn.onclick=()=>renderDiffFile(i);
+    fileTabs.appendChild(btn);
+  });
+
+  diffMeta.innerHTML=`<span>${file.file}</span><span class="dm-add">+${file.add}</span><span class="dm-del">-${file.del}</span><span class="dm-note">focused real hunks</span>`;
+  renderDiffRows(file.diff);
+}
+
+function renderDiffRows(lines){
+  diffView.innerHTML='';
+  let oldLine=0,newLine=0;
+  lines.forEach(line=>{
+    if(line.startsWith('@@')){
+      const m=line.match(/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+      if(m){oldLine=Number(m[1]);newLine=Number(m[2])}
+      const h=document.createElement('div');h.className='diff-row hunk';h.textContent=line;diffView.appendChild(h);return;
+    }
+
+    const kind=line.startsWith('+')?'add':line.startsWith('-')?'del':'ctx';
+    const row=document.createElement('div');row.className=`diff-row ${kind}`;
+    const oldNum=document.createElement('span');oldNum.className='diff-num';
+    const newNum=document.createElement('span');newNum.className='diff-num';
+    const mark=document.createElement('span');mark.className='diff-mark';
+    const code=document.createElement('span');code.className='diff-code';
+
+    if(kind==='add'){newNum.textContent=newLine++;mark.textContent='+'}
+    else if(kind==='del'){oldNum.textContent=oldLine++;mark.textContent='−'}
+    else{oldNum.textContent=oldLine++;newNum.textContent=newLine++;mark.textContent=' '}
+    code.textContent=line.length?line.slice(1):'';
+    row.append(oldNum,newNum,mark,code);diffView.appendChild(row);
+  });
+  diffView.scrollTop=0;diffView.scrollLeft=0;
+}
+
+document.getElementById('code-close').onclick=closeCodePanel;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCodePanel()});
+MOD_NODES.forEach(n=>mod.nEls[n.id].g.addEventListener('click',()=>{if(level==='mod')openCodePanel(n.id)}));
+
+// ════════════════════════════════════════════════════════════
 // SECTION: ZOOM / DRILL-DOWN
 // Handles level transitions (architecture ↔ module).
 // To add more zoomable services, register them in ARCH_NODES
@@ -573,6 +1005,7 @@ function zoomIn(){
 }
 
 function zoomOut(){
+  closeCodePanel();
   level='arch';
   gMod.style.opacity='0';gMod.style.pointerEvents='none';
   setTimeout(()=>{gArch.style.transform='scale(1)';gArch.style.opacity='1';gArch.style.pointerEvents='auto'},200);
@@ -591,6 +1024,7 @@ const tip=document.getElementById('tip');
 function showTip(e,n){
   let h=`<div class="tip-n">${n.label}</div>`;
   if(n.zoomable)h+=`<div class="tip-f">click to explore modules</div>`;
+  if(level==='mod'&&hasCodeDiff(activePR,n.id))h+=`<div class="tip-f">click to inspect code diff</div>`;
   if(activePR){const d=getData(activePR);if(d&&d[n.id])h+=`<div class="tip-s">${d[n.id].summary}</div>`}
   tip.innerHTML=h;tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
 }
