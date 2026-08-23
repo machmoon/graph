@@ -1,150 +1,303 @@
-<title>Blast Radius</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blast Radius · Next-Gen PR Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap">
 <style>
-:root{--bg:#070a10;--sf:#0c1018;--tx:#8a99b0;--txd:#3a4a60;--txb:#dce6f0;--bd:#152035;--acc:#38bdf8;--grn:#22c55e;--amb:#f59e0b;--blu:#3b82f6;--red:#ef4444}
+:root{
+  --bg:#070a11;--sf:#0c111a;--sfd:#080d15;--tx:#8ea0b8;--txd:#40526a;--txb:#e2eaf4;
+  --bd:#152033;--bdh:#22334e;--acc:#38bdf8;--grn:#22c55e;--amb:#f59e0b;--blu:#3b82f6;
+  --red:#ef4444;--purp:#a855f7;--glow:rgba(56,189,248,0.15);
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-serif;overflow:hidden;height:100vh}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,-apple-system,sans-serif;overflow:hidden;height:100vh;user-select:none}
 
-#crumb{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:11px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:6px 14px}
-.bc{color:var(--txd);cursor:default}.bc.click{color:var(--acc);cursor:pointer}.bc.click:hover{color:var(--txb)}.bc.on{color:var(--txb)}.bcsep{color:var(--txd)}
+/* ══ HUD HEADER / BREADCRUMB ══ */
+#top-hud{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:25;display:flex;align-items:center;gap:12px}
+#crumb{display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:11px;background:rgba(12,17,26,0.85);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:6px;padding:6px 14px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.bc{color:var(--txd);cursor:default;transition:color .15s}.bc.click{color:var(--acc);cursor:pointer}.bc.click:hover{color:var(--txb)}.bc.on{color:var(--txb);font-weight:600}.bcsep{color:var(--txd)}
 
-#sidebar{position:fixed;top:12px;left:12px;width:250px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:14px;z-index:10;font-size:11px;max-height:calc(100vh - 24px);overflow-y:auto}
-#sidebar::-webkit-scrollbar{width:3px}#sidebar::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
-#sidebar h1{font-size:15px;font-weight:700;color:var(--txb);margin-bottom:1px}
-.sub{color:var(--txd);font-size:10px;font-family:'Fira Code',monospace;margin-bottom:10px}
-.div{height:1px;background:var(--bd);margin:8px 0}
-.lbl{font-size:9px;font-weight:600;color:var(--txd);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'Fira Code',monospace}
-.pr-btn{display:block;width:100%;text-align:left;background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--tx);transition:border-color .2s,background .2s}
-.pr-btn:hover{border-color:#2a3a55;background:#0e1520}.pr-btn.active{border-color:var(--acc);background:#0c1a2e}
-.pr-id{font-family:'Fira Code',monospace;font-size:10px;color:var(--txd)}
-.pr-title{color:var(--txb);font-weight:500;margin-top:1px}
-.pr-meta{font-size:9px;color:var(--txd);margin-top:1px;font-family:'Fira Code',monospace}
-.pt{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
+#impact-pill{display:none;align-items:center;gap:8px;font-family:'Fira Code',monospace;font-size:11px;background:rgba(12,17,26,0.9);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:6px;padding:6px 12px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.risk-tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:0.5px}
+.risk-crit{background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.4)}
+.risk-high{background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid rgba(245,158,11,0.4)}
+.risk-med{background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid rgba(59,130,246,0.4)}
+.risk-low{background:rgba(34,197,94,0.2);color:#4ade80;border:1px solid rgba(34,197,94,0.4)}
+
+/* ══ SIDEBAR ══ */
+#sidebar{position:fixed;top:12px;left:12px;width:260px;background:rgba(12,17,26,0.88);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:8px;padding:14px;z-index:20;font-size:11px;max-height:calc(100vh - 24px);overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:var(--bdh);border-radius:2px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.brand-title{font-size:15px;font-weight:700;color:var(--txb);letter-spacing:-0.2px;display:flex;align-items:center;gap:6px}
+.brand-badge{font-family:'Fira Code',monospace;font-size:8px;padding:2px 5px;background:rgba(56,189,248,0.15);color:var(--acc);border:1px solid rgba(56,189,248,0.3);border-radius:4px;font-weight:600}
+.sub{color:var(--txd);font-size:10px;font-family:'Fira Code',monospace;margin-bottom:12px}
+.div{height:1px;background:var(--bd);margin:10px 0}
+.lbl{font-size:9px;font-weight:600;color:var(--txd);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'Fira Code',monospace;display:flex;justify-content:space-between;align-items:center}
+.tour-btn{background:linear-gradient(135deg,#0c2540 0%,#091726 100%);border:1px solid #1e3a5f;color:var(--acc);font-family:'Fira Code',monospace;font-size:10px;font-weight:600;padding:6px 10px;border-radius:5px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;transition:all .2s;box-shadow:0 2px 10px rgba(56,189,248,0.1)}
+.tour-btn:hover{border-color:var(--acc);color:#fff;box-shadow:0 4px 16px rgba(56,189,248,0.25);transform:translateY(-1px)}
+
+.pr-btn{display:block;width:100%;text-align:left;background:#090e17;border:1px solid var(--bd);border-radius:6px;padding:8px 10px;margin-bottom:6px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--tx);transition:all .18s;position:relative}
+.pr-btn:hover{border-color:var(--bdh);background:#0e1522;transform:translateX(1px)}
+.pr-btn.active{border-color:var(--acc);background:#0c1a2e;box-shadow:inset 3px 0 0 var(--acc)}
+.pr-id{font-family:'Fira Code',monospace;font-size:10px;color:var(--txd);display:flex;align-items:center;gap:4px}
+.pr-title{color:var(--txb);font-weight:600;margin-top:2px;font-size:11.5px;line-height:1.3}
+.pr-meta{font-size:9.5px;color:var(--txd);margin-top:3px;font-family:'Fira Code',monospace;display:flex;justify-content:space-between}
+.pt{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 .pt.feat{background:#052e16;color:var(--grn)}.pt.fix{background:#2a1a05;color:var(--amb)}.pt.refactor{background:#0f1d3d;color:var(--blu)}
-.stat-row{display:flex;gap:10px;margin-bottom:6px}.stat{text-align:center;flex:1}
-.stat-v{font-size:20px;font-weight:700;color:var(--txb);line-height:1}.stat-u{font-size:9px;color:var(--txd);font-family:'Fira Code',monospace}
+
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.stat{text-align:center;background:#080d15;border:1px solid var(--bd);border-radius:5px;padding:6px 2px}
+.stat-v{font-size:18px;font-weight:700;color:var(--txb);line-height:1;font-family:'Fira Code',monospace}
+.stat-u{font-size:8.5px;color:var(--txd);font-family:'Fira Code',monospace;margin-top:3px}
+
+.progress-wrap{margin-bottom:10px}
+.progress-bar-bg{height:4px;background:#0e1520;border-radius:2px;overflow:hidden;margin-top:4px}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--grn));width:0%;transition:width .3s}
+
 #analysis{display:none}
-.ci{background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px}
-.ci.has-diff{cursor:pointer;transition:border-color .15s,background .15s}.ci.has-diff:hover{border-color:#31506e;background:#0d1622}
-.ci-open{margin-top:5px;color:var(--acc);font-family:'Fira Code',monospace;font-size:9px;font-style:normal}
-.ci.indirect{border-style:dashed;opacity:.65}
+.ci{background:#090e17;border:1px solid var(--bd);border-radius:6px;padding:8px 10px;margin-bottom:6px;transition:all .15s;position:relative}
+.ci.has-diff{cursor:pointer}
+.ci.has-diff:hover{border-color:#324c6e;background:#0e1726}
+.ci.reviewed{border-left:3px solid var(--grn)!important;background:#061710}
+.ci-open{margin-top:5px;color:var(--acc);font-family:'Fira Code',monospace;font-size:9px;display:flex;align-items:center;justify-content:space-between}
+.ci.indirect{border-style:dashed;opacity:.7}
 .ci-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
-.ci-n{font-weight:600;color:var(--txb);font-size:12px}
+.ci-n{font-weight:600;color:var(--txb);font-size:12px;display:flex;align-items:center;gap:5px}
 .ci-b{font-family:'Fira Code',monospace;font-size:9px}.ci-b .a{color:var(--grn)}.ci-b .d{color:var(--red)}
-.ci-f{font-size:10px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.4}
-.ci-s{font-size:10px;color:var(--tx);margin-top:3px;line-height:1.3;font-style:italic}
+.ci-f{font-size:9.5px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.4}
+.ci-s{font-size:10px;color:var(--tx);margin-top:3px;line-height:1.35}
 .ci-it{font-size:9px;color:var(--txd);font-style:italic}
+.ai-badge{display:inline-flex;align-items:center;gap:3px;font-size:8.5px;padding:1px 5px;border-radius:3px;background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);font-family:'Fira Code',monospace;margin-top:4px}
+
+/* ══ FLOATING HOP SCRUBBER / CONTROLS ══ */
+#controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:25;display:none;flex-direction:column;align-items:center;gap:8px;background:rgba(12,17,26,0.92);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;box-shadow:0 16px 48px rgba(0,0,0,0.6)}
+.ctrl-row{display:flex;align-items:center;gap:8px}
+.ctrl-btn{background:#090e17;border:1px solid var(--bd);color:var(--tx);padding:6px 12px;border-radius:5px;font-family:'Fira Code',monospace;font-size:10.5px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.ctrl-btn:hover:not(:disabled){border-color:var(--acc);color:var(--txb);background:#0f1a2a}
+.ctrl-btn.active-ctrl{border-color:var(--acc);color:var(--acc);background:#0c1a2e}
+.ctrl-btn:disabled{opacity:.35;cursor:default;border-color:var(--bd);color:var(--txd)}
+.hop-stepper{display:flex;align-items:center;gap:4px;background:#080c13;padding:3px;border-radius:6px;border:1px solid var(--bd)}
+.hop-tab{background:transparent;border:none;color:var(--txd);font-family:'Fira Code',monospace;font-size:9.5px;padding:4px 8px;border-radius:4px;cursor:pointer;transition:all .15s}
+.hop-tab:hover{color:var(--txb);background:#101824}
+.hop-tab.active{background:#162438;color:var(--acc);font-weight:600;border:1px solid #233c5d}
+.story-narrative{font-size:10.5px;font-family:'DM Sans',sans-serif;color:#cbd5e1;max-width:560px;text-align:center;line-height:1.35;padding-top:2px}
 
 /* ══ CODE DIFF PANEL ══ */
-#code-panel{position:fixed;top:12px;right:12px;width:min(640px,calc(100vw - 298px));height:calc(100vh - 24px);z-index:40;display:none;flex-direction:column;background:#090d14;border:1px solid #22324a;border-radius:7px;box-shadow:0 24px 80px rgba(0,0,0,.55);overflow:hidden}
-.code-head{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid var(--bd);background:#0c111a}
-.code-kicker{font-family:'Fira Code',monospace;font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--acc);margin-bottom:4px}
+#code-panel{position:fixed;top:12px;right:12px;width:min(660px,calc(100vw - 300px));height:calc(100vh - 24px);z-index:40;display:none;flex-direction:column;background:rgba(9,13,20,0.96);backdrop-filter:blur(20px);border:1px solid #22344d;border-radius:8px;box-shadow:0 24px 80px rgba(0,0,0,0.7);overflow:hidden}
+.code-head{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bd);background:#0b111a}
+.code-kicker{font-family:'Fira Code',monospace;font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--acc);margin-bottom:2px;display:flex;align-items:center;gap:6px}
 .code-title{font-size:16px;font-weight:700;color:var(--txb)}
-.code-sub{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd);margin-top:3px}
-#code-close{border:1px solid var(--bd);background:#0a0f18;color:var(--tx);width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:16px;line-height:1}#code-close:hover{border-color:var(--acc);color:var(--txb)}
-#file-tabs{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--bd);overflow-x:auto;background:#0a0f17;flex-shrink:0}
+.code-sub{font-family:'DM Sans',sans-serif;font-size:11px;color:var(--tx);margin-top:2px}
+.code-actions{display:flex;align-items:center;gap:6px}
+.btn-reviewed{background:#062315;border:1px solid #14532d;color:#4ade80;font-family:'Fira Code',monospace;font-size:9.5px;padding:4px 8px;border-radius:4px;cursor:pointer;transition:all .15s}
+.btn-reviewed:hover{background:#0e3a24}
+#code-close{border:1px solid var(--bd);background:#090e17;color:var(--tx);width:26px;height:26px;border-radius:4px;cursor:pointer;font-size:15px;line-height:1}
+#code-close:hover{border-color:var(--acc);color:var(--txb)}
+
+#file-tabs{display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid var(--bd);overflow-x:auto;background:#080d15;flex-shrink:0}
 #file-tabs::-webkit-scrollbar{height:3px}#file-tabs::-webkit-scrollbar-thumb{background:#25344a}
-.file-tab{border:1px solid transparent;background:transparent;color:#65758c;padding:5px 8px;border-radius:4px;cursor:pointer;font-family:'Fira Code',monospace;font-size:9px;white-space:nowrap}.file-tab:hover{color:var(--txb);background:#101824}.file-tab.active{color:var(--txb);border-color:#29415e;background:#101b29}
-#diff-meta{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--bd);font-family:'Fira Code',monospace;font-size:9px;color:var(--txd);flex-shrink:0}.dm-add{color:#4ade80}.dm-del{color:#f87171}.dm-note{margin-left:auto;color:#53647b}
-#diff-view{overflow:auto;flex:1;background:#070a10;font-family:'Fira Code',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.55;padding:8px 0 24px}
-#diff-view::-webkit-scrollbar{width:7px;height:7px}#diff-view::-webkit-scrollbar-thumb{background:#25344a;border-radius:4px}
-.diff-row{display:grid;grid-template-columns:45px 45px 22px minmax(max-content,1fr);min-height:18px;border-left:3px solid transparent}
-.diff-row.add{background:rgba(34,197,94,.10);border-left-color:#22c55e}.diff-row.del{background:rgba(239,68,68,.10);border-left-color:#ef4444}.diff-row.hunk{display:block;background:#0b1724;color:#60a5fa;border-left-color:#2563eb;padding:5px 12px;margin:7px 0 3px}
-.diff-num{color:#34445a;text-align:right;padding:0 8px;border-right:1px solid #111b2a;user-select:none}.diff-mark{text-align:center;color:#45566d;user-select:none}.add .diff-mark{color:#4ade80}.del .diff-mark{color:#f87171}
-.diff-code{white-space:pre;padding:0 12px;color:#9aa9bb}.add .diff-code{color:#bbf7d0}.del .diff-code{color:#fecaca}
-.diff-empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;color:var(--txd);font-size:11px;line-height:1.6}.diff-empty strong{display:block;color:var(--txb);font-size:13px;margin-bottom:5px}
-@media(max-width:900px){#code-panel{left:12px;width:calc(100vw - 24px)}}
+.file-tab{border:1px solid transparent;background:transparent;color:#65758c;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:'Fira Code',monospace;font-size:9px;white-space:nowrap;transition:all .15s}
+.file-tab:hover{color:var(--txb);background:#101824}
+.file-tab.active{color:var(--txb);border-color:#29415e;background:#121f30}
 
-/* ══ CONTROLS ══ */
-#controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;display:none;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:6px 10px}
-#controls button{background:#0a0f18;border:1px solid var(--bd);color:var(--tx);padding:5px 14px;border-radius:4px;font-family:'Fira Code',monospace;font-size:10px;cursor:pointer;transition:all .15s;white-space:nowrap}
-#controls button:hover{border-color:var(--acc);color:var(--txb)}
-#controls button.active-ctrl{border-color:var(--acc);color:var(--acc);background:#0c1a2e}
-#controls button:disabled{opacity:.3;cursor:default;border-color:var(--bd);color:var(--txd)}
+#diff-meta{display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:1px solid var(--bd);font-family:'Fira Code',monospace;font-size:9.5px;color:var(--txd);flex-shrink:0;background:#070a10}
+.dm-add{color:#4ade80;font-weight:600}.dm-del{color:#f87171;font-weight:600}.dm-note{margin-left:auto;color:#53647b}
 
+.ai-alert-box{margin:8px 12px 0;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:5px;padding:8px 10px;font-size:10.5px;color:#fca5a5;display:flex;align-items:flex-start;gap:8px}
+.ai-alert-icon{font-size:12px;flex-shrink:0}
+
+#diff-view{overflow:auto;flex:1;background:#05080e;font-family:'Fira Code',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.6;padding:8px 0 24px}
+#diff-view::-webkit-scrollbar{width:6px;height:6px}#diff-view::-webkit-scrollbar-thumb{background:#22334e;border-radius:3px}
+.diff-row{display:grid;grid-template-columns:42px 42px 20px minmax(max-content,1fr);min-height:19px;border-left:3px solid transparent}
+.diff-row.add{background:rgba(34,197,94,0.09);border-left-color:#22c55e}
+.diff-row.del{background:rgba(239,68,68,0.09);border-left-color:#ef4444}
+.diff-row.hunk{display:block;background:#0a1524;color:#60a5fa;border-left-color:#2563eb;padding:4px 12px;margin:6px 0 2px;font-size:10px}
+.diff-num{color:#30425a;text-align:right;padding:0 6px;border-right:1px solid #111a28;user-select:none}
+.diff-mark{text-align:center;color:#45566d;user-select:none;font-weight:600}
+.add .diff-mark{color:#4ade80}.del .diff-mark{color:#f87171}
+.diff-code{white-space:pre;padding:0 10px;color:#9aa9bb}
+.add .diff-code{color:#bbf7d0}.del .diff-code{color:#fecaca}
+.diff-code .kwd{color:#93c5fd;font-weight:600}.diff-code .str{color:#86efac}.diff-code .cmt{color:#52677f;font-style:italic}
+.diff-empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;color:var(--txd);font-size:11px;line-height:1.6}
+
+/* ══ TOOLTIPS & MODALS ══ */
+.tip{position:fixed;background:rgba(12,17,26,0.94);backdrop-filter:blur(12px);border:1px solid var(--bd);padding:8px 12px;border-radius:6px;font-size:11px;pointer-events:none;display:none;z-index:50;max-width:280px;box-shadow:0 12px 32px rgba(0,0,0,0.6)}
+.tip-n{font-weight:700;color:var(--txb);margin-bottom:2px;display:flex;justify-content:space-between;align-items:center}
+.tip-f{font-family:'Fira Code',monospace;font-size:9.5px;color:var(--acc);margin-top:2px}
+.tip-s{font-size:10.5px;color:var(--tx);margin-top:4px;line-height:1.35}
+.tip-edge{font-size:10px;color:#94a3b8;font-family:'Fira Code',monospace;line-height:1.4}
+
+#help-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;background:rgba(12,17,26,0.96);backdrop-filter:blur(20px);border:1px solid var(--bd);border-radius:10px;padding:20px;width:340px;display:none;box-shadow:0 24px 80px rgba(0,0,0,0.8)}
+.hm-title{font-size:14px;font-weight:700;color:var(--txb);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.hm-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #141f30;font-size:11px}
+.hm-k{font-family:'Fira Code',monospace;background:#142033;padding:2px 6px;border-radius:4px;color:var(--acc);font-size:10px}
+
+/* ══ SVG ELEMENTS & ANIMATIONS ══ */
 svg{display:block;width:100vw;height:100vh}
 .tier-label{font-family:'Fira Code',monospace;font-size:9px;fill:#1a2a40;letter-spacing:1.5px}
-.node-group{cursor:pointer}.node-box{transition:fill .5s}.node-border{transition:stroke .5s,stroke-width .4s,stroke-dasharray .3s}
-.node-tag,.node-label,.node-info{transition:fill .5s}
-.edge-path{fill:none;stroke:#141e30;stroke-width:1.2;transition:stroke .5s,stroke-width .4s}
-.node-group.dimmed .node-box{fill:#080c12!important}.node-group.dimmed .node-border{stroke:#101820!important}
-.node-group.dimmed .node-tag{fill:#1a2535!important}.node-group.dimmed .node-label{fill:#2a3a4a!important}.node-group.dimmed .node-info{fill:#101820!important}
-.change-badge{transition:opacity .5s}
+.node-group{cursor:pointer;transition:transform .2s ease}
+.node-box{transition:fill .4s,stroke .4s}
+.node-border{transition:stroke .4s,stroke-width .3s,stroke-dasharray .3s}
+.node-tag,.node-label,.node-info{transition:fill .4s}
+.edge-path{fill:none;stroke:#152136;stroke-width:1.3;transition:stroke .4s,stroke-width .3s;cursor:pointer}
+.edge-hit{fill:none;stroke:transparent;stroke-width:14;cursor:pointer}
+.node-group.dimmed .node-box{fill:#060a0f!important}.node-group.dimmed .node-border{stroke:#0f1622!important}
+.node-group.dimmed .node-tag{fill:#151e2c!important}.node-group.dimmed .node-label{fill:#222f40!important}.node-group.dimmed .node-info{fill:#0e1520!important}
+.change-badge{transition:opacity .4s}
 .zoom-hint{font-family:'Fira Code',monospace;font-size:8px;fill:var(--acc);opacity:0;transition:opacity .2s;cursor:pointer}
-.node-group:hover .zoom-hint{opacity:.8}
+.node-group:hover .zoom-hint{opacity:.9}
 #gArch,#gMod{transition:opacity .45s ease}
-.tip{position:fixed;background:var(--sf);border:1px solid var(--bd);padding:6px 10px;border-radius:4px;font-size:11px;pointer-events:none;display:none;z-index:20;max-width:240px}
-.tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}.tip-f{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd)}
-.tip-s{font-size:10px;color:var(--tx);margin-top:3px;font-style:italic}
+
+/* Quick shortcut helper pill */
+#kbd-helper{position:fixed;bottom:14px;right:14px;z-index:20;font-family:'Fira Code',monospace;font-size:9.5px;color:var(--txd);background:rgba(12,17,26,0.7);padding:4px 8px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;transition:all .15s}
+#kbd-helper:hover{color:var(--txb);border-color:var(--bdh)}
 </style>
+</head>
+<body>
 
-<div id="crumb"><span class="bc on" id="bc0">System Architecture</span></div>
+<!-- TOP HUD -->
+<div id="top-hud">
+  <div id="crumb"><span class="bc on" id="bc0">System Architecture</span></div>
+  <div id="impact-pill">
+    <span id="pill-text">PR #6580</span>
+    <span class="risk-tag risk-high" id="pill-risk">HIGH RISK</span>
+  </div>
+</div>
 
-<div id="sidebar">
-  <h1>Blast Radius</h1>
+<!-- SIDEBAR -->
+<aside id="sidebar" aria-label="PR Analysis">
+  <div class="brand-row">
+    <div class="brand-title">Blast Radius <span class="brand-badge">PRO</span></div>
+  </div>
   <div class="sub" id="vsub">e-commerce · 13 components</div>
-  <div class="lbl">Pull Requests</div>
+
+  <button class="tour-btn" id="btn-tour" title="Step through the PR review story">✨ Start Guided Tour</button>
+
+  <div class="lbl"><span>Select PR Scenario</span><span style="font-size:8px;color:var(--txd)">[1-4]</span></div>
   <div id="pr-list"></div>
+
   <div id="analysis"></div>
-</div>
+</aside>
 
+<!-- FLOATING HOP SCRUBBER / PLAYBAR -->
 <div id="controls">
-  <button id="btn-play">&#9654; Play</button>
-  <button id="btn-stop">&#9632; Stop</button>
-  <button id="btn-reset">&#8634; Reset</button>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="btn-prev" title="Previous Hop (Left Arrow)">◀ Prev</button>
+    <button class="ctrl-btn" id="btn-play">▶ Auto Play</button>
+    <button class="ctrl-btn" id="btn-next" title="Next Hop (Right Arrow)">Next ▶</button>
+    <button class="ctrl-btn" id="btn-reset" title="Reset view">⟲ Reset</button>
+    
+    <div class="hop-stepper" id="hop-stepper">
+      <button class="hop-tab active" data-hop="all">All Hops</button>
+      <button class="hop-tab" data-hop="0">Hop 0: Origin</button>
+      <button class="hop-tab" data-hop="1">Hop 1: Callers</button>
+      <button class="hop-tab" data-hop="2">Hop 2: Ripple</button>
+    </div>
+  </div>
+  <div class="story-narrative" id="story-narrative">Select a PR to visualize architectural impact propagation.</div>
 </div>
 
-<aside id="code-panel" aria-label="Code diff">
+<!-- CODE DIFF PANEL -->
+<aside id="code-panel" aria-label="Code diff viewer">
   <div class="code-head">
     <div>
-      <div class="code-kicker" id="code-kicker">Code changes</div>
+      <div class="code-kicker" id="code-kicker"><span>Code changes</span></div>
       <div class="code-title" id="code-title">Module diff</div>
       <div class="code-sub" id="code-sub"></div>
     </div>
-    <button id="code-close" aria-label="Close code panel">&times;</button>
+    <div class="code-actions">
+      <button class="btn-reviewed" id="btn-mark-module">✓ Mark Reviewed</button>
+      <button id="code-close" aria-label="Close code panel">&times;</button>
+    </div>
   </div>
   <div id="file-tabs"></div>
   <div id="diff-meta"></div>
+  <div id="ai-alert-wrap"></div>
   <div id="diff-view"></div>
 </aside>
 
+<!-- TOOLTIP & MODAL -->
 <div class="tip" id="tip"></div>
+
+<div id="help-modal">
+  <div class="hm-title"><span>Keyboard Shortcuts</span><span style="cursor:pointer;font-size:16px" onclick="toggleHelp()">&times;</span></div>
+  <div class="hm-row"><span>Play / Pause Animation</span><span class="hm-k">Space</span></div>
+  <div class="hm-row"><span>Next / Prev Blast Hop</span><span class="hm-k">← / →</span></div>
+  <div class="hm-row"><span>Launch Guided Tour</span><span class="hm-k">T</span></div>
+  <div class="hm-row"><span>Zoom In / Out Gateway</span><span class="hm-k">Z</span></div>
+  <div class="hm-row"><span>Select PR 1-4</span><span class="hm-k">1 - 4</span></div>
+  <div class="hm-row"><span>Close Panels / Modals</span><span class="hm-k">Esc</span></div>
+</div>
+
+<div id="kbd-helper" onclick="toggleHelp()">Press <strong>?</strong> for shortcuts</div>
+
 <svg id="g"></svg>
 
 <script>
 // ════════════════════════════════════════════════════════════
-// SECTION: CONFIG
-// Tune animation speed, colors, node sizes here.
+// SECTION: CONFIG & CONSTANTS
 // ════════════════════════════════════════════════════════════
 const NS='http://www.w3.org/2000/svg';
-const W=window.innerWidth,H=window.innerHeight,CX=W/2+80;
-const NW=150,NH=54,NR=5;
+const W=window.innerWidth,H=window.innerHeight,CX=W/2+70;
+const NW=154,NH=54,NR=6;
 const HOP_DELAY=900;
-const BALL_MS=550;
+const BALL_MS=520;
 const TC={feat:'#22c55e',fix:'#f59e0b',refactor:'#3b82f6'};
-const TBG={feat:'#062015',fix:'#1a1505',refactor:'#0c1530'};
+const TBG={feat:'#062217',fix:'#1f1807',refactor:'#0c1736'};
 const TSK={feat:'#16a34a',fix:'#d97706',refactor:'#2563eb'};
 
+// Edge couplings descriptions
+const EDGE_DESCS={
+  'clients|lb':'Routes external client HTTPS requests to active load balancers',
+  'lb|gateway':'Proxies traffic with TLS termination to Fastify Gateway nodes',
+  'gateway|auth':'Verifies OAuth2 tokens and session claims before routing',
+  'gateway|user':'Proxies user profile and preferences API requests',
+  'gateway|product':'Routes catalog browsing and inventory lookups',
+  'gateway|order':'Dispatches checkout and order fulfillment transactions',
+  'gateway|notif':'Triggers transactional confirmation webhooks and emails',
+  'auth|redis':'Caches authenticated sessions and token blacklists (TTL 15m)',
+  'user|postgres':'Queries user account records and relational profile tables',
+  'product|postgres':'Queries product catalog, categories, and inventory counts',
+  'product|s3':'Serves and retrieves high-res product media assets',
+  'order|postgres':'Executes ACID transactional order records and line items',
+  'order|stripe':'Calls Stripe PaymentIntent API to authorize & capture funds',
+  'notif|queue':'Publishes async email/SMS jobs to RabbitMQ/Kafka queue',
+
+  // Fastify Internal Module Edges
+  'core|plugins':'Registers and decorates Fastify application plugins',
+  'core|server':'Binds HTTP listener and orchestrates lifecycle hooks',
+  'core|routing':'Maps URL routes and HTTP verbs to handler pipelines',
+  'routing|reqres':'Instantiates FastifyRequest and FastifyReply context',
+  'routing|validation':'Validates incoming request params/body against JSON Schema',
+  'routing|errors':'Dispatches unhandled handler exceptions to default error handler',
+  'plugins|reqres':'Augments request/reply prototype with plugin decorators',
+  'plugins|validation':'Provides custom Ajv schema keywords and formatters',
+  'server|internals':'Maintains symbol state (kOptions, kHooks, kErrorHandler)',
+  'reqres|errors':'Passes serialization and stream abort errors to error pipe',
+  'reqres|logging':'Executes response completion, timing, and serializer logs',
+  'validation|internals':'Compiles and caches Ajv schema validation functions',
+  'errors|internals':'Exports standardized FastifyError codes and symbols',
+  'logging|internals':'Wraps Pino logger instance with custom LogController lifecycle',
+};
+
 // ════════════════════════════════════════════════════════════
-// SECTION: ARCHITECTURE DATA
-// Add/remove system components and connections here.
-// Each node: {id, label, tag, x, y, zoomable?, zoomLabel?}
-// Each edge: [fromId, toId] meaning "from calls/depends-on to"
+// SECTION: ARCHITECTURE & MODULE DATA
 // ════════════════════════════════════════════════════════════
 const ARCH_NODES=[
   {id:'clients',label:'Clients',tag:'USERS',x:CX,y:70},
   {id:'lb',label:'Load Balancer',tag:'INFRA',x:CX,y:170},
   {id:'gateway',label:'API Gateway',tag:'FASTIFY',x:CX,y:280,zoomable:true,zoomLabel:'9 modules'},
-  {id:'auth',label:'Auth',tag:'SERVICE',x:CX-320,y:420},
-  {id:'user',label:'User',tag:'SERVICE',x:CX-160,y:420},
-  {id:'product',label:'Product',tag:'SERVICE',x:CX,y:420},
-  {id:'order',label:'Order',tag:'SERVICE',x:CX+160,y:420},
-  {id:'notif',label:'Notifications',tag:'SERVICE',x:CX+320,y:420},
-  {id:'redis',label:'Redis',tag:'CACHE',x:CX-300,y:570},
-  {id:'postgres',label:'PostgreSQL',tag:'DATABASE',x:CX-100,y:570},
-  {id:'s3',label:'S3 Bucket',tag:'STORAGE',x:CX+80,y:570},
-  {id:'stripe',label:'Stripe',tag:'EXTERNAL',x:CX+240,y:570},
-  {id:'queue',label:'Message Queue',tag:'QUEUE',x:CX+400,y:570},
+  {id:'auth',label:'Auth Service',tag:'SECURITY',x:CX-330,y:420},
+  {id:'user',label:'User Service',tag:'SERVICE',x:CX-165,y:420},
+  {id:'product',label:'Product Service',tag:'SERVICE',x:CX,y:420},
+  {id:'order',label:'Order Service',tag:'CORE BIZ',x:CX+165,y:420},
+  {id:'notif',label:'Notification',tag:'SERVICE',x:CX+330,y:420},
+  {id:'redis',label:'Redis Cache',tag:'MEMORY',x:CX-310,y:570},
+  {id:'postgres',label:'PostgreSQL',tag:'DATABASE',x:CX-110,y:570},
+  {id:'s3',label:'S3 Assets',tag:'STORAGE',x:CX+70,y:570},
+  {id:'stripe',label:'Stripe API',tag:'PAYMENTS',x:CX+240,y:570},
+  {id:'queue',label:'Event Bus',tag:'MESSAGING',x:CX+410,y:570},
 ];
 const ARCH_EDGES=[
   ['clients','lb'],['lb','gateway'],
@@ -153,21 +306,17 @@ const ARCH_EDGES=[
   ['order','postgres'],['order','stripe'],['notif','queue'],
 ];
 
-// ════════════════════════════════════════════════════════════
-// SECTION: MODULE DATA (inside API Gateway = Fastify)
-// Add internal module structure here. Same format as arch.
-// ════════════════════════════════════════════════════════════
-const COL=[-220,0,220],ROW=[80,220,370,520];
+const COL=[-230,0,230],ROW=[80,225,375,525];
 const MOD_NODES=[
-  {id:'core',label:'Core',tag:'ENTRY',x:CX,y:ROW[0]},
-  {id:'plugins',label:'Plugins',tag:'EXTENSION',x:CX+COL[0],y:ROW[1]},
+  {id:'core',label:'Core Fastify',tag:'ENTRY',x:CX,y:ROW[0]},
+  {id:'plugins',label:'Plugin Engine',tag:'EXTENSION',x:CX+COL[0],y:ROW[1]},
   {id:'server',label:'Server & Hooks',tag:'LIFECYCLE',x:CX+COL[1],y:ROW[1]},
-  {id:'routing',label:'Routing',tag:'HTTP',x:CX+COL[2],y:ROW[1]},
-  {id:'reqres',label:'Request / Reply',tag:'I/O',x:CX+COL[0],y:ROW[2]},
-  {id:'validation',label:'Validation',tag:'SCHEMA',x:CX+COL[1],y:ROW[2]},
-  {id:'errors',label:'Error Handling',tag:'ERRORS',x:CX+COL[2],y:ROW[2]},
-  {id:'logging',label:'Logging',tag:'OBSERVABILITY',x:CX+COL[0],y:ROW[3]},
-  {id:'internals',label:'Internals',tag:'SHARED',x:CX+COL[1],y:ROW[3]},
+  {id:'routing',label:'Router',tag:'HTTP',x:CX+COL[2],y:ROW[1]},
+  {id:'reqres',label:'Request / Reply',tag:'I/O PIPE',x:CX+COL[0],y:ROW[2]},
+  {id:'validation',label:'Schema Validator',tag:'SCHEMA',x:CX+COL[1],y:ROW[2]},
+  {id:'errors',label:'Error Pipeline',tag:'ERRORS',x:CX+COL[2],y:ROW[2]},
+  {id:'logging',label:'Log Controller',tag:'OBSERVABILITY',x:CX+COL[0],y:ROW[3]},
+  {id:'internals',label:'Symbols & State',tag:'SHARED',x:CX+COL[1],y:ROW[3]},
 ];
 const MOD_EDGES=[
   ['core','plugins'],['core','server'],['core','routing'],
@@ -178,27 +327,44 @@ const MOD_EDGES=[
 ];
 
 // ════════════════════════════════════════════════════════════
-// SECTION: PR DEFINITIONS
-// Add new PRs here. Each PR needs:
-//   arch: {componentId: {summary, add, del}} — architecture-level changes
-//   mod:  {moduleId: {files, summary, add, del}} — module-level changes (optional)
-// The blast engine auto-computes indirect impact via reverse adjacency.
+// SECTION: PR DEFINITIONS & AI REVIEW ANNOTATIONS
 // ════════════════════════════════════════════════════════════
 const PRS=[
-  // Real Fastify PR used as a local demo scenario. Nothing is fetched or submitted.
   { id:'#6580',title:'introduce log controller layer',type:'feat',author:'Manuel Spigolon',
+    risk:'CRITICAL',riskClass:'risk-crit',
+    story:[
+      'Origin: Introduces standalone LogController in Fastify Logger layer.',
+      'Hop 1: Directly rewires Request/Reply lifecycle and Server hooks.',
+      'Hop 2: Transitive blast reaches Router, Error pipelines, and internal symbols.',
+      'Review complete: Verify deprecation warnings for kDisableRequestLogging.'
+    ],
+    aiFindings:{
+      logging:'[Critical] Ensure custom logController instances extend base LogController class.',
+      server:'[High] Deprecated kDisableRequestLogging symbol may break community plugins.',
+      reqres:'[Medium] Stream error log handler now requires reply.server reference.'
+    },
     arch:{ gateway:{summary:'24 files rewiring logging across the request lifecycle',add:782,del:127} },
     mod:{
+      logging:{files:['log-controller.js','logger-factory.js'],add:191,del:2,summary:'Adds the controller and validates custom implementations'},
       core:{files:['fastify.js'],add:21,del:21,summary:'Creates and exports the LogController extension point'},
       server:{files:['context.js','four-oh-four.js'],add:8,del:13,summary:'Moves lifecycle and 404 logging behind the controller'},
       routing:{files:['route.js'],add:6,del:21,summary:'Routes incoming requests and shutdown logs through the controller'},
       reqres:{files:['reply.js'],add:9,del:33,summary:'Centralizes response completion and stream error logging'},
       errors:{files:['error-handler.js','errors.js'],add:14,del:26,summary:'Delegates error, serializer, and writeHead logs'},
-      logging:{files:['log-controller.js','logger-factory.js'],add:191,del:2,summary:'Adds the controller and validates custom implementations'},
       internals:{files:['symbols.js','warnings.js'],add:20,del:2,summary:'Adds shared controller state and migration warnings'},
     }
   },
   { id:'#4533',title:'fix connection pool exhaustion',type:'fix',author:'dave',
+    risk:'HIGH',riskClass:'risk-high',
+    story:[
+      'Origin: PostgreSQL connection pool size increased (20 → 50) with idle timeouts.',
+      'Hop 1: Order, User, and Product services implement exponential backoff queries.',
+      'Hop 2: API Gateway timeout handling adjusted to prevent thread locking.'
+    ],
+    aiFindings:{
+      postgres:'[High] Max pool size 50 exceeds RDS free-tier default limits.',
+      order:'[Medium] Read replica failover needs fallback connection check.'
+    },
     arch:{
       postgres:{summary:'Pool max 20→50, added idle timeout',add:12,del:3},
       user:{summary:'Connection retry with exponential backoff',add:25,del:8},
@@ -212,6 +378,15 @@ const PRS=[
     }
   },
   { id:'#4521',title:'add rate limiting middleware',type:'feat',author:'alice',
+    risk:'MEDIUM',riskClass:'risk-med',
+    story:[
+      'Origin: Ingests rate-limit hook slot into Gateway onRequest lifecycle.',
+      'Hop 1: Error pipeline gains 429 Too Many Requests response handler.',
+      'Hop 2: Router propagates rateLimit route config metadata.'
+    ],
+    aiFindings:{
+      server:'[Medium] In-memory rate limiting counters need Redis cluster sync for multi-node deployments.'
+    },
     arch:{ gateway:{summary:'5 files across hooks, routing, reply, errors',add:89,del:5} },
     mod:{
       server:{files:['hooks.js'],add:42,del:3,summary:'New onRequest hook slot for rate-limit checks'},
@@ -222,6 +397,15 @@ const PRS=[
     }
   },
   { id:'#4510',title:'refactor schema compilation',type:'refactor',author:'carol',
+    risk:'LOW',riskClass:'risk-low',
+    story:[
+      'Origin: Lazy compilation and memoization for Ajv JSON schemas.',
+      'Hop 1: Route definition parser defers schema validation build.',
+      'Hop 2: Request serializer uses compiled cache on warm calls.'
+    ],
+    aiFindings:{
+      validation:'[Low] Cache key generation should normalize schema property order.'
+    },
     arch:{ gateway:{summary:'5 files across validation, routing, reply',add:119,del:71} },
     mod:{
       validation:{files:['schemas.js','schema-controller.js','validation.js'],add:105,del:65,summary:'Lazy schema compilation with caching'},
@@ -231,10 +415,59 @@ const PRS=[
   },
 ];
 
-// Curated, real hunks from Fastify PR #6580. The demo keeps the most useful
-// sections in-page so it remains a single-file experience with no GitHub access.
+// Curated code diffs
 const CODE_DIFFS={
   '#6580':{
+    logging:[
+      {file:'lib/log-controller.js',add:169,del:0,diff:[
+        '@@ -0,0 +1,32 @@',
+        "+'use strict'",
+        '+',
+        "+const { defaultInitOptions } = require('./initial-config-validation')",
+        '+',
+        '+/**',
+        "+ * Internal logger layer that wraps Fastify's log calls with",
+        '+ * request-lifecycle awareness (disable-check, level selection).',
+        '+ */',
+        '+class LogController {',
+        '+  constructor (options) {',
+        '+    const opts = options || {}',
+        '+    this.disableRequestLogging = opts.disableRequestLogging || defaultInitOptions.disableRequestLogging',
+        "+    this.isDisableRequestLoggingFunction = typeof this.disableRequestLogging === 'function'",
+        '+    this.requestIdLogLabel = opts.requestIdLogLabel || defaultInitOptions.requestIdLogLabel',
+        '+  }',
+        '+',
+        '+  isLogDisabled (req) {',
+        '+    return this.isDisableRequestLoggingFunction',
+        '+      ? this.disableRequestLogging(req)',
+        '+      : this.disableRequestLogging',
+        '+  }',
+        '+',
+        '+  incomingRequest (request, reply, metadata) {',
+        '+    if (this.isLogDisabled(request)) { return }',
+        "+    request.log.info({ req: request }, 'incoming request')",
+        '+  }',
+        '+}',
+        '+module.exports = { LogController }'
+      ]},
+      {file:'lib/logger-factory.js',add:22,del:2,diff:[
+        '@@ -122,6 +127,19 @@',
+        '   return { logger, hasLogger: true }',
+        ' }',
+        ' ',
+        '+function createLogController (options) {',
+        '+  const userController = options.logController',
+        '+  if (!userController) {',
+        '+    return new LogController(options)',
+        '+  }',
+        '+  if (userController instanceof LogController) {',
+        '+    return userController',
+        '+  }',
+        '+  throw new FST_ERR_LOG_INVALID_LOG_CONTROLLER(typeof userController)',
+        '+}',
+        ' function now () {'
+      ]}
+    ],
     core:[
       {file:'fastify.js',add:21,del:21,diff:[
         '@@ -44,7 +45,7 @@',
@@ -249,35 +482,15 @@ const CODE_DIFFS={
         '     // expose logger instance',
         '     log: options.logger,',
         '+    [kLogController]: logController,',
-        '     // type provider',
         '     withTypeProvider,',
-        '@@ -894,6 +891,10 @@',
-        ' ',
-        '   const { logger, hasLogger } = createLogger(options)',
-        ' ',
-        '+  // the internal logger uses the input logger to execute the logging. This allows the user',
-        '+  // to customize every internal log line',
-        '+  const logController = createLogController(options)',
-        '+',
-        '   // Update the options with the fixed values',
         '@@ -1010,5 +1009,6 @@',
         ' module.exports = fastify',
         ' module.exports.errorCodes = errorCodes',
         '+module.exports.LogController = LogController',
-        ' module.exports.fastify = fastify',
-        ' module.exports.default = fastify',
-      ]},
+        ' module.exports.fastify = fastify'
+      ]}
     ],
     server:[
-      {file:'lib/context.js',add:0,del:3,diff:[
-        '@@ -53,8 +51,7 @@',
-        '   this.onRequestAbort = null',
-        '   this.config = config',
-        '   this.errorHandler = errorHandler || server[kErrorHandler]',
-        '-  this.requestIdLogLabel = requestIdLogLabel || server[kOptions].requestIdLogLabel',
-        '   this.childLoggerFactory = childLoggerFactory || server[kChildLoggerFactory]',
-        '   this._middie = null',
-      ]},
       {file:'lib/four-oh-four.js',add:8,del:10,diff:[
         '@@ -51,14 +52,10 @@',
         ' ',
@@ -285,7 +498,6 @@ const CODE_DIFFS={
         '+    request.server[kLogController].routeNotFound(request, reply)',
         '     const { url, method } = request.raw',
         '-    const message = `Route ${method}:${url} not found`',
-        '-    const resolvedDisableRequestLogging = typeof disableRequestLogging === \'function\' ? disableRequestLogging(request.raw) : disableRequestLogging',
         '-    if (!resolvedDisableRequestLogging) {',
         '-      request.log.info(message)',
         '-    }',
@@ -294,71 +506,43 @@ const CODE_DIFFS={
         '+      message: `Route ${method}:${url} not found`,',
         "       error: 'Not Found',",
         '       statusCode: 404',
-      ]},
+        '     })'
+      ]}
     ],
     routing:[
       {file:'lib/route.js',add:6,del:21,diff:[
-        '@@ -471,8 +465,6 @@',
-        '       loggerOpts.serializers = context.logSerializers',
-        '     }',
-        '     const childLogger = createChildLogger(context, logger, req, id, loggerOpts)',
-        '-    // Set initial value; will be re-evaluated after FastifyRequest is constructed if it is a function',
-        '-    childLogger[kDisableRequestLogging] = disableRequestLoggingFn ? false : disableRequestLogging',
-        ' ',
-        '     if (closing === true) {',
         '@@ -518,16 +512,7 @@',
         '     const request = new context.Request(id, params, req, query, childLogger, context)',
         '     const reply = new context.Reply(res, request, childLogger)',
         ' ',
-        '-    // Evaluate disableRequestLogging after FastifyRequest is constructed',
-        '-    // so the caller has access to decorations and customizations',
-        '-    const resolvedDisableRequestLogging = disableRequestLoggingFn',
-        '-      ? disableRequestLoggingFn(request)',
-        '-      : disableRequestLogging',
-        '-    childLogger[kDisableRequestLogging] = resolvedDisableRequestLogging',
-        '-',
         '-    if (resolvedDisableRequestLogging === false) {',
         "-      childLogger.info({ req: request }, 'incoming request')",
         '-    }',
         '+    context.server[kLogController].incomingRequest(request, reply)',
         ' ',
-        '     // Handler timeout setup — only when configured (zero overhead otherwise)',
-      ]},
+        '     // Handler timeout setup'
+      ]}
     ],
     reqres:[
       {file:'lib/reply.js',add:9,del:33,diff:[
         '@@ -735,14 +735,8 @@',
         ' }',
-        ' ',
         '-function logStreamError (logger, err, res) {',
         "-  if (err.code === 'ERR_STREAM_PREMATURE_CLOSE') {",
         '-    if (!logger[kDisableRequestLogging]) {',
         "-      logger.info({ res }, 'stream closed prematurely')",
         '-    }',
-        '-  } else {',
-        "-    logger.warn({ err }, 'response terminated with an error with headers already sent')",
         '-  }',
         '+function logStreamError (err, reply, res) {',
         '+  reply.server[kLogController].streamError(err, reply.request, reply)',
         ' }',
         '@@ -995,25 +989,7 @@',
-        ' ',
         ' function onResponseCallback (err, request, reply) {',
-        '-  if (reply.log[kDisableRequestLogging]) {',
-        '-    return',
-        '-  }',
-        '-',
-        '-  const responseTime = reply.elapsedTime',
-        '-',
-        '-  if (err != null) {',
-        "-    reply.log.error({ res: reply, err, responseTime }, 'request errored')",
-        '-    return',
-        '-  }',
-        '-',
+        '-  if (reply.log[kDisableRequestLogging]) return',
         "-  reply.log.info({ res: reply, responseTime }, 'request completed')",
         '+  reply.server[kLogController].requestCompleted(err, request, reply)',
-        ' }',
-      ]},
+        ' }'
+      ]}
     ],
     errors:[
       {file:'lib/error-handler.js',add:7,del:26,diff:[
@@ -377,151 +561,24 @@ const CODE_DIFFS={
         '-  }',
         '+  request.server[kLogController].defaultErrorLog(error, request, reply)',
         '   reply.send(error)',
-        ' }',
-        '@@ -123,10 +104,10 @@',
-        '       }))',
-        '     }',
-        '   } catch (err) {',
-        '-    if (!reply.log[kDisableRequestLogging]) {',
-        "-      reply.log.error({ err, statusCode: res.statusCode }, 'The serializer for the given status code failed')",
-        '-    }',
-        '+    reply.server[kLogController].serializerError(err, reply.request, reply, { statusCode: res.statusCode })',
-        '+',
-        '     reply.code(500)',
-      ]},
-      {file:'lib/errors.js',add:7,del:0,diff:[
-        '@@ -243,6 +243,13 @@',
-        '     TypeError',
-        '   ),',
-        ' ',
-        '+  FST_ERR_LOG_INVALID_LOG_CONTROLLER: createError(',
-        "+    'FST_ERR_LOG_INVALID_LOG_CONTROLLER',",
-        "+    \"logController option must be an instance of LogController, got '%s'.\",",
-        '+    500,',
-        '+    TypeError',
-        '+  ),',
-        '+',
-        '   /**',
-        '    * reply',
-      ]},
-    ],
-    logging:[
-      {file:'lib/log-controller.js',add:169,del:0,diff:[
-        '@@ -0,0 +1,32 @@',
-        "+'use strict'",
-        '+',
-        "+const { defaultInitOptions } = require('./initial-config-validation')",
-        '+',
-        '+/**',
-        "+ * Internal logger layer that wraps Fastify's log calls with",
-        '+ * request-lifecycle awareness (disable-check, level selection).',
-        '+ * Keeps the surface intentionally small so hot paths stay fast.',
-        '+ *',
-        '+ * Users can extend this class to customize internal log lines.',
-        '+ */',
-        '+class LogController {',
-        '+  constructor (options) {',
-        '+    const opts = options || {}',
-        '+    this.disableRequestLogging = opts.disableRequestLogging || defaultInitOptions.disableRequestLogging',
-        "+    this.isDisableRequestLoggingFunction = typeof this.disableRequestLogging === 'function'",
-        '+    this.requestIdLogLabel = opts.requestIdLogLabel || defaultInitOptions.requestIdLogLabel',
-        '+  }',
-        '+',
-        '+  isLogDisabled (req) {',
-        '+    return this.isDisableRequestLoggingFunction',
-        '+      ? this.disableRequestLogging(req)',
-        '+      : this.disableRequestLogging',
-        '+  }',
-        '@@ -0,0 +40,19 @@',
-        '+  incomingRequest (request, reply, metadata) {',
-        '+    if (this.isLogDisabled(request)) { return }',
-        '+',
-        "+    request.log.info({ req: request }, 'incoming request')",
-        '+  }',
-        '+',
-        '+  requestCompleted (error, request, reply, metadata) {',
-        '+    if (this.isLogDisabled(request)) { return }',
-        '+',
-        '+    if (error) {',
-        "+      reply.log.error({ res: reply, err: error, responseTime: reply.elapsedTime }, 'request errored')",
-        '+    } else {',
-        "+      reply.log.info({ res: reply, responseTime: reply.elapsedTime }, 'request completed')",
-        '+    }',
-        '+  }',
-        '@@ -0,0 +161,9 @@',
-        '+  serviceUnavailable (logger, server) {',
-        "+    logger.info({ res: { statusCode: 503 } }, 'request aborted - refusing to accept new requests as server is closing')",
-        '+  }',
-        '+}',
-        '+',
-        '+module.exports = { LogController }',
-      ]},
-      {file:'lib/logger-factory.js',add:22,del:2,diff:[
-        '@@ -122,6 +127,19 @@',
-        '   return { logger, hasLogger: true }',
-        ' }',
-        ' ',
-        '+function createLogController (options) {',
-        '+  const userController = options.logController',
-        '+  if (!userController) {',
-        '+    return new LogController(options)',
-        '+  }',
-        '+',
-        '+  if (userController instanceof LogController) {',
-        '+    return userController',
-        '+  }',
-        '+',
-        '+  throw new FST_ERR_LOG_INVALID_LOG_CONTROLLER(typeof userController)',
-        '+}',
-        '+',
-        ' function now () {',
-        '   const ts = process.hrtime()',
-      ]},
+        ' }'
+      ]}
     ],
     internals:[
       {file:'lib/symbols.js',add:1,del:1,diff:[
         '@@ -13,7 +13,6 @@',
-        "   kContentTypeParser: Symbol('fastify.contentTypeParser'),",
-        "   kState: Symbol('fastify.state'),",
         "   kOptions: Symbol('fastify.options'),",
         "-  kDisableRequestLogging: Symbol('fastify.disableRequestLogging'),",
         "   kPluginNameChain: Symbol('fastify.pluginNameChain'),",
-        '@@ -67,6 +66,7 @@',
-        "   kKeepAliveConnections: Symbol('fastify.keepAliveConnections'),",
-        "   kRouteByFastify: Symbol('fastify.routeByFastify'),",
         "+  kLogController: Symbol('fastify.logController'),",
-        "   kDiagnosticsStore: Symbol('fastify.diagnosticsStore')",
-      ]},
-      {file:'lib/warnings.js',add:19,del:1,diff:[
-        '@@ -48,10 +50,26 @@',
-        '   unlimited: true',
-        ' })',
-        ' ',
-        '+const FSTDEP023 = createWarning({',
-        "+  name: 'FastifyDeprecation',",
-        "+  code: 'FSTDEP023',",
-        "+  message: 'disableRequestLogging option is deprecated. Use the logController option instead.',",
-        '+  unlimited: true',
-        '+})',
-        '+',
-        '+const FSTDEP024 = createWarning({',
-        "+  name: 'FastifyDeprecation',",
-        "+  code: 'FSTDEP024',",
-        "+  message: 'requestIdLogLabel option is deprecated. Use the logController option instead.',",
-        '+  unlimited: true',
-        '+})',
-        '+',
-        ' module.exports = {',
-        '   FSTWRN001,',
-      ]},
-    ],
-  },
+        "   kDiagnosticsStore: Symbol('fastify.diagnosticsStore')"
+      ]}
+    ]
+  }
 };
 
 // ════════════════════════════════════════════════════════════
-// SECTION: GRAPH ENGINE
-// Builds reverse adjacency, renders nodes/edges to SVG.
-// To change node appearance or layout, modify renderGraph().
+// SECTION: SVG GRAPH RENDERING WITH DOT GRID & LASER GLOW
 // ════════════════════════════════════════════════════════════
 function buildReverse(edges){const r={};edges.forEach(([f,t])=>{if(!r[t])r[t]=[];r[t].push(f)});return r}
 const archRev=buildReverse(ARCH_EDGES), modRev=buildReverse(MOD_EDGES);
@@ -530,14 +587,27 @@ const svg=document.getElementById('g');
 svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
 
 const defs=document.createElementNS(NS,'defs');
-['arr','arr-b'].forEach(id=>{
+
+// Dot pattern background
+const pat=document.createElementNS(NS,'pattern');
+pat.setAttribute('id','dot-grid');pat.setAttribute('width','28');pat.setAttribute('height','28');
+pat.setAttribute('patternUnits','userSpaceOnUse');
+const dot=document.createElementNS(NS,'circle');
+dot.setAttribute('cx','2');dot.setAttribute('cy','2');dot.setAttribute('r','1.1');
+dot.setAttribute('fill','#152238');dot.setAttribute('opacity','0.6');
+pat.appendChild(dot);defs.appendChild(pat);
+
+// Arrow markers
+['arr','arr-b','arr-active'].forEach(id=>{
   const m=document.createElementNS(NS,'marker');
   m.setAttribute('id',id);m.setAttribute('viewBox','0 0 8 6');
   m.setAttribute('refX','8');m.setAttribute('refY','3');m.setAttribute('markerWidth','7');m.setAttribute('markerHeight','5');m.setAttribute('orient','auto');
   const p=document.createElementNS(NS,'path');p.setAttribute('d','M0,.5 L7,3 L0,5.5');
-  p.setAttribute('fill',id==='arr'?'#1a2a40':'currentColor');
+  p.setAttribute('fill',id==='arr'?'#1a2a40':id==='arr-active'?'#38bdf8':'currentColor');
   m.appendChild(p);defs.appendChild(m);
 });
+
+// Glow Filter
 const glow=document.createElementNS(NS,'filter');glow.setAttribute('id','glow');
 const blur=document.createElementNS(NS,'feGaussianBlur');blur.setAttribute('stdDeviation','4');blur.setAttribute('result','b');glow.appendChild(blur);
 const merge=document.createElementNS(NS,'feMerge');
@@ -546,11 +616,18 @@ const mn2=document.createElementNS(NS,'feMergeNode');mn2.setAttribute('in','Sour
 glow.appendChild(merge);defs.appendChild(glow);
 svg.appendChild(defs);
 
+// Background Rect
+const bgRect=document.createElementNS(NS,'rect');
+bgRect.setAttribute('width','100%');bgRect.setAttribute('height','100%');
+bgRect.setAttribute('fill','url(#dot-grid)');
+svg.appendChild(bgRect);
+
 const gArch=document.createElementNS(NS,'g');gArch.id='gArch';
 const gMod=document.createElementNS(NS,'g');gMod.id='gMod';gMod.style.opacity='0';gMod.style.pointerEvents='none';
 svg.appendChild(gArch);svg.appendChild(gMod);
 
 function makePath(a,b){
+  if(!a||!b)return'';
   if(Math.abs(a.y-b.y)<NH+20){
     const s=b.x>a.x?a.x+NW/2:a.x-NW/2;
     const e=b.x>a.x?b.x-NW/2-5:b.x+NW/2+5;
@@ -560,57 +637,109 @@ function makePath(a,b){
   return`M${a.x},${sy} C${a.x},${sy+dy*.5} ${b.x},${ey-dy*.5} ${b.x},${ey}`;
 }
 
+// Track reviewed nodes
+const reviewedNodes=new Set();
+
 function renderGraph(nodes,edges,container){
   const nMap={};nodes.forEach(n=>nMap[n.id]=n);
-  const eEls=edges.map(([fid,tid])=>{
+  const eEls=[];
+  
+  edges.forEach(([fid,tid])=>{
+    const gEdge=document.createElementNS(NS,'g');
     const p=document.createElementNS(NS,'path');
     p.setAttribute('d',makePath(nMap[fid],nMap[tid]));
     p.setAttribute('class','edge-path');p.setAttribute('marker-end','url(#arr)');
     p.dataset.from=fid;p.dataset.to=tid;
-    container.appendChild(p);return p;
+
+    const hit=document.createElementNS(NS,'path');
+    hit.setAttribute('d',makePath(nMap[fid],nMap[tid]));
+    hit.setAttribute('class','edge-hit');
+    hit.addEventListener('mouseenter',e=>showEdgeTip(e,fid,tid));
+    hit.addEventListener('mouseleave',hideTip);
+
+    gEdge.appendChild(p);gEdge.appendChild(hit);
+    container.appendChild(gEdge);
+    eEls.push(p);
   });
+
   const nEls={};
   nodes.forEach(n=>{
     const g=document.createElementNS(NS,'g');g.setAttribute('class','node-group');
     g.setAttribute('transform',`translate(${n.x},${n.y})`);g.dataset.id=n.id;
+    
+    // Background card
     const box=document.createElementNS(NS,'rect');
     box.setAttribute('x',-NW/2);box.setAttribute('y',-NH/2);box.setAttribute('width',NW);box.setAttribute('height',NH);
-    box.setAttribute('rx',NR);box.setAttribute('fill','#0e1420');box.setAttribute('class','node-box');g.appendChild(box);
+    box.setAttribute('rx',NR);box.setAttribute('fill','#0a0f18');box.setAttribute('class','node-box');g.appendChild(box);
+    
+    // Border
     const bdr=document.createElementNS(NS,'rect');
     bdr.setAttribute('x',-NW/2);bdr.setAttribute('y',-NH/2);bdr.setAttribute('width',NW);bdr.setAttribute('height',NH);
-    bdr.setAttribute('rx',NR);bdr.setAttribute('fill','none');bdr.setAttribute('stroke','#1e2e45');bdr.setAttribute('stroke-width','1');
+    bdr.setAttribute('rx',NR);bdr.setAttribute('fill','none');bdr.setAttribute('stroke','#1a2638');bdr.setAttribute('stroke-width','1');
     bdr.setAttribute('class','node-border');g.appendChild(bdr);
+    
+    // Status Bar
     const bar=document.createElementNS(NS,'rect');
-    bar.setAttribute('x',-NW/2+2);bar.setAttribute('y',-NH/2+5);bar.setAttribute('width',3);bar.setAttribute('height',NH-10);
-    bar.setAttribute('rx',1);bar.setAttribute('fill','#2a3a55');bar.setAttribute('opacity','.5');bar.setAttribute('class','node-bar');g.appendChild(bar);
+    bar.setAttribute('x',-NW/2+2);bar.setAttribute('y',-NH/2+5);bar.setAttribute('width',3.5);bar.setAttribute('height',NH-10);
+    bar.setAttribute('rx',1.5);bar.setAttribute('fill','#24344d');bar.setAttribute('opacity','.6');bar.setAttribute('class','node-bar');g.appendChild(bar);
+    
+    // Tag
     const tag=document.createElementNS(NS,'text');tag.textContent=n.tag;
-    tag.setAttribute('x',-NW/2+14);tag.setAttribute('y',-NH/2+16);tag.setAttribute('fill','#3a5070');
+    tag.setAttribute('x',-NW/2+14);tag.setAttribute('y',-NH/2+16);tag.setAttribute('fill','#3b5375');
     tag.setAttribute('font-size','8');tag.setAttribute('font-family',"'Fira Code',monospace");
     tag.setAttribute('letter-spacing','.6');tag.setAttribute('class','node-tag');g.appendChild(tag);
+    
+    // Label
     const lbl=document.createElementNS(NS,'text');lbl.textContent=n.label;
-    lbl.setAttribute('x',-NW/2+14);lbl.setAttribute('y',-NH/2+33);lbl.setAttribute('fill','#8a99b0');
-    lbl.setAttribute('font-size','13');lbl.setAttribute('font-family',"'DM Sans',sans-serif");
+    lbl.setAttribute('x',-NW/2+14);lbl.setAttribute('y',-NH/2+33);lbl.setAttribute('fill','#94a3b8');
+    lbl.setAttribute('font-size','12.5');lbl.setAttribute('font-family',"'DM Sans',sans-serif");
     lbl.setAttribute('font-weight','600');lbl.setAttribute('class','node-label');g.appendChild(lbl);
+    
+    // Info / Subtitle
     const info=document.createElementNS(NS,'text');info.textContent=n.zoomLabel||'';
-    info.setAttribute('x',-NW/2+14);info.setAttribute('y',-NH/2+47);info.setAttribute('fill','#2a3a50');
-    info.setAttribute('font-size','9');info.setAttribute('font-family',"'Fira Code',monospace");
+    info.setAttribute('x',-NW/2+14);info.setAttribute('y',-NH/2+46);info.setAttribute('fill','#2a3d58');
+    info.setAttribute('font-size','8.5');info.setAttribute('font-family',"'Fira Code',monospace");
     info.setAttribute('class','node-info');g.appendChild(info);
+
     if(n.zoomable){
-      const zh=document.createElementNS(NS,'text');zh.textContent='EXPLORE ▸';
-      zh.setAttribute('x',NW/2-8);zh.setAttribute('y',-NH/2+47);zh.setAttribute('text-anchor','end');
+      const zh=document.createElementNS(NS,'text');zh.textContent='DRILL DOWN ▸';
+      zh.setAttribute('x',NW/2-8);zh.setAttribute('y',-NH/2+46);zh.setAttribute('text-anchor','end');
       zh.setAttribute('class','zoom-hint');g.appendChild(zh);g.style.cursor='zoom-in';
     }
+
+    // Change Badge (+ / -)
     const bdg=document.createElementNS(NS,'g');bdg.setAttribute('class','change-badge');bdg.setAttribute('opacity','0');
     bdg.setAttribute('transform',`translate(${NW/2-8},${-NH/2-6})`);
-    const bb=document.createElementNS(NS,'rect');bb.setAttribute('x',-30);bb.setAttribute('y',-8);
-    bb.setAttribute('width',38);bb.setAttribute('height',16);bb.setAttribute('rx',3);
-    bb.setAttribute('fill','#0a0f18');bb.setAttribute('stroke','#1e2e45');bb.setAttribute('stroke-width','1');bdg.appendChild(bb);
-    const bt=document.createElementNS(NS,'text');bt.setAttribute('x',-11);bt.setAttribute('y',3);
-    bt.setAttribute('text-anchor','middle');bt.setAttribute('font-size','9');bt.setAttribute('fill','#8a99b0');
+    const bb=document.createElementNS(NS,'rect');bb.setAttribute('x',-34);bb.setAttribute('y',-8);
+    bb.setAttribute('width',42);bb.setAttribute('height',16);bb.setAttribute('rx',3);
+    bb.setAttribute('fill','#090e17');bb.setAttribute('stroke','#1f2f47');bb.setAttribute('stroke-width','1');bdg.appendChild(bb);
+    const bt=document.createElementNS(NS,'text');bt.setAttribute('x',-13);bt.setAttribute('y',3);
+    bt.setAttribute('text-anchor','middle');bt.setAttribute('font-size','8.5');bt.setAttribute('fill','#94a3b8');
     bt.setAttribute('font-family',"'Fira Code',monospace");bdg.appendChild(bt);g.appendChild(bdg);
-    g.addEventListener('mouseenter',e=>showTip(e,n));g.addEventListener('mouseleave',hideTip);
+
+    // AI finding Pin
+    const aiPin=document.createElementNS(NS,'g');aiPin.setAttribute('opacity','0');
+    aiPin.setAttribute('transform',`translate(${-NW/2+10},${-NH/2-5})`);
+    const aipBox=document.createElementNS(NS,'rect');aipBox.setAttribute('x',0);aipBox.setAttribute('y',-7);
+    aipBox.setAttribute('width',28);aipBox.setAttribute('height',14);aipBox.setAttribute('rx',3);
+    aipBox.setAttribute('fill','#450a0a');aipBox.setAttribute('stroke','#dc2626');aipBox.setAttribute('stroke-width','1');aiPin.appendChild(aipBox);
+    const aipTxt=document.createElementNS(NS,'text');aipTxt.setAttribute('x',14);aipTxt.setAttribute('y',3);
+    aipTxt.setAttribute('text-anchor','middle');aipTxt.setAttribute('font-size','8');aipTxt.setAttribute('fill','#fca5a5');
+    aipTxt.setAttribute('font-family',"'Fira Code',monospace");aipTxt.setAttribute('font-weight','600');
+    aipTxt.textContent='AI ⚠';aiPin.appendChild(aipTxt);g.appendChild(aiPin);
+
+    // Reviewed indicator badge
+    const revPin=document.createElementNS(NS,'g');revPin.setAttribute('opacity','0');
+    revPin.setAttribute('transform',`translate(${NW/2-24},${NH/2-4})`);
+    const rpb=document.createElementNS(NS,'circle');rpb.setAttribute('r','6');rpb.setAttribute('fill','#16a34a');revPin.appendChild(rpb);
+    const rpt=document.createElementNS(NS,'text');rpt.setAttribute('text-anchor','middle');rpt.setAttribute('y','2.5');rpt.setAttribute('font-size','7.5');rpt.setAttribute('fill','#fff');rpt.textContent='✓';revPin.appendChild(rpt);
+    g.appendChild(revPin);
+
+    g.addEventListener('mouseenter',e=>showTip(e,n));
+    g.addEventListener('mouseleave',hideTip);
     container.appendChild(g);
-    nEls[n.id]={g,box,bdr,bar,tag,lbl,info,bdg,bb,bt};
+
+    nEls[n.id]={g,box,bdr,bar,tag,lbl,info,bdg,bb,bt,aiPin,revPin};
   });
   return{nEls,eEls,nMap};
 }
@@ -619,21 +748,20 @@ const arch=renderGraph(ARCH_NODES,ARCH_EDGES,gArch);
 const mod=renderGraph(MOD_NODES,MOD_EDGES,gMod);
 
 // ════════════════════════════════════════════════════════════
-// SECTION: ANIMATION ENGINE
-// Ball animation, node highlighting, step queue.
-// To change animation style, modify animateBall() and highlightNode().
+// SECTION: BLAST ENGINE & LASER PULSES
 // ════════════════════════════════════════════════════════════
 let animSteps=[];
 let animIdx=0;
 let animTimer=null;
 let animState='idle';
 let liveBalls=[];
+let currentHopFilter='all';
 
 function animateBall(container,pathEl,color,reverse){
   const ball=document.createElementNS(NS,'circle');
-  ball.setAttribute('r','4');ball.setAttribute('fill',color);ball.setAttribute('filter','url(#glow)');
+  ball.setAttribute('r','4.5');ball.setAttribute('fill',color);ball.setAttribute('filter','url(#glow)');
   const trail=document.createElementNS(NS,'circle');
-  trail.setAttribute('r','10');trail.setAttribute('fill',color);trail.setAttribute('opacity','0.15');
+  trail.setAttribute('r','12');trail.setAttribute('fill',color);trail.setAttribute('opacity','0.2');
   container.appendChild(trail);container.appendChild(ball);
   const len=pathEl.getTotalLength();
   const start=performance.now();
@@ -648,12 +776,12 @@ function animateBall(container,pathEl,color,reverse){
     const pt=pathEl.getPointAtLength(at);
     ball.setAttribute('cx',pt.x);ball.setAttribute('cy',pt.y);
     trail.setAttribute('cx',pt.x);trail.setAttribute('cy',pt.y);
-    trail.setAttribute('opacity',String(.2*(1-t)));
+    trail.setAttribute('opacity',String(.25*(1-t)));
     if(t<1){requestAnimationFrame(step)}
     else{
-      ball.style.transition='opacity .3s';trail.style.transition='opacity .3s';
+      ball.style.transition='opacity .25s';trail.style.transition='opacity .25s';
       ball.setAttribute('opacity','0');trail.setAttribute('opacity','0');
-      setTimeout(()=>{ball.remove();trail.remove();entry.done=true},300);
+      setTimeout(()=>{ball.remove();trail.remove();entry.done=true},250);
     }
   }
   requestAnimationFrame(step);
@@ -661,30 +789,29 @@ function animateBall(container,pathEl,color,reverse){
 
 function clearBalls(){liveBalls.forEach(b=>{b.done=true;b.ball.remove();b.trail.remove()});liveBalls=[]}
 
-function highlightNode(el,color,bg,stroke,data){
-  el.box.setAttribute('fill',bg);el.bdr.setAttribute('stroke',stroke);el.bdr.setAttribute('stroke-width','1.5');
-  el.bar.setAttribute('fill',color);el.bar.setAttribute('opacity','.8');
-  el.tag.setAttribute('fill',color);el.lbl.setAttribute('fill','#f0f4f8');el.info.setAttribute('fill',color);
+function highlightNode(el,color,bg,stroke,data,nodeId){
+  el.box.setAttribute('fill',bg);el.bdr.setAttribute('stroke',stroke);el.bdr.setAttribute('stroke-width','1.6');
+  el.bar.setAttribute('fill',color);el.bar.setAttribute('opacity','.9');
+  el.tag.setAttribute('fill',color);el.lbl.setAttribute('fill','#f1f5f9');el.info.setAttribute('fill',color);
   if(data){el.bt.textContent=`+${data.add} -${data.del}`;el.bb.setAttribute('stroke',stroke);el.bdg.setAttribute('opacity','1')}
+  if(activePR&&activePR.aiFindings&&activePR.aiFindings[nodeId]){el.aiPin.setAttribute('opacity','1')}
+  if(reviewedNodes.has(nodeId)){el.revPin.setAttribute('opacity','1')}
 }
 
-function highlightIndirect(el){
+function highlightIndirect(el,nodeId){
   el.g.classList.remove('dimmed');
   el.bdr.setAttribute('stroke','#475569');el.bdr.setAttribute('stroke-dasharray','4 3');
   el.lbl.setAttribute('fill','#64748b');el.tag.setAttribute('fill','#475569');
+  if(activePR&&activePR.aiFindings&&activePR.aiFindings[nodeId]){el.aiPin.setAttribute('opacity','1')}
+  if(reviewedNodes.has(nodeId)){el.revPin.setAttribute('opacity','1')}
 }
 
 function highlightEdge(pathEl,color){
-  pathEl.setAttribute('stroke',color);pathEl.setAttribute('stroke-width','2.5');
+  pathEl.setAttribute('stroke',color);pathEl.setAttribute('stroke-width','2.6');
+  pathEl.setAttribute('marker-end','url(#arr-active)');
 }
 
-// ════════════════════════════════════════════════════════════
-// SECTION: BLAST ANALYSIS
-// Computes direct + indirect impact, builds animation steps.
-// To add new analysis types (config, scaling), add PR type handling here.
-// ════════════════════════════════════════════════════════════
 let level='arch',activePR=null,activeBtn=null;
-
 function getView(){return level==='arch'?arch:mod}
 function getRev(){return level==='arch'?archRev:modRev}
 function getData(pr){return level==='arch'?pr.arch:pr.mod}
@@ -692,16 +819,18 @@ function getData(pr){return level==='arch'?pr.arch:pr.mod}
 function resetHighlights(){
   clearBalls();
   [arch,mod].forEach(v=>{
-    Object.values(v.nEls).forEach(el=>{
+    Object.entries(v.nEls).forEach(([id,el])=>{
       el.g.classList.remove('dimmed');
-      el.box.setAttribute('fill','#0e1420');el.bdr.setAttribute('stroke','#1e2e45');
+      el.box.setAttribute('fill','#0a0f18');el.bdr.setAttribute('stroke','#1a2638');
       el.bdr.setAttribute('stroke-width','1');el.bdr.setAttribute('stroke-dasharray','');
-      el.bar.setAttribute('fill','#2a3a55');el.bar.setAttribute('opacity','.5');
-      el.tag.setAttribute('fill','#3a5070');el.lbl.setAttribute('fill','#8a99b0');
-      el.info.setAttribute('fill','#2a3a50');el.bdg.setAttribute('opacity','0');
-      el.bb.setAttribute('stroke','#1e2e45');
+      el.bar.setAttribute('fill','#24344d');el.bar.setAttribute('opacity','.6');
+      el.tag.setAttribute('fill','#3b5375');el.lbl.setAttribute('fill','#94a3b8');
+      el.info.setAttribute('fill','#2a3d58');el.bdg.setAttribute('opacity','0');
+      el.bb.setAttribute('stroke','#1f2f47');
+      el.aiPin.setAttribute('opacity','0');
+      el.revPin.setAttribute('opacity',reviewedNodes.has(id)?'1':'0');
     });
-    v.eEls.forEach(p=>{p.setAttribute('stroke','#141e30');p.setAttribute('stroke-width','1.2');p.setAttribute('marker-end','url(#arr)')});
+    v.eEls.forEach(p=>{p.setAttribute('stroke','#152136');p.setAttribute('stroke-width','1.3');p.setAttribute('marker-end','url(#arr)')});
   });
 }
 
@@ -717,54 +846,60 @@ function buildSteps(pr){
   const steps=[];
   const allIds=Object.keys(view.nEls);
 
-  steps.push({delay:0,fn:()=>{
-    allIds.forEach(id=>{if(dist[id]===undefined)view.nEls[id].g.classList.add('dimmed')});
-  }});
+  // Step 0: Dim non-affected
+  steps.push({
+    name:'Dim Unaffected',
+    narrative:`Analyzing ${pr.id}: isolating ${direct.size} modified components across ${allIds.length} system nodes.`,
+    fn:()=>{allIds.forEach(id=>{if(dist[id]===undefined)view.nEls[id].g.classList.add('dimmed')})}
+  });
 
-  steps.push({delay:300,fn:()=>{
-    direct.forEach(cid=>{
-      const el=view.nEls[cid];if(!el)return;
-      highlightNode(el,color,bg,stroke,data[cid]);
-    });
-    view.eEls.forEach(p=>{
-      if(direct.has(p.dataset.from)&&direct.has(p.dataset.to)){
-        highlightEdge(p,color);
-      }
-    });
-  }});
+  // Step 1: Hop 0 (Origin changes)
+  steps.push({
+    name:'Hop 0: Origin',
+    narrative:`Hop 0: Direct changes in ${[...direct].map(id=>view.nMap[id]?.label||id).join(', ')}.`,
+    fn:()=>{
+      direct.forEach(cid=>{const el=view.nEls[cid];if(el)highlightNode(el,color,bg,stroke,data[cid],cid)});
+      view.eEls.forEach(p=>{if(direct.has(p.dataset.from)&&direct.has(p.dataset.to))highlightEdge(p,color)});
+    }
+  });
 
+  // Hop steps
   for(let hop=1;hop<=maxHop;hop++){
     const hopNodes=Object.entries(dist).filter(([,d])=>d===hop).map(([id])=>id);
-    const ballDelay=300+hop*HOP_DELAY;
-    const nodeDelay=ballDelay+BALL_MS*0.6;
+    const hopNames=hopNodes.map(id=>view.nMap[id]?.label||id).join(', ');
 
-    steps.push({delay:ballDelay,fn:()=>{
-      const container=level==='arch'?gArch:gMod;
-      view.eEls.forEach(p=>{
-        const fd=dist[p.dataset.from],td=dist[p.dataset.to];
-        if(fd===undefined||td===undefined)return;
-        if(fd===hop&&td===hop-1){
-          highlightEdge(p,hop<=1?color:'#475569');
-          animateBall(container,p,hop<=1?color:'#64748b',true);
-        }
-        if(td===hop&&fd===hop-1){
-          highlightEdge(p,hop<=1?color:'#475569');
-          animateBall(container,p,hop<=1?color:'#64748b',false);
-        }
-      });
-    }});
+    steps.push({
+      name:`Hop ${hop} Wave`,
+      narrative:`Hop ${hop} Wave: Dependency pulse propagating to ${hopNodes.length} direct caller(s): ${hopNames}.`,
+      fn:()=>{
+        const container=level==='arch'?gArch:gMod;
+        view.eEls.forEach(p=>{
+          const fd=dist[p.dataset.from],td=dist[p.dataset.to];
+          if(fd===undefined||td===undefined)return;
+          if(fd===hop&&td===hop-1){highlightEdge(p,hop<=1?color:'#475569');animateBall(container,p,hop<=1?color:'#64748b',true)}
+          if(td===hop&&fd===hop-1){highlightEdge(p,hop<=1?color:'#475569');animateBall(container,p,hop<=1?color:'#64748b',false)}
+        });
+      }
+    });
 
-    steps.push({delay:nodeDelay,fn:()=>{
-      hopNodes.forEach(cid=>{
-        const el=view.nEls[cid];if(!el)return;
-        if(direct.has(cid)){highlightNode(el,color,bg,stroke,data[cid])}
-        else{highlightIndirect(el)}
-      });
-    }});
+    steps.push({
+      name:`Hop ${hop} Impact`,
+      narrative:`Hop ${hop} Impact: ${hopNames} marked as downstream dependents risking regression.`,
+      fn:()=>{
+        hopNodes.forEach(cid=>{
+          const el=view.nEls[cid];if(!el)return;
+          if(direct.has(cid)){highlightNode(el,color,bg,stroke,data[cid],cid)}
+          else{highlightIndirect(el,cid)}
+        });
+      }
+    });
   }
 
-  const panelDelay=300+((maxHop+1)*HOP_DELAY);
-  steps.push({delay:panelDelay,fn:()=>updatePanel(pr,dist,direct)});
+  steps.push({
+    name:'Complete',
+    narrative:`Blast complete: ${direct.size} direct + ${Object.keys(dist).length-direct.size} downstream components reached.`,
+    fn:()=>updatePanel(pr,dist,direct)
+  });
   return steps;
 }
 
@@ -786,13 +921,66 @@ function runNextStep(){
     updateControlUI();return;
   }
   const step=animSteps[animIdx];
-  const prev=animIdx>0?animSteps[animIdx-1].delay:0;
-  const wait=step.delay-prev;
-  animTimer=setTimeout(()=>{
+  step.fn();
+  document.getElementById('story-narrative').textContent=step.narrative;
+  animIdx++;
+  animTimer=setTimeout(runNextStep,HOP_DELAY);
+}
+
+function stepForward(){
+  if(!activePR)return;
+  if(animState==='idle'){resetHighlights();animSteps=buildSteps(activePR);animIdx=0}
+  stopAnimation();
+  if(animIdx<animSteps.length){
+    const step=animSteps[animIdx];
     step.fn();
+    document.getElementById('story-narrative').textContent=step.narrative;
     animIdx++;
-    runNextStep();
-  },Math.max(0,wait));
+    if(animIdx>=animSteps.length)animState='done';
+    else animState='paused';
+    updateControlUI();
+  }
+}
+
+function stepBackward(){
+  if(!activePR||animIdx<=1)return;
+  const target=Math.max(0,animIdx-2);
+  stopAnimation();
+  resetHighlights();
+  animIdx=0;
+  for(let i=0;i<=target;i++){
+    animSteps[i].fn();
+    document.getElementById('story-narrative').textContent=animSteps[i].narrative;
+    animIdx++;
+  }
+  animState='paused';
+  updateControlUI();
+}
+
+function filterHop(hopKey){
+  if(!activePR)return;
+  stopAnimation();
+  resetHighlights();
+  document.querySelectorAll('.hop-tab').forEach(t=>t.classList.toggle('active',t.dataset.hop===hopKey));
+  const view=getView(),rev=getRev(),data=getData(activePR);
+  if(!data)return;
+  const direct=new Set(Object.keys(data));
+  const dist={};direct.forEach(id=>{dist[id]=0});
+  const q=[...direct];
+  while(q.length){const c=q.shift();for(const d of(rev[c]||[])){if(dist[d]===undefined){dist[d]=dist[c]+1;q.push(d)}}}
+  const color=TC[activePR.type],bg=TBG[activePR.type],stroke=TSK[activePR.type];
+
+  Object.keys(view.nEls).forEach(id=>{
+    const d=dist[id];
+    if(d===undefined){view.nEls[id].g.classList.add('dimmed')}
+    else if(hopKey==='all'||hopKey===String(d)){
+      if(direct.has(id))highlightNode(view.nEls[id],color,bg,stroke,data[id],id);
+      else highlightIndirect(view.nEls[id],id);
+    } else {
+      view.nEls[id].g.classList.add('dimmed');
+    }
+  });
+  updatePanel(activePR,dist,direct);
 }
 
 function stopAnimation(){
@@ -807,28 +995,65 @@ function resetAnimation(){
   resetHighlights();
   closeCodePanel();
   document.getElementById('analysis').style.display='none';
+  document.getElementById('story-narrative').textContent='Select a PR to visualize architectural impact propagation.';
   updateControlUI();
 }
 
 function updateControlUI(){
   const play=document.getElementById('btn-play');
-  const stop=document.getElementById('btn-stop');
+  const prev=document.getElementById('btn-prev');
+  const next=document.getElementById('btn-next');
   const reset=document.getElementById('btn-reset');
-  play.disabled=animState==='playing'||animState==='done';
-  stop.disabled=animState!=='playing';
-  reset.disabled=animState==='idle';
+  play.innerHTML=animState==='playing'?'⏸ Pause':animState==='done'?'✓ Done':'▶ Auto Play';
   play.classList.toggle('active-ctrl',animState==='playing');
+  prev.disabled=animIdx<=0;
+  next.disabled=animIdx>=animSteps.length;
+  reset.disabled=animState==='idle';
 }
 
-document.getElementById('btn-play').onclick=playAnimation;
-document.getElementById('btn-stop').onclick=stopAnimation;
+document.getElementById('btn-play').onclick=()=>{if(animState==='playing')stopAnimation();else playAnimation()};
+document.getElementById('btn-prev').onclick=stepBackward;
+document.getElementById('btn-next').onclick=stepForward;
 document.getElementById('btn-reset').onclick=resetAnimation;
+document.querySelectorAll('.hop-tab').forEach(b=>b.addEventListener('click',()=>filterHop(b.dataset.hop)));
 
 // ════════════════════════════════════════════════════════════
-// SECTION: SIDEBAR & PANEL
-// PR list rendering, analysis panel, tooltips.
-// To add new sidebar sections, modify updatePanel().
+// SECTION: GUIDED REVIEW TOUR (STORY MODE)
 // ════════════════════════════════════════════════════════════
+function startGuidedTour(){
+  const pr=PRS[0]; // #6580
+  selectPR(pr);
+  if(level==='arch'){
+    setTimeout(()=>{
+      zoomIn();
+      setTimeout(()=>{
+        playAnimation();
+        setTimeout(()=>{
+          openCodePanel('logging');
+        },2200);
+      },600);
+    },800);
+  }
+}
+document.getElementById('btn-tour').onclick=startGuidedTour;
+
+// ════════════════════════════════════════════════════════════
+// SECTION: SIDEBAR & REVIEW PROGRESS
+// ════════════════════════════════════════════════════════════
+function selectPR(pr){
+  activePR=pr;
+  const btns=document.querySelectorAll('.pr-btn');
+  btns.forEach(b=>{b.classList.toggle('active',b.dataset.id===pr.id)});
+  resetAnimation();
+  document.getElementById('controls').style.display='flex';
+  document.getElementById('impact-pill').style.display='flex';
+  document.getElementById('pill-text').textContent=`${pr.type.toUpperCase()} ${pr.id} · ${pr.title}`;
+  const pillRisk=document.getElementById('pill-risk');
+  pillRisk.className=`risk-tag ${pr.riskClass}`;
+  pillRisk.textContent=`${pr.risk} RISK`;
+  playAnimation();
+}
+
 function updatePanel(pr,dist,direct){
   const data=getData(pr);if(!data)return;
   const view=getView();
@@ -837,96 +1062,114 @@ function updatePanel(pr,dist,direct){
   const td=Object.values(data).reduce((s,c)=>s+c.del,0);
   const color=TC[pr.type];
 
-  let html=`<div class="div"></div><div class="lbl">Impact</div>
+  const totalAffected=direct.size+indirectSet.size;
+  const reviewedCount=[...direct,...indirectSet].filter(id=>reviewedNodes.has(id)).length;
+  const pct=Math.round((reviewedCount/Math.max(1,totalAffected))*100);
+
+  let html=`<div class="div"></div>
+    <div class="progress-wrap">
+      <div class="lbl"><span>Review Progress</span><span>${reviewedCount}/${totalAffected} (${pct}%)</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="lbl"><span>Blast Metrics</span><span class="${pr.riskClass}" style="padding:1px 4px;border-radius:2px;font-size:8px">${pr.risk}</span></div>
     <div class="stat-row">
       <div class="stat"><div class="stat-v">${direct.size}</div><div class="stat-u">direct</div></div>
       <div class="stat"><div class="stat-v">${indirectSet.size}</div><div class="stat-u">indirect</div></div>
-      <div class="stat"><div class="stat-v">${ta+td}</div><div class="stat-u">lines</div></div>
-    </div><div class="div"></div><div class="lbl">Direct Changes</div>`;
+      <div class="stat"><div class="stat-v">+${ta}</div><div class="stat-u">lines</div></div>
+    </div><div class="div"></div><div class="lbl">Direct Origin Changes</div>`;
 
   for(const cid of direct){
     const c=data[cid];if(!c)continue;
     const name=view.nMap[cid]?view.nMap[cid].label:cid;
     const canDiff=level==='mod'&&hasCodeDiff(pr,cid);
-    html+=`<div class="ci${canDiff?' has-diff':''}" style="border-left:3px solid ${color}"${canDiff?` onclick="openCodePanel('${cid}')"`:''}>
-      <div class="ci-h"><span class="ci-n">${name}</span><span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span></div>
+    const isRev=reviewedNodes.has(cid);
+    const aiNote=pr.aiFindings&&pr.aiFindings[cid];
+
+    html+=`<div class="ci${canDiff?' has-diff':''}${isRev?' reviewed':''}" style="border-left:3px solid ${color}"${canDiff?` onclick="openCodePanel('${cid}')"`:''}>
+      <div class="ci-h">
+        <span class="ci-n">${isRev?'✓ ':''}${name}</span>
+        <span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span>
+      </div>
       ${c.files?`<div class="ci-f">${c.files.join(', ')}</div>`:''}
       <div class="ci-s">${c.summary}</div>
-      ${canDiff?'<div class="ci-open">view code diff →</div>':''}</div>`;
+      ${aiNote?`<div class="ai-badge">🤖 ${aiNote.slice(0,40)}...</div>`:''}
+      ${canDiff?'<div class="ci-open"><span>inspect code diff</span><span>→</span></div>':''}
+    </div>`;
   }
+
   if(indirectSet.size>0){
-    html+=`<div class="div"></div><div class="lbl">Indirect Impact</div>`;
+    html+=`<div class="div"></div><div class="lbl">Indirect Callers (At Risk)</div>`;
     for(const cid of indirectSet){
       const name=view.nMap[cid]?view.nMap[cid].label:cid;
-      html+=`<div class="ci indirect"><div class="ci-n" style="font-size:11px">${name}</div><div class="ci-it">depends on changed components</div></div>`;
+      const isRev=reviewedNodes.has(cid);
+      const aiNote=pr.aiFindings&&pr.aiFindings[cid];
+      html+=`<div class="ci indirect${isRev?' reviewed':''}">
+        <div class="ci-n">${isRev?'✓ ':''}${name}</div>
+        <div class="ci-it">transitively depends on modified contract</div>
+        ${aiNote?`<div class="ai-badge">🤖 ${aiNote}</div>`:''}
+      </div>`;
     }
   }
+
   if(level==='arch'&&pr.mod){
     html+=`<div class="div"></div><div style="text-align:center;padding:4px 0">
-      <span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomIn()">zoom into API Gateway ▸</span></div>`;
+      <span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomIn()">🔍 Drill Down into API Gateway ▸</span></div>`;
   }
+
   document.getElementById('analysis').innerHTML=html;
   document.getElementById('analysis').style.display='block';
 }
 
 const prList=document.getElementById('pr-list');
-PRS.forEach(pr=>{
-  const btn=document.createElement('button');btn.className='pr-btn';
+PRS.forEach((pr,idx)=>{
+  const btn=document.createElement('button');btn.className='pr-btn';btn.dataset.id=pr.id;
   const ta=pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.add,0):0;
   const td=pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.del,0):0;
-  btn.innerHTML=`<div class="pr-id"><span class="pt ${pr.type}">${pr.type}</span>${pr.id}</div>
+  btn.innerHTML=`<div class="pr-id"><span class="pt ${pr.type}">${pr.type}</span>${pr.id} · ${pr.author}</div>
     <div class="pr-title">${pr.title}</div>
-    <div class="pr-meta">${pr.author} · +${ta} -${td}</div>`;
-  btn.addEventListener('click',()=>{
-    if(activeBtn)activeBtn.classList.remove('active');
-    btn.classList.add('active');activeBtn=btn;
-    activePR=pr;
-    resetAnimation();
-    document.getElementById('controls').style.display='flex';
-    playAnimation();
-  });
+    <div class="pr-meta"><span>${pr.risk} Risk</span><span style="color:#4ade80">+${ta} -${td}</span></div>`;
+  btn.addEventListener('click',()=>selectPR(pr));
   prList.appendChild(btn);
 });
 
 // ════════════════════════════════════════════════════════════
-// SECTION: CODE DIFF PANEL
-// Final leaf: module → changed file → unified diff.
+// SECTION: CODE DIFF PANEL & REVIEW ACTIONS
 // ════════════════════════════════════════════════════════════
 const codePanel=document.getElementById('code-panel');
 const fileTabs=document.getElementById('file-tabs');
 const diffMeta=document.getElementById('diff-meta');
 const diffView=document.getElementById('diff-view');
-let openDiffFiles=[];
+const aiAlertWrap=document.getElementById('ai-alert-wrap');
+const btnMarkModule=document.getElementById('btn-mark-module');
+let openDiffFiles=[],currentModuleId=null;
 
-function hasCodeDiff(pr,moduleId){
-  return Boolean(pr&&CODE_DIFFS[pr.id]&&CODE_DIFFS[pr.id][moduleId]);
-}
-
-function closeCodePanel(){
-  codePanel.style.display='none';
-  openDiffFiles=[];
-}
+function hasCodeDiff(pr,moduleId){return Boolean(pr&&CODE_DIFFS[pr.id]&&CODE_DIFFS[pr.id][moduleId])}
+function closeCodePanel(){codePanel.style.display='none';openDiffFiles=[];currentModuleId=null}
 
 function openCodePanel(moduleId){
   if(level!=='mod'||!activePR)return;
+  currentModuleId=moduleId;
   const node=mod.nMap[moduleId];
   const moduleChange=activePR.mod&&activePR.mod[moduleId];
   openDiffFiles=(CODE_DIFFS[activePR.id]&&CODE_DIFFS[activePR.id][moduleId])||[];
 
-  document.getElementById('code-kicker').textContent=`${activePR.type} ${activePR.id} · FASTIFY`;
+  document.getElementById('code-kicker').innerHTML=`<span>${activePR.type.toUpperCase()} ${activePR.id}</span> <span>·</span> <span>FASTIFY GATEWAY</span>`;
   document.getElementById('code-title').textContent=node?node.label:moduleId;
-  document.getElementById('code-sub').textContent=moduleChange
-    ? moduleChange.summary
-    : 'Indirect impact only — this module has no lines changed in the PR';
+  document.getElementById('code-sub').textContent=moduleChange?moduleChange.summary:'Indirect impact only — no direct source edits in this module.';
   codePanel.style.display='flex';
 
+  updateMarkButton();
+
+  // AI findings
+  if(activePR.aiFindings&&activePR.aiFindings[moduleId]){
+    aiAlertWrap.innerHTML=`<div class="ai-alert-box"><span class="ai-alert-icon">🤖</span><div><strong>Greptile AI Insight:</strong> ${activePR.aiFindings[moduleId]}</div></div>`;
+  } else {
+    aiAlertWrap.innerHTML='';
+  }
+
   if(openDiffFiles.length===0){
-    fileTabs.style.display='none';
-    diffMeta.style.display='none';
-    const reason=moduleChange
-      ? 'This mock scenario does not have an embedded source patch yet.'
-      : 'This module depends on changed code, but the PR does not modify it directly.';
-    diffView.innerHTML=`<div class="diff-empty"><div><strong>No direct diff</strong>${reason}</div></div>`;
+    fileTabs.style.display='none';diffMeta.style.display='none';
+    diffView.innerHTML=`<div class="diff-empty"><div><strong style="color:var(--txb);font-size:13px;display:block;margin-bottom:6px">No direct file changes</strong>This module depends on changed contracts, but is not directly modified in this PR.</div></div>`;
     return;
   }
 
@@ -935,6 +1178,33 @@ function openCodePanel(moduleId){
   renderDiffFile(0);
 }
 
+function updateMarkButton(){
+  if(!currentModuleId)return;
+  const isRev=reviewedNodes.has(currentModuleId);
+  btnMarkModule.textContent=isRev?'✓ Reviewed (Undo)':'Mark as Reviewed';
+  btnMarkModule.style.background=isRev?'#16a34a':'#062315';
+  btnMarkModule.style.color=isRev?'#fff':'#4ade80';
+}
+
+btnMarkModule.onclick=()=>{
+  if(!currentModuleId)return;
+  if(reviewedNodes.has(currentModuleId)){reviewedNodes.delete(currentModuleId)}
+  else{reviewedNodes.add(currentModuleId)}
+  updateMarkButton();
+  resetHighlights();
+  if(activePR){
+    const view=getView(),rev=getRev(),data=getData(activePR);
+    const direct=new Set(Object.keys(data||{}));
+    const dist={};direct.forEach(id=>{dist[id]=0});
+    const q=[...direct];
+    while(q.length){const c=q.shift();for(const d of(rev[c]||[])){if(dist[d]===undefined){dist[d]=dist[c]+1;q.push(d)}}}
+    const color=TC[activePR.type],bg=TBG[activePR.type],stroke=TSK[activePR.type];
+    direct.forEach(id=>{if(view.nEls[id])highlightNode(view.nEls[id],color,bg,stroke,data[id],id)});
+    Object.keys(dist).forEach(id=>{if(!direct.has(id)&&view.nEls[id])highlightIndirect(view.nEls[id],id)});
+    updatePanel(activePR,dist,direct);
+  }
+};
+
 function renderDiffFile(index){
   const file=openDiffFiles[index];if(!file)return;
   fileTabs.innerHTML='';
@@ -942,12 +1212,11 @@ function renderDiffFile(index){
     const btn=document.createElement('button');
     btn.className=`file-tab${i===index?' active':''}`;
     btn.textContent=f.file;
-    btn.title=f.file;
     btn.onclick=()=>renderDiffFile(i);
     fileTabs.appendChild(btn);
   });
 
-  diffMeta.innerHTML=`<span>${file.file}</span><span class="dm-add">+${file.add}</span><span class="dm-del">-${file.del}</span><span class="dm-note">focused real hunks</span>`;
+  diffMeta.innerHTML=`<span>${file.file}</span><span class="dm-add">+${file.add}</span><span class="dm-del">-${file.del}</span><span class="dm-note">Syntactic Diff</span>`;
   renderDiffRows(file.diff);
 }
 
@@ -960,7 +1229,6 @@ function renderDiffRows(lines){
       if(m){oldLine=Number(m[1]);newLine=Number(m[2])}
       const h=document.createElement('div');h.className='diff-row hunk';h.textContent=line;diffView.appendChild(h);return;
     }
-
     const kind=line.startsWith('+')?'add':line.startsWith('-')?'del':'ctx';
     const row=document.createElement('div');row.className=`diff-row ${kind}`;
     const oldNum=document.createElement('span');oldNum.className='diff-num';
@@ -971,36 +1239,39 @@ function renderDiffRows(lines){
     if(kind==='add'){newNum.textContent=newLine++;mark.textContent='+'}
     else if(kind==='del'){oldNum.textContent=oldLine++;mark.textContent='−'}
     else{oldNum.textContent=oldLine++;newNum.textContent=newLine++;mark.textContent=' '}
-    code.textContent=line.length?line.slice(1):'';
-    row.append(oldNum,newNum,mark,code);diffView.appendChild(row);
+    
+    // Simple syntax highlights
+    let text=line.length?line.slice(1):'';
+    text=text.replace(/(\bconst\b|\blet\b|\bvar\b|\bfunction\b|\bclass\b|\brequire\b|\bmodule\.exports\b|\breturn\b|\bif\b|\bthrow\b|\bnew\b)/g,'<span class="kwd">$1</span>');
+    text=text.replace(/('.*?'|".*?"|`.*?`)/g,'<span class="str">$1</span>');
+    text=text.replace(/(\/\/.*$)/g,'<span class="cmt">$1</span>');
+    code.innerHTML=text;
+
+    row.append(oldNum,newNum,mark,code);
+    diffView.appendChild(row);
   });
-  diffView.scrollTop=0;diffView.scrollLeft=0;
+  diffView.scrollTop=0;
 }
 
 document.getElementById('code-close').onclick=closeCodePanel;
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCodePanel()});
 MOD_NODES.forEach(n=>mod.nEls[n.id].g.addEventListener('click',()=>{if(level==='mod')openCodePanel(n.id)}));
 
 // ════════════════════════════════════════════════════════════
-// SECTION: ZOOM / DRILL-DOWN
-// Handles level transitions (architecture ↔ module).
-// To add more zoomable services, register them in ARCH_NODES
-// with zoomable:true and create matching module data.
+// SECTION: ZOOM & DRILL-DOWN (ARCH ↔ MOD)
 // ════════════════════════════════════════════════════════════
 const bc0=document.getElementById('bc0'),crumb=document.getElementById('crumb');
-
 function zoomIn(){
   level='mod';
   const gw=arch.nMap['gateway'];
   gArch.style.transformOrigin=`${gw.x}px ${gw.y}px`;
-  gArch.style.transform='scale(3.5)';gArch.style.opacity='0';gArch.style.pointerEvents='none';
-  setTimeout(()=>{gMod.style.opacity='1';gMod.style.pointerEvents='auto'},250);
+  gArch.style.transform='scale(3.2)';gArch.style.opacity='0';gArch.style.pointerEvents='none';
+  setTimeout(()=>{gMod.style.opacity='1';gMod.style.pointerEvents='auto'},220);
   bc0.classList.add('click');bc0.classList.remove('on');bc0.onclick=zoomOut;
   if(!document.getElementById('bc1')){
     const sep=document.createElement('span');sep.className='bcsep';sep.textContent='›';sep.id='bcsep';crumb.appendChild(sep);
-    const b=document.createElement('span');b.className='bc on';b.id='bc1';b.textContent='API Gateway';crumb.appendChild(b);
+    const b=document.createElement('span');b.className='bc on';b.id='bc1';b.textContent='API Gateway (Fastify)';crumb.appendChild(b);
   }
-  document.getElementById('vsub').textContent='fastify · 9 modules';
+  document.getElementById('vsub').textContent='fastify · 9 internal modules';
   if(activePR){resetAnimation();playAnimation()}
 }
 
