@@ -8,7 +8,7 @@
 git clone <repo-url>
 cd graph
 npm install
-git clone --depth 1 https://github.com/fastify/fastify.git
+git submodule update --init --recursive
 npm start
 ```
 
@@ -16,13 +16,13 @@ Open http://localhost:8777.
 
 ### Standalone Fastify demo
 
-Open `blast-radius.html` directly in a browser. It is self-contained: no build step or server is required.
+Open `public/index.html` directly in a browser. It is self-contained: no build step or server is required.
 
 ## What You'll See
 
 A module dependency graph of the real Fastify codebase — 9 modules, 32 files, all edges from actual import relationships extracted via madge. Click any module to zoom into its files. Select a PR to see the blast radius animate across the graph.
 
-The standalone demo (`blast-radius.html`) has three levels of detail:
+The standalone demo (`public/index.html`) has three levels of detail:
 
 - **Architecture** — gateway, services, databases, and external systems.
 - **Modules** — Fastify internal modules affected by the selected PR.
@@ -56,12 +56,12 @@ graph/
     blast-engine.js      # BFS blast radius computation
   public/
     index.html           # Frontend: real Fastify graph viz, animation, zoom
-  blast-radius.html      # Standalone offline demo, including code-diff leaf
-  reports/
-    fastify-75d74e1a.md  # Analysis backing the Fastify #6580 demo
+  lib/greptile.js        # GitHub API + Greptile comments → node-keyed PR report
   scripts/
-    greptile-report.mjs  # GitHub API → node-keyed review report
-  fastify/               # Local Fastify clone (git-ignored)
+    component-map.json   # file path prefix → graph node id
+  docs/
+    fastify-75d74e1a.md  # Analysis backing the Fastify #6580 demo
+  fastify/               # Fastify submodule, pinned to the demo commit
 ```
 
 ## API Endpoints
@@ -90,7 +90,7 @@ graph/
 
 ## Standalone Demo Development
 
-`blast-radius.html` is organized into labeled `SECTION:` blocks:
+`public/index.html` is organized into labeled `SECTION:` blocks:
 
 | Section | What's there | What to add |
 |---------|-------------|-------------|
@@ -152,24 +152,50 @@ Everything in the visualization comes from real Fastify data:
 - **9 module groups** based on file naming conventions (routing, errors, validation, etc.)
 - **3 demo PRs** reference real Fastify file names with plausible change descriptions
 
-## Greptile Integration
+## Greptile Integration (live)
 
-Greptile review findings can be converted into a node-keyed report the visualizer can overlay on a blast radius.
-
-1. Install the Greptile GitHub App on `machmoon/graph` and wait for indexing.
-2. `greptile.json` requests severity tags and downstream-file references.
-3. Run the local report script:
-
-```bash
-GITHUB_TOKEN=ghp_... node scripts/greptile-report.mjs 42
-GITHUB_TOKEN=ghp_... node scripts/greptile-report.mjs 42 owner/repo
+```
+PR pushed → Greptile reviews & comments on GitHub → server polls GitHub → public/index.html updates
 ```
 
-`impact.arch` and `impact.mod` use the same node IDs as the visualizer. `findings[]` retains inline comments, severity, and mapped downstream mentions; `unmapped[]` records paths with no component-map rule.
+Nothing is hardcoded. `server.js` polls the GitHub API for PRs on `GITHUB_REPO`, pulls Greptile's
+inline comments + summary back out, maps changed files to graph nodes, and serves the result at
+`GET /api/reports`. The page re-fetches that every 30s and rebuilds the PR list, badges, and diff
+panel (real patches from the GitHub API) from it. Open the page at
+**http://localhost:8777/** — over `file://` it falls back to offline demo data.
 
-## Future Ideas
+### One-time setup
+1. Install the Greptile GitHub App on the repo at https://app.greptile.com and enable the repo.
+   `greptile.json` tells Greptile to tag findings `[critical|high|medium|low]` and to list
+   downstream files in a "Downstream impact" section — the parser relies on both.
+2. Create `.env` (git-ignored) so the server isn't stuck on GitHub's 60 req/h anonymous limit:
+   ```
+   GITHUB_TOKEN=github_pat_...   # fine-grained: Pull requests: read, Contents: read
+   GITHUB_REPO=machmoon/graph    # optional, this is the default
+   POLL_MS=60000                 # optional; default 60s with token, 5min without
+   ```
+3. `npm start`
 
-- Function-level graph from a code diff into symbols and call sites
-- Live GitHub PR ingestion and automatic component mapping
-- Configuration-only and cross-repository impact analysis
-- AI-generated per-module change summaries
+### Files
+```
+greptile.json                          # Greptile review config
+lib/greptile.js                        # GitHub API → node-keyed report
+scripts/component-map.json             # path prefix -> ARCH_NODES / MOD_NODES id
+docs/fastify-75d74e1a.md               # write-up of the Fastify #6580 stress case
+```
+
+### Endpoints
+| Method | Path | What it does |
+|--------|------|-------------|
+| `GET` | `/api/reports` | All PR reports the server knows about (+ poll status) |
+| `GET` | `/api/reports/:pr?refresh=1` | One report; `refresh` forces a rebuild from GitHub |
+
+### Report shape
+`impact.arch` / `impact.mod` are keyed by the visualizer's node IDs:
+```json
+"impact": { "arch": { "order": { "files": ["demo-repo/order-service/order.ts"], "findings": 2, "maxSeverity": "high", "add": 18, "del": 6, "downstream": false } } }
+```
+`findings[]` = each Greptile inline comment with `path`, `line`, `severity`, `body`, plus `mentions[]`
+(other files it names, already mapped). `files[].patch` feeds the diff panel. `unmapped[]` lists
+changed paths with no rule in `component-map.json` — a PR that only touches the tool's own code
+(`lib/`, `server.js`) shows its Greptile review but lights up no nodes.

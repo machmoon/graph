@@ -1,0 +1,3 @@
+[submodule "fastify"]
+	path = fastify
+	url = https://github.com/machmoon/fastify.git
