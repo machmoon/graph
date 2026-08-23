@@ -1305,7 +1305,10 @@ async function loadLiveReports(){
   const sig=JSON.stringify(data.reports.map(r=>[r.pr.number,r.pr.updatedAt,r.findings.length]));
   if(liveMode==='live'&&sig===liveSig)return;
   liveMode='live';liveSig=sig;
-  PRS=data.reports.map(reportToPR);
+  // Keep the local Fastify change visible alongside GitHub-backed PRs when
+  // running `npm start`; it is intentionally not submitted to GitHub.
+  const localDemo=MOCK_PRS.filter(pr=>pr.id==='#local-abort');
+  PRS=[...localDemo,...data.reports.map(reportToPR)];
   renderPRList();setLiveSub(data);
   if(activePR){
     if(lastPanel&&lastPanel.pr.id===activePR.id&&animState==='done')updatePanel(activePR,lastPanel.dist,lastPanel.direct);
