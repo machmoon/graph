@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const { buildGraph, groupFiles, FASTIFY_GROUPS } = require('./lib/graph-builder');
 const { parseDiffStat, mapFilesToGroups } = require('./lib/pr-analyzer');
-const { computeBlastRadius } = require('./lib/blast-engine');
+const { computeBlastRadius, computeWeightedBlast } = require('./lib/blast-engine');
 
 const app = express();
 const PORT = 8777;
@@ -69,11 +69,13 @@ app.post('/api/analyze', async (req, res) => {
     const affected = mapFilesToGroups(changedFiles, cachedGrouped.fileToGroup);
     const directIds = Object.keys(affected);
     const blast = computeBlastRadius(directIds, cachedGrouped.edges);
+    const weighted = computeWeightedBlast(directIds, cachedGrouped.edges);
 
     res.json({
       changedFiles,
       affected,
       blast,
+      weighted,
       edges: cachedGrouped.edges,
     });
   } catch (err) {
@@ -93,8 +95,9 @@ app.post('/api/analyze-mock', (req, res) => {
   const affected = mapFilesToGroups(files, cachedGrouped.fileToGroup);
   const directIds = Object.keys(affected);
   const blast = computeBlastRadius(directIds, cachedGrouped.edges);
+  const weighted = computeWeightedBlast(directIds, cachedGrouped.edges);
 
-  res.json({ affected, blast, edges: cachedGrouped.edges });
+  res.json({ affected, blast, weighted, edges: cachedGrouped.edges });
 });
 
 app.listen(PORT, () => {
