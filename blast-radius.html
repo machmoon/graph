@@ -1,0 +1,730 @@
+<title>Blast Radius</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap">
+<style>
+:root {
+  --bg: #080c14;
+  --surface: #0d1219;
+  --surface-hover: #151e2c;
+  --text: #94a3b8;
+  --text-dim: #3e4f66;
+  --text-bright: #e2e8f0;
+  --border: #1a2438;
+  --accent: #38bdf8;
+  --blast-0: #ef4444;
+  --blast-1: #f97316;
+  --blast-2: #eab308;
+  --blast-3: #22c55e;
+  --node-fill: #1e293b;
+  --node-stroke: #334155;
+  --link-color: #1e293b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Fira Code', 'Consolas', monospace;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#sidebar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  z-index: 10;
+  font-size: 11px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  user-select: none;
+}
+
+#sidebar h1 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-bright);
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+}
+
+.subtitle {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-bottom: 14px;
+}
+
+.legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 0;
+}
+
+.section-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-bright);
+  line-height: 1;
+}
+
+.stat-unit {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+#selected-file {
+  color: var(--accent);
+  font-size: 11px;
+  word-break: break-all;
+  min-height: 16px;
+}
+
+.prompt-hint {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-style: italic;
+}
+
+#affected-list {
+  font-size: 10px;
+  line-height: 1.8;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+#affected-list::-webkit-scrollbar { width: 3px; }
+#affected-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+#sidebar::-webkit-scrollbar { width: 3px; }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.aff-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.aff-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+button {
+  background: var(--surface-hover);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s, color 0.15s;
+  letter-spacing: 0.3px;
+}
+
+button:hover {
+  background: var(--border);
+  color: var(--text-bright);
+}
+
+svg {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+.tooltip {
+  position: fixed;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'Fira Code', monospace;
+  pointer-events: none;
+  display: none;
+  z-index: 20;
+  color: var(--text);
+  max-width: 220px;
+}
+
+.tooltip .tt-name {
+  color: var(--text-bright);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.tooltip .tt-stat {
+  color: var(--text-dim);
+  font-size: 9px;
+}
+</style>
+
+<div id="sidebar">
+  <h1>BLAST RADIUS</h1>
+  <div class="subtitle" id="graph-info">loading...</div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blast-0)"></div>changed</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blast-1)"></div>1 hop</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blast-2)"></div>2 hops</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blast-3)"></div>3+ hops</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--node-fill);border:1px solid var(--node-stroke)"></div>safe</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Impact</div>
+  <div class="stat-row">
+    <div class="stat-value" id="affected-count">0</div>
+    <div class="stat-unit" id="affected-pct">files (0%)</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Selected</div>
+  <div id="selected-file"><span class="prompt-hint">click a node</span></div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Affected</div>
+  <div id="affected-list"><span class="prompt-hint">—</span></div>
+
+  <div class="divider"></div>
+
+  <button id="clear-btn">clear</button>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-stat" id="tt-stat"></div>
+</div>
+
+<svg id="graph"></svg>
+
+<script>
+const GRAPH = {
+  "fastify.js":["lib/content-type-parser.js","lib/context.js","lib/decorate.js","lib/error-handler.js","lib/errors.js","lib/four-oh-four.js","lib/hooks.js","lib/initial-config-validation.js","lib/logger-factory.js","lib/plugin-override.js","lib/plugin-utils.js","lib/reply.js","lib/req-id-gen-factory.js","lib/request.js","lib/route.js","lib/schema-controller.js","lib/server.js","lib/symbols.js"],
+  "lib/config-validator.js":[],
+  "lib/content-type-parser.js":["lib/content-type.js","lib/errors.js","lib/symbols.js","lib/warnings.js"],
+  "lib/content-type.js":[],
+  "lib/context.js":["lib/symbols.js"],
+  "lib/decorate.js":["lib/errors.js","lib/symbols.js"],
+  "lib/error-handler.js":["lib/error-serializer.js","lib/error-status.js","lib/errors.js","lib/schemas.js","lib/symbols.js","lib/wrap-thenable.js"],
+  "lib/error-serializer.js":[],
+  "lib/error-status.js":["lib/symbols.js"],
+  "lib/errors.js":[],
+  "lib/four-oh-four.js":["lib/context.js","lib/error-handler.js","lib/errors.js","lib/hooks.js","lib/logger-factory.js","lib/reply.js","lib/req-id-gen-factory.js","lib/request.js","lib/symbols.js"],
+  "lib/handle-request.js":["lib/content-type.js","lib/error-status.js","lib/errors.js","lib/hooks.js","lib/symbols.js","lib/validation.js","lib/wrap-thenable.js"],
+  "lib/head-route.js":[],
+  "lib/hooks.js":["lib/errors.js","lib/symbols.js"],
+  "lib/initial-config-validation.js":["lib/config-validator.js","lib/errors.js"],
+  "lib/log-controller.js":[],
+  "lib/logger-factory.js":["lib/errors.js","lib/log-controller.js","lib/logger-pino.js","lib/symbols.js"],
+  "lib/logger-pino.js":["lib/errors.js"],
+  "lib/noop-set.js":[],
+  "lib/plugin-override.js":["lib/content-type-parser.js","lib/hooks.js","lib/plugin-utils.js","lib/reply.js","lib/request.js","lib/schema-controller.js","lib/symbols.js"],
+  "lib/plugin-utils.js":["lib/decorate.js","lib/errors.js","lib/symbols.js"],
+  "lib/reply.js":["lib/content-type.js","lib/decorate.js","lib/error-handler.js","lib/errors.js","lib/handle-request.js","lib/hooks.js","lib/logger-factory.js","lib/schemas.js","lib/symbols.js"],
+  "lib/req-id-gen-factory.js":["lib/symbols.js"],
+  "lib/request.js":["lib/content-type.js","lib/decorate.js","lib/errors.js","lib/symbols.js"],
+  "lib/route.js":["lib/context.js","lib/error-handler.js","lib/errors.js","lib/handle-request.js","lib/head-route.js","lib/hooks.js","lib/initial-config-validation.js","lib/logger-factory.js","lib/req-id-gen-factory.js","lib/schemas.js","lib/symbols.js","lib/validation.js"],
+  "lib/schema-controller.js":["lib/schemas.js"],
+  "lib/schemas.js":["lib/content-type.js","lib/errors.js","lib/symbols.js"],
+  "lib/server.js":["lib/errors.js","lib/hooks.js","lib/noop-set.js","lib/symbols.js","lib/warnings.js"],
+  "lib/symbols.js":[],
+  "lib/validation.js":["lib/errors.js","lib/symbols.js","lib/warnings.js"],
+  "lib/warnings.js":[],
+  "lib/wrap-thenable.js":["lib/error-status.js","lib/symbols.js"]
+};
+
+const BLAST_COLORS = ['#ef4444','#f97316','#eab308','#22c55e'];
+const BLAST_DELAY = 220;
+
+const nodeIds = Object.keys(GRAPH);
+const totalFiles = nodeIds.length;
+
+const reverseAdj = {};
+const linkData = [];
+
+for (const [src, deps] of Object.entries(GRAPH)) {
+  for (const dep of deps) {
+    if (!reverseAdj[dep]) reverseAdj[dep] = [];
+    reverseAdj[dep].push(src);
+    linkData.push({ sourceId: src, targetId: dep });
+  }
+}
+
+const revDeg = {};
+for (const id of nodeIds) revDeg[id] = (reverseAdj[id] || []).length;
+const maxRevDeg = Math.max(...Object.values(revDeg), 1);
+
+function nodeR(id) {
+  const t = (revDeg[id] || 0) / maxRevDeg;
+  return 4 + t * 14;
+}
+
+function shortName(id) {
+  return id.replace('lib/', '').replace('.js', '');
+}
+
+const depth = {};
+{
+  const q = ['fastify.js'];
+  depth['fastify.js'] = 0;
+  while (q.length) {
+    const cur = q.shift();
+    for (const dep of (GRAPH[cur] || [])) {
+      if (depth[dep] === undefined) {
+        depth[dep] = depth[cur] + 1;
+        q.push(dep);
+      }
+    }
+  }
+}
+
+const svg = document.getElementById('graph');
+const W = window.innerWidth;
+const H = window.innerHeight;
+svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+const nodes = nodeIds.map(id => ({
+  id, x: 0, y: 0, vx: 0, vy: 0, dragging: false, blastDist: -1
+}));
+const nodeMap = {};
+nodes.forEach(n => { nodeMap[n.id] = n; });
+
+const links = linkData.map(l => ({
+  source: nodeMap[l.sourceId],
+  target: nodeMap[l.targetId],
+}));
+
+{
+  const cx = W / 2, cy = H / 2;
+  const byDepth = {};
+  nodes.forEach(n => {
+    const d = depth[n.id] ?? 3;
+    if (!byDepth[d]) byDepth[d] = [];
+    byDepth[d].push(n);
+  });
+  for (const [d, group] of Object.entries(byDepth)) {
+    if (+d === 0) { group[0].x = cx; group[0].y = cy; }
+    else {
+      const r = +d * 160;
+      group.forEach((n, i) => {
+        const a = (i / group.length) * 2 * Math.PI - Math.PI / 2 + (+d * 0.4);
+        n.x = cx + r * Math.cos(a);
+        n.y = cy + r * Math.sin(a);
+      });
+    }
+  }
+}
+
+let alpha = 1;
+const REPULSION = -700;
+const SPRING = 0.035;
+const IDEAL_LEN = 130;
+const CENTER_G = 0.006;
+const DAMPING = 0.5;
+const ALPHA_DECAY = 0.012;
+
+function simulate() {
+  if (alpha < 0.001) return;
+
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      let dx = b.x - a.x, dy = b.y - a.y;
+      let d2 = dx * dx + dy * dy;
+      if (d2 < 4) { dx += 1; dy += 1; d2 = 2; }
+      const d = Math.sqrt(d2);
+      const f = REPULSION * alpha / d2;
+      const fx = f * dx / d, fy = f * dy / d;
+      a.vx -= fx; a.vy -= fy;
+      b.vx += fx; b.vy += fy;
+    }
+  }
+
+  for (const l of links) {
+    const dx = l.target.x - l.source.x, dy = l.target.y - l.source.y;
+    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+    const f = (d - IDEAL_LEN) * SPRING * alpha;
+    const fx = f * dx / d, fy = f * dy / d;
+    l.source.vx += fx; l.source.vy += fy;
+    l.target.vx -= fx; l.target.vy -= fy;
+  }
+
+  const cx = W / 2, cy = H / 2;
+  for (const n of nodes) {
+    n.vx += (cx - n.x) * CENTER_G * alpha;
+    n.vy += (cy - n.y) * CENTER_G * alpha;
+  }
+
+  for (const n of nodes) {
+    if (n.dragging) continue;
+    n.vx *= DAMPING; n.vy *= DAMPING;
+    n.x += n.vx; n.y += n.vy;
+  }
+
+  alpha *= (1 - ALPHA_DECAY);
+}
+
+let transform = { x: 0, y: 0, k: 1 };
+const gRoot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+svg.appendChild(gRoot);
+
+const gLinks = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+const gNodes = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+gRoot.appendChild(gLinks);
+gRoot.appendChild(gNodes);
+
+const linkEls = links.map(l => {
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line.setAttribute('stroke', 'var(--link-color)');
+  line.setAttribute('stroke-width', '0.8');
+  line.setAttribute('stroke-opacity', '0.5');
+  gLinks.appendChild(line);
+  return line;
+});
+
+const nodeEls = nodes.map(n => {
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.style.cursor = 'pointer';
+
+  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  const r = nodeR(n.id);
+  circle.setAttribute('r', r);
+  circle.setAttribute('fill', 'var(--node-fill)');
+  circle.setAttribute('stroke', 'var(--node-stroke)');
+  circle.setAttribute('stroke-width', '1');
+  circle.style.transition = 'fill 0.35s, stroke 0.35s';
+  g.appendChild(circle);
+
+  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.textContent = shortName(n.id);
+  text.setAttribute('dy', -(r + 5));
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('fill', 'var(--text)');
+  text.setAttribute('font-size', revDeg[n.id] >= 5 ? '9' : '8');
+  text.setAttribute('font-family', "'Fira Code', monospace");
+  text.setAttribute('opacity', revDeg[n.id] >= 5 ? '0.7' : '0');
+  text.style.transition = 'opacity 0.2s';
+  text.style.pointerEvents = 'none';
+  g.appendChild(text);
+
+  g.addEventListener('mouseenter', () => {
+    if (text.getAttribute('opacity') !== '1') text.setAttribute('opacity', '1');
+    circle.setAttribute('stroke', 'var(--accent)');
+    circle.setAttribute('stroke-width', '2');
+    showTooltip(n);
+  });
+  g.addEventListener('mouseleave', () => {
+    if (revDeg[n.id] < 5 && n.blastDist < 0) text.setAttribute('opacity', '0');
+    else text.setAttribute('opacity', '0.7');
+    if (n.blastDist < 0) {
+      circle.setAttribute('stroke', 'var(--node-stroke)');
+    } else {
+      circle.setAttribute('stroke', blastStroke(n.blastDist));
+    }
+    circle.setAttribute('stroke-width', '1');
+    hideTooltip();
+  });
+
+  gNodes.appendChild(g);
+  return { g, circle, text };
+});
+
+function blastColor(dist) {
+  if (dist < 0) return 'var(--node-fill)';
+  if (dist < BLAST_COLORS.length) return BLAST_COLORS[dist];
+  return BLAST_COLORS[BLAST_COLORS.length - 1];
+}
+
+function blastStroke(dist) {
+  if (dist < 0) return 'var(--node-stroke)';
+  if (dist === 0) return '#fca5a5';
+  if (dist === 1) return '#fdba74';
+  if (dist === 2) return '#fde047';
+  return '#86efac';
+}
+
+function blastLinkColor(dist) {
+  if (dist === 0) return 'rgba(239,68,68,0.45)';
+  if (dist === 1) return 'rgba(249,115,22,0.35)';
+  if (dist === 2) return 'rgba(234,179,8,0.3)';
+  return 'rgba(34,197,94,0.25)';
+}
+
+const tooltip = document.getElementById('tooltip');
+const ttName = document.getElementById('tt-name');
+const ttStat = document.getElementById('tt-stat');
+
+function showTooltip(n) {
+  ttName.textContent = shortName(n.id);
+  const deps = (GRAPH[n.id] || []).length;
+  const rdeps = (reverseAdj[n.id] || []).length;
+  let stat = `imports ${deps} · imported by ${rdeps}`;
+  if (n.blastDist >= 0) stat += ` · ${n.blastDist === 0 ? 'changed' : n.blastDist + ' hop' + (n.blastDist > 1 ? 's' : '')}`;
+  ttStat.textContent = stat;
+  tooltip.style.display = 'block';
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+svg.addEventListener('mousemove', e => {
+  if (tooltip.style.display === 'block') {
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top = (e.clientY - 10) + 'px';
+  }
+});
+
+function render() {
+  gRoot.setAttribute('transform', `translate(${transform.x},${transform.y}) scale(${transform.k})`);
+
+  links.forEach((l, i) => {
+    linkEls[i].setAttribute('x1', l.source.x);
+    linkEls[i].setAttribute('y1', l.source.y);
+    linkEls[i].setAttribute('x2', l.target.x);
+    linkEls[i].setAttribute('y2', l.target.y);
+  });
+
+  nodes.forEach((n, i) => {
+    nodeEls[i].g.setAttribute('transform', `translate(${n.x},${n.y})`);
+  });
+}
+
+let animating = true;
+function tick() {
+  simulate();
+  render();
+  if (alpha > 0.001 || nodes.some(n => n.dragging)) {
+    requestAnimationFrame(tick);
+  } else {
+    animating = false;
+  }
+}
+
+function reheat() {
+  alpha = 0.3;
+  if (!animating) { animating = true; tick(); }
+}
+
+let dragNode = null;
+let dragStart = null;
+let panStart = null;
+let didDrag = false;
+
+svg.addEventListener('mousedown', e => {
+  const target = e.target.closest('g[transform]');
+  if (target && gNodes.contains(target)) {
+    const idx = Array.from(gNodes.children).indexOf(target);
+    if (idx >= 0) {
+      dragNode = nodes[idx];
+      dragNode.dragging = true;
+      dragStart = { x: e.clientX, y: e.clientY };
+      didDrag = false;
+      e.preventDefault();
+      return;
+    }
+  }
+  panStart = { x: e.clientX - transform.x, y: e.clientY - transform.y };
+});
+
+svg.addEventListener('mousemove', e => {
+  if (dragNode) {
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag = true;
+    dragNode.x = (e.clientX - transform.x) / transform.k;
+    dragNode.y = (e.clientY - transform.y) / transform.k;
+    dragNode.vx = 0; dragNode.vy = 0;
+    reheat();
+  } else if (panStart) {
+    transform.x = e.clientX - panStart.x;
+    transform.y = e.clientY - panStart.y;
+    render();
+  }
+});
+
+svg.addEventListener('mouseup', e => {
+  if (dragNode) {
+    if (!didDrag) {
+      triggerBlast(dragNode.id);
+    }
+    dragNode.dragging = false;
+    dragNode = null;
+    reheat();
+  }
+  panStart = null;
+});
+
+svg.addEventListener('wheel', e => {
+  e.preventDefault();
+  const scale = e.deltaY > 0 ? 0.9 : 1.1;
+  const newK = Math.max(0.2, Math.min(4, transform.k * scale));
+  const mx = e.clientX, my = e.clientY;
+  transform.x = mx - (mx - transform.x) * (newK / transform.k);
+  transform.y = my - (my - transform.y) * (newK / transform.k);
+  transform.k = newK;
+  render();
+}, { passive: false });
+
+let blastTimers = [];
+
+function triggerBlast(fileId) {
+  clearBlast();
+
+  const dist = {};
+  const q = [fileId];
+  dist[fileId] = 0;
+  while (q.length) {
+    const cur = q.shift();
+    const d = dist[cur];
+    const dependents = reverseAdj[cur] || [];
+    for (const dep of dependents) {
+      if (dist[dep] === undefined) {
+        dist[dep] = d + 1;
+        q.push(dep);
+      }
+    }
+  }
+
+  const maxDist = Math.max(...Object.values(dist), 0);
+
+  for (let hop = 0; hop <= maxDist; hop++) {
+    const timer = setTimeout(() => {
+      for (const [id, d] of Object.entries(dist)) {
+        if (d !== hop) continue;
+        const n = nodeMap[id];
+        const idx = nodes.indexOf(n);
+        n.blastDist = d;
+        nodeEls[idx].circle.setAttribute('fill', blastColor(d));
+        nodeEls[idx].circle.setAttribute('stroke', blastStroke(d));
+        nodeEls[idx].text.setAttribute('opacity', '0.9');
+        nodeEls[idx].text.setAttribute('fill', blastColor(d));
+      }
+
+      links.forEach((l, i) => {
+        const sd = dist[l.source.id], td = dist[l.target.id];
+        if (td !== undefined && sd !== undefined && td === hop && sd === hop - 1) {
+          linkEls[i].setAttribute('stroke', blastLinkColor(Math.min(sd, td)));
+          linkEls[i].setAttribute('stroke-width', '2');
+          linkEls[i].setAttribute('stroke-opacity', '1');
+        }
+        if (sd !== undefined && td !== undefined && sd === hop && td === hop - 1) {
+          linkEls[i].setAttribute('stroke', blastLinkColor(Math.min(sd, td)));
+          linkEls[i].setAttribute('stroke-width', '2');
+          linkEls[i].setAttribute('stroke-opacity', '1');
+        }
+      });
+
+      updateSidebar(fileId, dist);
+    }, hop * BLAST_DELAY);
+    blastTimers.push(timer);
+  }
+
+  if (Object.keys(dist).length === 1) {
+    updateSidebar(fileId, dist);
+  }
+}
+
+function clearBlast() {
+  blastTimers.forEach(t => clearTimeout(t));
+  blastTimers = [];
+
+  nodes.forEach((n, i) => {
+    n.blastDist = -1;
+    nodeEls[i].circle.setAttribute('fill', 'var(--node-fill)');
+    nodeEls[i].circle.setAttribute('stroke', 'var(--node-stroke)');
+    nodeEls[i].text.setAttribute('fill', 'var(--text)');
+    nodeEls[i].text.setAttribute('opacity', revDeg[n.id] >= 5 ? '0.7' : '0');
+  });
+
+  linkEls.forEach(el => {
+    el.setAttribute('stroke', 'var(--link-color)');
+    el.setAttribute('stroke-width', '0.8');
+    el.setAttribute('stroke-opacity', '0.5');
+  });
+
+  document.getElementById('affected-count').textContent = '0';
+  document.getElementById('affected-pct').textContent = 'files (0%)';
+  document.getElementById('selected-file').innerHTML = '<span class="prompt-hint">click a node</span>';
+  document.getElementById('affected-list').innerHTML = '<span class="prompt-hint">—</span>';
+}
+
+function updateSidebar(selectedId, dist) {
+  const affected = Object.entries(dist).filter(([id]) => id !== selectedId);
+  const count = affected.length;
+  const pct = Math.round((count / totalFiles) * 100);
+
+  document.getElementById('affected-count').textContent = count;
+  document.getElementById('affected-pct').textContent = `files (${pct}%)`;
+  document.getElementById('selected-file').textContent = shortName(selectedId);
+
+  if (affected.length === 0) {
+    document.getElementById('affected-list').innerHTML = '<span class="prompt-hint">no downstream impact</span>';
+    return;
+  }
+
+  affected.sort((a, b) => a[1] - b[1]);
+  const html = affected.map(([id, d]) =>
+    `<div class="aff-item"><div class="aff-dot" style="background:${blastColor(d)}"></div>${shortName(id)}</div>`
+  ).join('');
+  document.getElementById('affected-list').innerHTML = html;
+}
+
+document.getElementById('clear-btn').addEventListener('click', clearBlast);
+
+document.getElementById('graph-info').textContent =
+  `fastify · ${totalFiles} files · ${linkData.length} imports`;
+
+tick();
+</script>

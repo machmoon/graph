@@ -1,0 +1,164 @@
+{
+  "fastify.js": [
+    "lib/content-type-parser.js",
+    "lib/context.js",
+    "lib/decorate.js",
+    "lib/error-handler.js",
+    "lib/errors.js",
+    "lib/four-oh-four.js",
+    "lib/hooks.js",
+    "lib/initial-config-validation.js",
+    "lib/logger-factory.js",
+    "lib/plugin-override.js",
+    "lib/plugin-utils.js",
+    "lib/reply.js",
+    "lib/req-id-gen-factory.js",
+    "lib/request.js",
+    "lib/route.js",
+    "lib/schema-controller.js",
+    "lib/server.js",
+    "lib/symbols.js"
+  ],
+  "lib/config-validator.js": [],
+  "lib/content-type-parser.js": [
+    "lib/content-type.js",
+    "lib/errors.js",
+    "lib/symbols.js",
+    "lib/warnings.js"
+  ],
+  "lib/content-type.js": [],
+  "lib/context.js": [
+    "lib/symbols.js"
+  ],
+  "lib/decorate.js": [
+    "lib/errors.js",
+    "lib/symbols.js"
+  ],
+  "lib/error-handler.js": [
+    "lib/error-serializer.js",
+    "lib/error-status.js",
+    "lib/errors.js",
+    "lib/schemas.js",
+    "lib/symbols.js",
+    "lib/wrap-thenable.js"
+  ],
+  "lib/error-serializer.js": [],
+  "lib/error-status.js": [
+    "lib/symbols.js"
+  ],
+  "lib/errors.js": [],
+  "lib/four-oh-four.js": [
+    "lib/context.js",
+    "lib/error-handler.js",
+    "lib/errors.js",
+    "lib/hooks.js",
+    "lib/logger-factory.js",
+    "lib/reply.js",
+    "lib/req-id-gen-factory.js",
+    "lib/request.js",
+    "lib/symbols.js"
+  ],
+  "lib/handle-request.js": [
+    "lib/content-type.js",
+    "lib/error-status.js",
+    "lib/errors.js",
+    "lib/hooks.js",
+    "lib/symbols.js",
+    "lib/validation.js",
+    "lib/wrap-thenable.js"
+  ],
+  "lib/head-route.js": [],
+  "lib/hooks.js": [
+    "lib/errors.js",
+    "lib/symbols.js"
+  ],
+  "lib/initial-config-validation.js": [
+    "lib/config-validator.js",
+    "lib/errors.js"
+  ],
+  "lib/log-controller.js": [],
+  "lib/logger-factory.js": [
+    "lib/errors.js",
+    "lib/log-controller.js",
+    "lib/logger-pino.js",
+    "lib/symbols.js"
+  ],
+  "lib/logger-pino.js": [
+    "lib/errors.js"
+  ],
+  "lib/noop-set.js": [],
+  "lib/plugin-override.js": [
+    "lib/content-type-parser.js",
+    "lib/hooks.js",
+    "lib/plugin-utils.js",
+    "lib/reply.js",
+    "lib/request.js",
+    "lib/schema-controller.js",
+    "lib/symbols.js"
+  ],
+  "lib/plugin-utils.js": [
+    "lib/decorate.js",
+    "lib/errors.js",
+    "lib/symbols.js"
+  ],
+  "lib/reply.js": [
+    "lib/content-type.js",
+    "lib/decorate.js",
+    "lib/error-handler.js",
+    "lib/errors.js",
+    "lib/handle-request.js",
+    "lib/hooks.js",
+    "lib/logger-factory.js",
+    "lib/schemas.js",
+    "lib/symbols.js"
+  ],
+  "lib/req-id-gen-factory.js": [
+    "lib/symbols.js"
+  ],
+  "lib/request.js": [
+    "lib/content-type.js",
+    "lib/decorate.js",
+    "lib/errors.js",
+    "lib/symbols.js"
+  ],
+  "lib/route.js": [
+    "lib/context.js",
+    "lib/error-handler.js",
+    "lib/errors.js",
+    "lib/handle-request.js",
+    "lib/head-route.js",
+    "lib/hooks.js",
+    "lib/initial-config-validation.js",
+    "lib/logger-factory.js",
+    "lib/req-id-gen-factory.js",
+    "lib/schemas.js",
+    "lib/symbols.js",
+    "lib/validation.js"
+  ],
+  "lib/schema-controller.js": [
+    "lib/schemas.js"
+  ],
+  "lib/schemas.js": [
+    "lib/content-type.js",
+    "lib/errors.js",
+    "lib/symbols.js"
+  ],
+  "lib/server.js": [
+    "lib/errors.js",
+    "lib/hooks.js",
+    "lib/noop-set.js",
+    "lib/symbols.js",
+    "lib/warnings.js"
+  ],
+  "lib/symbols.js": [],
+  "lib/validation.js": [
+    "lib/errors.js",
+    "lib/symbols.js",
+    "lib/warnings.js"
+  ],
+  "lib/warnings.js": [],
+  "lib/wrap-thenable.js": [
+    "lib/error-status.js",
+    "lib/symbols.js"
+  ]
+}
