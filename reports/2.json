@@ -1,0 +1,80 @@
+{
+  "generatedFrom": "greptile",
+  "repo": "machmoon/graph",
+  "pr": {
+    "id": "#2",
+    "number": 2,
+    "title": "chore: configure Fastify submodule for PR demo",
+    "author": "hardikgoyal",
+    "url": "https://github.com/machmoon/graph/pull/2",
+    "head": "17ff9c5d85543e171e3f3f72093e3f90006ee0d5",
+    "base": "main",
+    "state": "open"
+  },
+  "greptileReviewed": true,
+  "files": [
+    {
+      "path": ".gitignore",
+      "additions": 0,
+      "deletions": 1,
+      "status": "modified",
+      "arch": null,
+      "mod": null
+    },
+    {
+      "path": ".gitmodules",
+      "additions": 3,
+      "deletions": 0,
+      "status": "added",
+      "arch": null,
+      "mod": null
+    },
+    {
+      "path": "fastify",
+      "additions": 1,
+      "deletions": 1,
+      "status": "modified",
+      "arch": null,
+      "mod": null
+    },
+    {
+      "path": "setup.md",
+      "additions": 2,
+      "deletions": 2,
+      "status": "modified",
+      "arch": null,
+      "mod": null
+    }
+  ],
+  "findings": [],
+  "summary": {
+    "body": "<h3>Greptile Summary</h3>\n\nThe PR converts the existing Fastify gitlink into a properly configured submodule, pins it to the commit used by the demo, and updates setup documentation accordingly.\n\n- Adds the public Fastify repository as the `fastify` submodule origin.\n- Pins the submodule to commit `75d74e1a`.\n- Replaces the standalone shallow-clone setup step with submodule initialization.\n- Stops treating `fastify/` as ignored local content.\n\n**Downstream impact**\n- The live graph and analysis flows in the repository root depend on the initialized Fastify checkout through `server.js`, `lib/graph-builder.js`, and `lib/pr-analyzer.js`.\n- No `demo-repo/*` service is directly changed or shown to break.\n\n<h3>Confidence Score: 5/5</h3>\n\nThe PR appears safe to merge, with the configured submodule and documented initialization flow aligned to the intended Fastify demo revision.\n\nThe changed gitlink, submodule origin, ignore configuration, and setup instructions form a consistent checkout workflow, and no concrete reachable regression remains.\n\n<details><summary><h3>Important Files Changed</h3></summary>\n\n\n\n\n| Filename | Overview |\n|----------|----------|\n| .gitmodules | Registers the existing `fastify` gitlink against the canonical public Fastify repository. |\n| fastify | Updates the pinned submodule revision to the Fastify commit used by the documented demo. |\n| setup.md | Updates Quick Start and repository-layout documentation to use the configured submodule. |\n| .gitignore | Removes the obsolete ignore rule now that `fastify` is tracked as a submodule. |\n\n</details>\n\n\n<details open><summary><h3>Flowchart</h3></summary>\n\n```mermaid\n%%{init: {'theme': 'neutral'}}%%\nflowchart LR\n  A[git clone graph] --> B[Initialize fastify submodule]\n  B --> C[Fastify commit 75d74e1a]\n  C --> D[server.js]\n  D --> E[lib/graph-builder.js]\n  D --> F[lib/pr-analyzer.js]\n  E --> G[Live dependency graph]\n  F --> H[PR blast-radius analysis]\n```\n</details>\n\n\n<!-- greptile_other_comments_section -->\n\n<sub>Reviews (1): Last reviewed commit: [\"chore: configure Fastify submodule for P...\"](https://github.com/machmoon/graph/commit/17ff9c5d85543e171e3f3f72093e3f90006ee0d5) | [Re-trigger Greptile](https://app.greptile.com/api/retrigger?id=56088045)</sub>",
+    "downstream": [
+      {
+        "path": "server.js",
+        "arch": null,
+        "mod": null
+      },
+      {
+        "path": "lib/graph-builder.js",
+        "arch": null,
+        "mod": null
+      },
+      {
+        "path": "lib/pr-analyzer.js",
+        "arch": null,
+        "mod": null
+      }
+    ]
+  },
+  "impact": {
+    "arch": {},
+    "mod": {}
+  },
+  "unmapped": [
+    ".gitignore",
+    ".gitmodules",
+    "fastify",
+    "setup.md"
+  ]
+}
