@@ -105,7 +105,18 @@ body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,-apple
 .dm-add{color:#4ade80;font-weight:600}.dm-del{color:#f87171;font-weight:600}.dm-note{margin-left:auto;color:#53647b}
 
 .ai-alert-box{margin:8px 12px 0;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:5px;padding:8px 10px;font-size:10.5px;color:#fca5a5;display:flex;align-items:flex-start;gap:8px}
-.ai-alert-icon{font-size:12px;flex-shrink:0}
+.btn-ask{background:#0a1b33;border:1px solid #1e3a5f;color:#7dd3fc;font-family:'Fira Code',monospace;font-size:9.5px;padding:4px 8px;border-radius:4px;cursor:pointer;transition:all .15s}
+.btn-ask:hover:not(:disabled){background:#102a4d}
+.btn-ask:disabled{opacity:.55;cursor:default}
+.ask-box{margin:8px 12px 0;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.28);border-radius:5px;padding:8px 10px;font-size:10.5px;color:#bae6fd}
+.ask-box .ask-hd{display:flex;align-items:center;gap:6px;font-weight:600;color:#7dd3fc;margin-bottom:5px}
+.ask-v{border-top:1px solid rgba(56,189,248,0.16);padding-top:5px;margin-top:5px;line-height:1.5}
+.ask-v:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.ask-sev{font-family:'Fira Code',monospace;font-size:8.5px;padding:1px 4px;border-radius:3px;margin-right:5px;text-transform:uppercase}
+.sev-critical{background:#7f1d1d;color:#fecaca}.sev-high{background:#7c2d12;color:#fed7aa}
+.sev-medium{background:#78350f;color:#fde68a}.sev-low{background:#1e3a5f;color:#bfdbfe}
+.ask-cleared{color:#4ade80;font-size:10px;margin-top:6px}
+.ask-err{color:#fca5a5}
 
 #diff-view{overflow:auto;flex:1;background:#05080e;font-family:'Fira Code',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.6;padding:8px 0 24px}
 #diff-view::-webkit-scrollbar{width:6px;height:6px}#diff-view::-webkit-scrollbar-thumb{background:#22334e;border-radius:3px}
@@ -181,9 +192,9 @@ svg{display:block;width:100vw;height:100vh}
   </div>
   <div class="sub" id="vsub">e-commerce · 13 components</div>
 
-  <button class="tour-btn" id="btn-tour" title="Step through the PR review story">✨ Start Guided Tour</button>
+  <button class="tour-btn" id="btn-tour" title="Step through the PR review story">Start Guided Tour</button>
 
-  <div class="lbl"><span>Select PR Scenario</span><span style="font-size:8px;color:var(--txd)">[1-4]</span></div>
+  <div class="lbl"><span>Pull Requests</span><span id="pr-count"></span></div>
   <div id="pr-list"></div>
 
   <div id="analysis"></div>
@@ -216,6 +227,7 @@ svg{display:block;width:100vw;height:100vh}
       <div class="code-sub" id="code-sub"></div>
     </div>
     <div class="code-actions">
+      <button class="btn-ask" id="btn-ask-greptile" title="Ask Greptile about this module's downstream blast radius">Review Blast Radius</button>
       <button class="btn-reviewed" id="btn-mark-module">✓ Mark Reviewed</button>
       <button id="code-close" aria-label="Close code panel">&times;</button>
     </div>
@@ -736,7 +748,7 @@ function renderGraph(nodes,edges,container){
     const aipTxt=document.createElementNS(NS,'text');aipTxt.setAttribute('x',14);aipTxt.setAttribute('y',3);
     aipTxt.setAttribute('text-anchor','middle');aipTxt.setAttribute('font-size','8');aipTxt.setAttribute('fill','#fca5a5');
     aipTxt.setAttribute('font-family',"'Fira Code',monospace");aipTxt.setAttribute('font-weight','600');
-    aipTxt.textContent='AI ⚠';aiPin.appendChild(aipTxt);g.appendChild(aiPin);
+    aipTxt.textContent='AI';aiPin.appendChild(aipTxt);g.appendChild(aiPin);
 
     // Reviewed indicator badge
     const revPin=document.createElementNS(NS,'g');revPin.setAttribute('opacity','0');
@@ -1181,7 +1193,7 @@ function updatePanel(pr,dist,direct){
       </div>
       ${c.files?`<div class="ci-f">${c.files.join(', ')}</div>`:''}
       <div class="ci-s">${c.summary}</div>
-      ${aiNote?`<div class="ai-badge">🤖 ${aiNote.slice(0,40)}...</div>`:''}
+      ${aiNote?`<div class="ai-badge">${aiNote.slice(0,40)}...</div>`:''}
       ${canDiff?'<div class="ci-open"><span>inspect code diff</span><span>→</span></div>':''}
     </div>`;
   }
@@ -1195,7 +1207,7 @@ function updatePanel(pr,dist,direct){
       html+=`<div class="ci indirect${isRev?' reviewed':''}">
         <div class="ci-n">${isRev?'✓ ':''}${name}</div>
         <div class="ci-it">transitively depends on modified contract</div>
-        ${aiNote?`<div class="ai-badge">🤖 ${aiNote}</div>`:''}
+        ${aiNote?`<div class="ai-badge">${aiNote}</div>`:''}
       </div>`;
     }
   }
@@ -1203,7 +1215,7 @@ function updatePanel(pr,dist,direct){
   html+=greptileSection(pr);
   if(level==='arch'&&pr.mod&&Object.keys(pr.mod).length){
     html+=`<div class="div"></div><div style="text-align:center;padding:4px 0">
-      <span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomIn()">🔍 Drill Down into API Gateway ▸</span></div>`;
+      <span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomIn()">Drill Down into API Gateway ▸</span></div>`;
   }
 
   document.getElementById('analysis').innerHTML=html;
@@ -1213,6 +1225,7 @@ function updatePanel(pr,dist,direct){
 const prList=document.getElementById('pr-list');
 function renderPRList(){
   prList.innerHTML='';
+  const pc=document.getElementById('pr-count');if(pc)pc.textContent=liveMode==='live'?`${PRS.length} on ${liveData?liveData.repo:''}`.trim():`${PRS.length} demo`;
   if(!PRS.length){prList.innerHTML='<div class="ci-it" style="padding:4px 0">No pull requests yet — open one on GitHub and it will appear here after Greptile reviews it.</div>';return}
   PRS.forEach(pr=>{
     const btn=document.createElement('button');btn.className='pr-btn';btn.dataset.id=pr.id;
@@ -1336,7 +1349,7 @@ const btnMarkModule=document.getElementById('btn-mark-module');
 let openDiffFiles=[],currentModuleId=null;
 
 function hasCodeDiff(pr,moduleId){return Boolean(pr&&CODE_DIFFS[pr.id]&&CODE_DIFFS[pr.id][moduleId])}
-function closeCodePanel(){codePanel.style.display='none';openDiffFiles=[];currentModuleId=null}
+function closeCodePanel(){codePanel.style.display='none';openDiffFiles=[];currentModuleId=null;const w=document.getElementById('ask-wrap');if(w)w.remove()}
 
 function openCodePanel(moduleId){
   if(level!=='mod'||!activePR)return;
@@ -1354,10 +1367,12 @@ function openCodePanel(moduleId){
 
   // AI findings
   if(activePR.aiFindings&&activePR.aiFindings[moduleId]){
-    aiAlertWrap.innerHTML=`<div class="ai-alert-box"><span class="ai-alert-icon">🤖</span><div><strong>Greptile AI Insight:</strong> ${esc(activePR.aiFindings[moduleId])}</div></div>`;
+    aiAlertWrap.innerHTML=`<div class="ai-alert-box"><div><strong>Greptile AI Insight:</strong> ${esc(activePR.aiFindings[moduleId])}</div></div>`;
   } else {
     aiAlertWrap.innerHTML='';
   }
+
+  renderAskResult(moduleId);
 
   if(openDiffFiles.length===0){
     fileTabs.style.display='none';diffMeta.style.display='none';
@@ -1369,6 +1384,61 @@ function openCodePanel(moduleId){
   diffMeta.style.display='flex';
   renderDiffFile(0);
 }
+
+// ── Active review ───────────────────────────────────────
+// POST /api/review computes the blast radius from the module you have open and
+// asks Greptile about the modules downstream of it. Unlike the polled PR
+// reports, this fires on demand and is aimed by the graph.
+const btnAsk=document.getElementById('btn-ask-greptile');
+const askResults={};   // moduleId -> rendered html, so reopening a module is free
+
+function renderAskResult(moduleId){
+  const existing=document.getElementById('ask-wrap');
+  if(existing)existing.remove();
+  const html=askResults[moduleId];
+  if(!html)return;
+  const div=document.createElement('div');
+  div.id='ask-wrap';
+  div.innerHTML=html;
+  aiAlertWrap.insertAdjacentElement('afterend',div);
+}
+
+function askBox(inner){return `<div class="ask-box">${inner}</div>`}
+
+btnAsk.onclick=async()=>{
+  if(!currentModuleId)return;
+  const moduleId=currentModuleId;
+  btnAsk.disabled=true;btnAsk.textContent='Asking Greptile…';
+  askResults[moduleId]=askBox('<div class="ask-hd">Active review</div>Computing blast radius and querying Greptile…');
+  renderAskResult(moduleId);
+  try{
+    const res=await fetch('/api/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({node:moduleId})});
+    const data=await res.json();
+    if(!res.ok){
+      askResults[moduleId]=askBox(`<div class="ask-hd">Active review</div><div class="ask-err">${esc(data.error||res.statusText)}</div>`);
+    }else{
+      const r=data.review||{};
+      const hops=(data.blast&&data.blast.maxHop)||0;
+      const findings=(r.findings||[]).filter(f=>f.body);
+      let inner=`<div class="ask-hd">Greptile · asked about ${hops} hop${hops===1?'':'s'} downstream</div>`;
+      if(!findings.length){
+        inner+='No downstream breakage found.';
+      }else{
+        inner+=findings.map(f=>{
+          const sev=`<span class="ask-sev sev-${esc(f.severity)}">${esc(f.severity)}</span>`;
+          const where=f.path?`<code>${esc(f.path)}${f.line?':'+f.line:''}</code> — `:'';
+          return `<div class="ask-v">${sev}${where}${esc(f.body)}</div>`;
+        }).join('');
+      }
+      if(r.cleared&&r.cleared.length)inner+=`<div class="ask-cleared">✓ Cleared: ${r.cleared.map(esc).join(', ')}</div>`;
+      askResults[moduleId]=askBox(inner);
+    }
+  }catch(err){
+    askResults[moduleId]=askBox(`<div class="ask-hd">Active review</div><div class="ask-err">${esc(err.message||String(err))}</div>`);
+  }
+  renderAskResult(moduleId);
+  btnAsk.disabled=false;btnAsk.textContent='Review Blast Radius';
+};
 
 function updateMarkButton(){
   if(!currentModuleId)return;
