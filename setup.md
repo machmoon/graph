@@ -2,117 +2,156 @@
 
 ## Quick Start
 
-1. Clone this repo
-2. Open `blast-radius.html` in a browser — that's the demo, no build step needed
+### Live local app
+
+```bash
+git clone <repo-url>
+cd graph
+npm install
+git clone --depth 1 https://github.com/fastify/fastify.git
+npm start
+```
+
+Open http://localhost:8777.
+
+### Standalone Fastify demo
+
+Open `blast-radius.html` directly in a browser. It is self-contained: no build step or server is required.
+
+## What You'll See
+
+A system architecture diagram shows a selected PR's blast radius with animated dependency paths. Click the API Gateway node to zoom into the Fastify module graph.
+
+The standalone demo has three levels of detail:
+
+- **Architecture** — gateway, services, databases, and external systems.
+- **Modules** — Fastify internal modules affected by the selected PR.
+- **Code diff leaf** — click a changed Fastify module to inspect curated real file-level diff hunks.
+
+The `#6580 introduce log controller layer` scenario is a local demonstration based on Fastify commit `75d74e1a`; it is not a submitted PR.
+
+## Pipeline
+
+```
+PR comes in → madge extracts dependency graph → map changed files to modules → BFS blast radius → render + animate
+```
+
+The architecture level is a system design diagram. The local app derives the module graph from real Fastify imports via madge; the demo PRs are local mock data.
 
 ## Project Structure
 
 ```
 graph/
-  blast-radius.html    # Main demo (self-contained, no dependencies)
-  graph-data.json      # Real dependency graph extracted from Fastify
-  setup.md             # You are here
-  fastify/             # Cloned Fastify repo (used to extract graph data)
-  demo-repo/           # Dummy microservice repo (scaffolded, not used yet)
+  server.js              # Express server on port 8777
+  package.json
+  lib/
+    graph-builder.js     # madge → dependency graph → grouped modules
+    pr-analyzer.js       # git diff parsing, file → module mapping
+    blast-engine.js      # BFS blast radius computation
+  public/
+    index.html           # Frontend for the live local app
+  blast-radius.html      # Standalone offline demo, including code-diff leaf
+  reports/
+    fastify-75d74e1a.md  # Analysis backing the Fastify #6580 demo
+  scripts/
+    greptile-report.mjs  # GitHub API → node-keyed review report
+  fastify/               # Local Fastify clone (git-ignored)
 ```
 
-## How It Works
+## API Endpoints
 
-`blast-radius.html` is a single self-contained HTML file with inline CSS/JS. No npm, no bundler, no server required. Just open it in a browser.
+| Method | Path | What it does |
+|--------|------|-------------|
+| `GET` | `/api/graph` | Returns the module dependency graph from Fastify |
+| `POST` | `/api/analyze` | Analyzes a git diff between branches |
+| `POST` | `/api/analyze-mock` | Computes blast radius from supplied files |
 
-It renders three levels of detail:
-- **Level 1 (Architecture)**: System design diagram — gateway, services, databases, etc.
-- **Level 2 (Modules)**: Fastify internal modules — click the API Gateway node to zoom in
-- **Final leaf (Code diff)**: Click a changed Fastify module to inspect real file-level diff hunks
+### `/api/analyze` body
 
-When you pick a PR from the sidebar, it runs BFS through a reverse dependency graph to compute direct + indirect impact, then animates the blast radius with glowing balls traveling along edges.
+```json
+{ "repo": "path/to/repo", "base": "main", "head": "feature-branch" }
+```
 
-## Where to Work
+### `/api/analyze-mock` body
 
-The code is organized into labeled sections. Search for `SECTION:` to find them:
+```json
+{ "files": ["lib/hooks.js", "lib/reply.js"] }
+```
+
+## Standalone Demo Development
+
+`blast-radius.html` is organized into labeled `SECTION:` blocks:
 
 | Section | What's there | What to add |
 |---------|-------------|-------------|
-| **CONFIG** | Animation timing, colors, sizes | Tune speed, add color themes |
-| **ARCHITECTURE DATA** | System nodes + edges | New services, databases, external APIs |
-| **MODULE DATA** | Fastify internal modules | More zoomable services with their own module graphs |
-| **PR DEFINITIONS** | Mock PRs with change data | New PR scenarios, different change types |
-| **CODE_DIFFS** | File-level unified diff hunks for a PR/module | More files or richer code excerpts |
-| **GRAPH ENGINE** | SVG rendering, layout, reverse adjacency | Custom layouts, node shapes, edge routing |
-| **ANIMATION ENGINE** | Ball animation, highlighting, step queue | New animation effects, trails, particles |
-| **BLAST ANALYSIS** | Impact computation, animation orchestration | New analysis modes (config changes, scaling) |
-| **SIDEBAR & PANEL** | PR list, analysis panel, tooltips | Filters, search, summary cards |
-| **ZOOM / DRILL-DOWN** | Level transitions | More zoom levels (Level 3: files/functions) |
-| **CODE DIFF PANEL** | File tabs, line numbers, diff rendering | Full patches, comments, syntax highlighting |
+| **CONFIG** | Animation timing, colors, sizes | Themes and timing changes |
+| **ARCHITECTURE DATA** | System nodes and edges | Services, databases, external APIs |
+| **MODULE DATA** | Fastify internal modules | More zoomable service graphs |
+| **PR DEFINITIONS** | Mock PR scenarios | New change scenarios |
+| **CODE_DIFFS** | File-level unified diff hunks | More files or richer excerpts |
+| **GRAPH / ANIMATION / BLAST ENGINE** | Rendering, layout, reverse BFS | Custom layouts and effects |
+| **SIDEBAR / PANEL / ZOOM** | UI and level transitions | Filters and further drill-down |
+| **CODE DIFF PANEL** | Tabs, line numbers, diff rendering | Full patches, comments, syntax highlighting |
 
-## Adding a New PR
+### Adding a mock PR
 
-Add an entry to the `PRS` array:
+Add an entry to the `PRS` array. Define direct architecture and module changes; indirect impact is computed automatically.
 
 ```javascript
 {
   id: '#1234',
   title: 'your PR title',
-  type: 'feat',          // 'feat' | 'fix' | 'refactor' — controls color
+  type: 'feat',
   author: 'yourname',
-  arch: {                 // architecture-level changes (node IDs from ARCH_NODES)
-    gateway: { summary: 'What changed', add: 10, del: 2 },
-    redis:   { summary: 'Cache invalidation added', add: 5, del: 0 },
-  },
-  mod: {                  // module-level changes (node IDs from MOD_NODES, optional)
-    routing: { files: ['route.js'], add: 8, del: 2, summary: 'Route changes' },
-  }
+  arch: { gateway: { summary: 'What changed', add: 10, del: 2 } },
+  mod: { routing: { files: ['route.js'], add: 8, del: 2, summary: 'Route changes' } }
 }
 ```
 
-Indirect impact is computed automatically — you only define direct changes.
-
-To make a changed module open the final code leaf, add matching entries to
-`CODE_DIFFS`, keyed by PR ID and module ID. Each file supplies its totals and a
-small unified-diff array:
+To let a changed module open the code-diff leaf, add `CODE_DIFFS` entries keyed by PR ID and module ID:
 
 ```javascript
 const CODE_DIFFS = {
   '#1234': {
     routing: [{
-      file: 'lib/route.js',
-      add: 8,
-      del: 2,
-      diff: [
-        '@@ -10,3 +10,4 @@',
-        ' function route () {',
-        '-  return oldHandler()',
-        '+  return newHandler()',
-        ' }',
-      ]
+      file: 'lib/route.js', add: 8, del: 2,
+      diff: ['@@ -10,3 +10,4 @@', ' function route () {', '-  return oldHandler()', '+  return newHandler()', ' }']
     }]
   }
 }
 ```
 
-## Adding a New Zoomable Service
+## Adding a New Repo Profile
 
-1. Add `zoomable: true` and `zoomLabel: 'N modules'` to the node in `ARCH_NODES`
-2. Create a new `YOUR_NODES` and `YOUR_EDGES` array (same format as `MOD_NODES`/`MOD_EDGES`)
-3. Add a new SVG group and `renderGraph()` call
-4. Wire up the zoom transition in the `ZOOM / DRILL-DOWN` section
+In `lib/graph-builder.js`, add a group definition like `FASTIFY_GROUPS`:
 
-## Extracting Real Dependency Graphs
-
-We used [madge](https://github.com/pahen/madge) to extract the Fastify import graph:
-
-```bash
-cd fastify
-npm install madge --no-save
-npx madge --json fastify.js > ../graph-data.json
+```javascript
+const MY_REPO_GROUPS = {
+  api:      { label: 'API Layer', tag: 'HTTP', match: f => /routes|controllers/.test(f) },
+  models:   { label: 'Models', tag: 'DATA', match: f => /models|entities/.test(f) },
+  services: { label: 'Services', tag: 'BUSINESS', match: f => /services/.test(f) },
+  utils:    { label: 'Utilities', tag: 'SHARED', match: f => /utils|helpers/.test(f) },
+}
 ```
 
-This works for any JS/TS repo. The output is an adjacency list: `{ "file.js": ["dep1.js", "dep2.js"] }`.
+## Greptile Integration
 
-## Future Ideas (not implemented yet)
+Greptile review findings can be converted into a node-keyed report the visualizer can overlay on a blast radius.
 
-- **Config-type PRs**: e.g. scaling pods 2 to 4, show infra changes without code changes
-- **Function-level graph**: Navigate from the code diff into symbols and call sites
-- **Live GitHub integration**: Fetch real PR diffs and auto-map to components
-- **AI summary**: Use an LLM to generate change descriptions from diffs
-- **Multi-repo support**: Visualize cross-repo dependencies
+1. Install the Greptile GitHub App on `machmoon/graph` and wait for indexing.
+2. `greptile.json` requests severity tags and downstream-file references.
+3. Run the local report script:
+
+```bash
+GITHUB_TOKEN=ghp_... node scripts/greptile-report.mjs 42
+GITHUB_TOKEN=ghp_... node scripts/greptile-report.mjs 42 owner/repo
+```
+
+`impact.arch` and `impact.mod` use the same node IDs as the visualizer. `findings[]` retains inline comments, severity, and mapped downstream mentions; `unmapped[]` records paths with no component-map rule.
+
+## Future Ideas
+
+- Function-level graph from a code diff into symbols and call sites
+- Live GitHub PR ingestion and automatic component mapping
+- Configuration-only and cross-repository impact analysis
+- AI-generated per-module change summaries

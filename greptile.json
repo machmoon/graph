@@ -1,0 +1,7 @@
+{
+  "strictness": 2,
+  "comment_types": ["logic", "syntax", "style"],
+  "labels": [],
+  "ignore_patterns": ["fastify/**", "graph-data.json", "reports/**"],
+  "instructions": "This repository models a microservice system (demo-repo/*) fronted by a Fastify API gateway. When reviewing, for every file you flag, explicitly list the OTHER files and services that depend on it and could break (callers, importers, consumers of the same event/queue). Use the exact repo-relative file paths in backticks so they can be parsed. Prefix each finding with a severity tag in square brackets: [critical], [high], [medium], or [low]. In your summary comment, include a 'Downstream impact' section listing affected services by directory name (e.g. demo-repo/order-service)."
+}

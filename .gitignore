@@ -1,0 +1,5 @@
+node_modules/
+fastify/
+demo-repo/
+graph-data.json
+*.log
