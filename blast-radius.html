@@ -1,16 +1,12 @@
 <title>Blast Radius</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap">
 <style>
-:root { --bg:#070a10; --sf:#0c1018; --tx:#8a99b0; --txd:#3a4a60; --txb:#dce6f0; --bd:#152035; --acc:#38bdf8; --grn:#22c55e; --amb:#f59e0b; --blu:#3b82f6; --red:#ef4444; }
+:root{--bg:#070a10;--sf:#0c1018;--tx:#8a99b0;--txd:#3a4a60;--txb:#dce6f0;--bd:#152035;--acc:#38bdf8;--grn:#22c55e;--amb:#f59e0b;--blu:#3b82f6;--red:#ef4444}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-serif;overflow:hidden;height:100vh}
 
 #crumb{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:11px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:6px 14px}
-.crumb-item{color:var(--txd);cursor:default;transition:color .2s}
-.crumb-item.clickable{color:var(--acc);cursor:pointer}
-.crumb-item.clickable:hover{color:var(--txb)}
-.crumb-item.active{color:var(--txb)}
-.crumb-sep{color:var(--txd);font-size:13px}
+.bc{color:var(--txd);cursor:default}.bc.click{color:var(--acc);cursor:pointer}.bc.click:hover{color:var(--txb)}.bc.on{color:var(--txb)}.bcsep{color:var(--txd)}
 
 #sidebar{position:fixed;top:12px;left:12px;width:250px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:14px;z-index:10;font-size:11px;max-height:calc(100vh - 24px);overflow-y:auto}
 #sidebar::-webkit-scrollbar{width:3px}#sidebar::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
@@ -18,84 +14,91 @@ body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-s
 .sub{color:var(--txd);font-size:10px;font-family:'Fira Code',monospace;margin-bottom:10px}
 .div{height:1px;background:var(--bd);margin:8px 0}
 .lbl{font-size:9px;font-weight:600;color:var(--txd);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'Fira Code',monospace}
-
 .pr-btn{display:block;width:100%;text-align:left;background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--tx);transition:border-color .2s,background .2s}
-.pr-btn:hover{border-color:#2a3a55;background:#0e1520}
-.pr-btn.active{border-color:var(--acc);background:#0c1a2e}
+.pr-btn:hover{border-color:#2a3a55;background:#0e1520}.pr-btn.active{border-color:var(--acc);background:#0c1a2e}
 .pr-id{font-family:'Fira Code',monospace;font-size:10px;color:var(--txd)}
 .pr-title{color:var(--txb);font-weight:500;margin-top:1px}
 .pr-meta{font-size:9px;color:var(--txd);margin-top:1px;font-family:'Fira Code',monospace}
-.pr-type{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
-.pr-type.feat{background:#052e16;color:var(--grn)}.pr-type.fix{background:#2a1a05;color:var(--amb)}.pr-type.refactor{background:#0f1d3d;color:var(--blu)}
-
-.stat-row{display:flex;gap:10px;margin-bottom:6px}
-.stat{text-align:center;flex:1}
-.stat-v{font-size:20px;font-weight:700;color:var(--txb);line-height:1}
-.stat-u{font-size:9px;color:var(--txd);font-family:'Fira Code',monospace}
+.pt{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
+.pt.feat{background:#052e16;color:var(--grn)}.pt.fix{background:#2a1a05;color:var(--amb)}.pt.refactor{background:#0f1d3d;color:var(--blu)}
+.stat-row{display:flex;gap:10px;margin-bottom:6px}.stat{text-align:center;flex:1}
+.stat-v{font-size:20px;font-weight:700;color:var(--txb);line-height:1}.stat-u{font-size:9px;color:var(--txd);font-family:'Fira Code',monospace}
 #analysis{display:none}
 .ci{background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px}
 .ci.indirect{border-style:dashed;opacity:.65}
 .ci-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
 .ci-n{font-weight:600;color:var(--txb);font-size:12px}
-.ci-b{font-family:'Fira Code',monospace;font-size:9px}
-.ci-b .a{color:var(--grn)}.ci-b .d{color:var(--red)}
+.ci-b{font-family:'Fira Code',monospace;font-size:9px}.ci-b .a{color:var(--grn)}.ci-b .d{color:var(--red)}
 .ci-f{font-size:10px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.4}
 .ci-s{font-size:10px;color:var(--tx);margin-top:3px;line-height:1.3;font-style:italic}
 .ci-it{font-size:9px;color:var(--txd);font-style:italic}
 
+/* ══ CONTROLS ══ */
+#controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;display:none;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:6px 10px}
+#controls button{background:#0a0f18;border:1px solid var(--bd);color:var(--tx);padding:5px 14px;border-radius:4px;font-family:'Fira Code',monospace;font-size:10px;cursor:pointer;transition:all .15s;white-space:nowrap}
+#controls button:hover{border-color:var(--acc);color:var(--txb)}
+#controls button.active-ctrl{border-color:var(--acc);color:var(--acc);background:#0c1a2e}
+#controls button:disabled{opacity:.3;cursor:default;border-color:var(--bd);color:var(--txd)}
+
 svg{display:block;width:100vw;height:100vh}
 .tier-label{font-family:'Fira Code',monospace;font-size:9px;fill:#1a2a40;letter-spacing:1.5px}
-.node-group{cursor:pointer}
-.node-box{transition:fill .4s}.node-border{transition:stroke .4s,stroke-width .3s,stroke-dasharray .3s}
-.node-tag,.node-label,.node-info{transition:fill .4s}
-.edge-path{fill:none;stroke:#141e30;stroke-width:1.2;transition:stroke .4s,stroke-width .3s}
-.node-group.dimmed .node-box{fill:#080c12!important}
-.node-group.dimmed .node-border{stroke:#101820!important}
-.node-group.dimmed .node-tag{fill:#1a2535!important}
-.node-group.dimmed .node-label{fill:#2a3a4a!important}
-.node-group.dimmed .node-info{fill:#101820!important}
-.change-badge{transition:opacity .4s}
-
+.node-group{cursor:pointer}.node-box{transition:fill .5s}.node-border{transition:stroke .5s,stroke-width .4s,stroke-dasharray .3s}
+.node-tag,.node-label,.node-info{transition:fill .5s}
+.edge-path{fill:none;stroke:#141e30;stroke-width:1.2;transition:stroke .5s,stroke-width .4s}
+.node-group.dimmed .node-box{fill:#080c12!important}.node-group.dimmed .node-border{stroke:#101820!important}
+.node-group.dimmed .node-tag{fill:#1a2535!important}.node-group.dimmed .node-label{fill:#2a3a4a!important}.node-group.dimmed .node-info{fill:#101820!important}
+.change-badge{transition:opacity .5s}
 .zoom-hint{font-family:'Fira Code',monospace;font-size:8px;fill:var(--acc);opacity:0;transition:opacity .2s;cursor:pointer}
 .node-group:hover .zoom-hint{opacity:.8}
-
 #gArch,#gMod{transition:opacity .45s ease}
 .tip{position:fixed;background:var(--sf);border:1px solid var(--bd);padding:6px 10px;border-radius:4px;font-size:11px;pointer-events:none;display:none;z-index:20;max-width:240px}
-.tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}
-.tip-f{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd)}
+.tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}.tip-f{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd)}
 .tip-s{font-size:10px;color:var(--tx);margin-top:3px;font-style:italic}
 </style>
 
-<div id="crumb">
-  <span class="crumb-item active" id="bc0">System Architecture</span>
-</div>
+<div id="crumb"><span class="bc on" id="bc0">System Architecture</span></div>
 
 <div id="sidebar">
   <h1>Blast Radius</h1>
-  <div class="sub" id="view-sub">e-commerce · 13 components</div>
+  <div class="sub" id="vsub">e-commerce · 13 components</div>
   <div class="lbl">Pull Requests</div>
   <div id="pr-list"></div>
   <div id="analysis"></div>
 </div>
+
+<div id="controls">
+  <button id="btn-play">&#9654; Play</button>
+  <button id="btn-stop">&#9632; Stop</button>
+  <button id="btn-reset">&#8634; Reset</button>
+</div>
+
 <div class="tip" id="tip"></div>
 <svg id="g"></svg>
 
 <script>
+// ════════════════════════════════════════════════════════════
+// SECTION: CONFIG
+// Tune animation speed, colors, node sizes here.
+// ════════════════════════════════════════════════════════════
 const NS='http://www.w3.org/2000/svg';
-const W=window.innerWidth,H=window.innerHeight;
-const CX=W/2+80;
-
+const W=window.innerWidth,H=window.innerHeight,CX=W/2+80;
+const NW=150,NH=54,NR=5;
+const HOP_DELAY=900;
+const BALL_MS=550;
 const TC={feat:'#22c55e',fix:'#f59e0b',refactor:'#3b82f6'};
 const TBG={feat:'#062015',fix:'#1a1505',refactor:'#0c1530'};
-const TS={feat:'#16a34a',fix:'#d97706',refactor:'#2563eb'};
+const TSK={feat:'#16a34a',fix:'#d97706',refactor:'#2563eb'};
 
-const NW=150,NH=54,NR=5;
-
-// ═══════════════ ARCHITECTURE DATA ═══════════════
+// ════════════════════════════════════════════════════════════
+// SECTION: ARCHITECTURE DATA
+// Add/remove system components and connections here.
+// Each node: {id, label, tag, x, y, zoomable?, zoomLabel?}
+// Each edge: [fromId, toId] meaning "from calls/depends-on to"
+// ════════════════════════════════════════════════════════════
 const ARCH_NODES=[
   {id:'clients',label:'Clients',tag:'USERS',x:CX,y:70},
   {id:'lb',label:'Load Balancer',tag:'INFRA',x:CX,y:170},
-  {id:'gateway',label:'API Gateway',tag:'FASTIFY',x:CX,y:280,zoomable:true,zoomLabel:'9 modules inside'},
+  {id:'gateway',label:'API Gateway',tag:'FASTIFY',x:CX,y:280,zoomable:true,zoomLabel:'9 modules'},
   {id:'auth',label:'Auth',tag:'SERVICE',x:CX-320,y:420},
   {id:'user',label:'User',tag:'SERVICE',x:CX-160,y:420},
   {id:'product',label:'Product',tag:'SERVICE',x:CX,y:420},
@@ -114,7 +117,10 @@ const ARCH_EDGES=[
   ['order','postgres'],['order','stripe'],['notif','queue'],
 ];
 
-// ═══════════════ MODULE DATA (inside API Gateway = Fastify) ═══════════════
+// ════════════════════════════════════════════════════════════
+// SECTION: MODULE DATA (inside API Gateway = Fastify)
+// Add internal module structure here. Same format as arch.
+// ════════════════════════════════════════════════════════════
 const COL=[-220,0,220],ROW=[80,220,370,520];
 const MOD_NODES=[
   {id:'core',label:'Core',tag:'ENTRY',x:CX,y:ROW[0]},
@@ -135,22 +141,35 @@ const MOD_EDGES=[
   ['validation','internals'],['errors','internals'],['logging','internals'],
 ];
 
-// ═══════════════ PR DATA — both levels ═══════════════
+// ════════════════════════════════════════════════════════════
+// SECTION: PR DEFINITIONS
+// Add new PRs here. Each PR needs:
+//   arch: {componentId: {summary, add, del}} — architecture-level changes
+//   mod:  {moduleId: {files, summary, add, del}} — module-level changes (optional)
+// The blast engine auto-computes indirect impact via reverse adjacency.
+// ════════════════════════════════════════════════════════════
 const PRS=[
+  { id:'#4533',title:'fix connection pool exhaustion',type:'fix',author:'dave',
+    arch:{
+      postgres:{summary:'Pool max 20→50, added idle timeout',add:12,del:3},
+      user:{summary:'Connection retry with exponential backoff',add:25,del:8},
+      product:{summary:'Batched catalog queries to reduce pool usage',add:18,del:6},
+      order:{summary:'Read replicas for non-critical queries',add:34,del:12},
+    },
+    mod:{
+      routing:{files:['route.js'],add:8,del:2,summary:'Routes handle DB timeout gracefully'},
+      errors:{files:['errors.js'],add:6,del:0,summary:'New FST_ERR_DB_TIMEOUT error code'},
+      server:{files:['server.js'],add:4,del:1,summary:'Health check includes pool status'},
+    }
+  },
   { id:'#4521',title:'add rate limiting middleware',type:'feat',author:'alice',
-    arch:{ gateway:{summary:'5 files changed across hooks, routing, reply, errors',add:89,del:5} },
+    arch:{ gateway:{summary:'5 files across hooks, routing, reply, errors',add:89,del:5} },
     mod:{
       server:{files:['hooks.js'],add:42,del:3,summary:'New onRequest hook slot for rate-limit checks'},
       reqres:{files:['reply.js'],add:18,del:0,summary:'Added .tooManyRequests() 429 response helper'},
       errors:{files:['errors.js'],add:5,del:0,summary:'New FST_ERR_RATE_LIMITED error code'},
       routing:{files:['route.js'],add:23,del:2,summary:'Route config accepts rateLimit option'},
       internals:{files:['symbols.js'],add:1,del:0,summary:'Added kRateLimit symbol'},
-    }
-  },
-  { id:'#4498',title:'fix pino logger timezone offset',type:'fix',author:'bob',
-    arch:{ gateway:{summary:'2 files in logging subsystem',add:10,del:4} },
-    mod:{
-      logging:{files:['logger-pino.js','logger-factory.js'],add:10,del:4,summary:'Fixed UTC offset in timestamp serializer'},
     }
   },
   { id:'#4510',title:'refactor schema compilation',type:'refactor',author:'carol',
@@ -163,52 +182,46 @@ const PRS=[
   },
 ];
 
-// ═══════════════ REVERSE ADJ (for indirect impact) ═══════════════
-function buildReverse(edges){
-  const r={};
-  edges.forEach(([f,t])=>{ if(!r[t])r[t]=[];r[t].push(f); });
-  return r;
-}
-const archRev=buildReverse(ARCH_EDGES);
-const modRev=buildReverse(MOD_EDGES);
+// ════════════════════════════════════════════════════════════
+// SECTION: GRAPH ENGINE
+// Builds reverse adjacency, renders nodes/edges to SVG.
+// To change node appearance or layout, modify renderGraph().
+// ════════════════════════════════════════════════════════════
+function buildReverse(edges){const r={};edges.forEach(([f,t])=>{if(!r[t])r[t]=[];r[t].push(f)});return r}
+const archRev=buildReverse(ARCH_EDGES), modRev=buildReverse(MOD_EDGES);
 
-// ═══════════════ STATE ═══════════════
-let level='arch'; // 'arch' | 'mod'
-let activePR=null;
-let activeBtn=null;
-
-// ═══════════════ SVG SETUP ═══════════════
 const svg=document.getElementById('g');
 svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
 
 const defs=document.createElementNS(NS,'defs');
-['arr','arr-h'].forEach(id=>{
+['arr','arr-b'].forEach(id=>{
   const m=document.createElementNS(NS,'marker');
   m.setAttribute('id',id);m.setAttribute('viewBox','0 0 8 6');
-  m.setAttribute('refX','8');m.setAttribute('refY','3');
-  m.setAttribute('markerWidth','7');m.setAttribute('markerHeight','5');
-  m.setAttribute('orient','auto');
-  const p=document.createElementNS(NS,'path');
-  p.setAttribute('d','M0,0.5 L7,3 L0,5.5');
-  p.setAttribute('fill',id==='arr'?'#1a2a40':'#ef4444');
+  m.setAttribute('refX','8');m.setAttribute('refY','3');m.setAttribute('markerWidth','7');m.setAttribute('markerHeight','5');m.setAttribute('orient','auto');
+  const p=document.createElementNS(NS,'path');p.setAttribute('d','M0,.5 L7,3 L0,5.5');
+  p.setAttribute('fill',id==='arr'?'#1a2a40':'currentColor');
   m.appendChild(p);defs.appendChild(m);
 });
+const glow=document.createElementNS(NS,'filter');glow.setAttribute('id','glow');
+const blur=document.createElementNS(NS,'feGaussianBlur');blur.setAttribute('stdDeviation','4');blur.setAttribute('result','b');glow.appendChild(blur);
+const merge=document.createElementNS(NS,'feMerge');
+const mn1=document.createElementNS(NS,'feMergeNode');mn1.setAttribute('in','b');merge.appendChild(mn1);
+const mn2=document.createElementNS(NS,'feMergeNode');mn2.setAttribute('in','SourceGraphic');merge.appendChild(mn2);
+glow.appendChild(merge);defs.appendChild(glow);
 svg.appendChild(defs);
 
 const gArch=document.createElementNS(NS,'g');gArch.id='gArch';
 const gMod=document.createElementNS(NS,'g');gMod.id='gMod';gMod.style.opacity='0';gMod.style.pointerEvents='none';
 svg.appendChild(gArch);svg.appendChild(gMod);
 
-// ═══════════════ GENERIC RENDERING ═══════════════
-function makePath(from,to){
-  const sy=from.y+NH/2,ey=to.y-NH/2-5,sx=from.x,ex=to.x;
-  if(Math.abs(from.y-to.y)<NH+20){
-    const s=to.x>from.x?from.x+NW/2:from.x-NW/2;
-    const e=to.x>from.x?to.x-NW/2-5:to.x+NW/2+5;
-    return`M${s},${from.y} L${e},${to.y}`;
+function makePath(a,b){
+  if(Math.abs(a.y-b.y)<NH+20){
+    const s=b.x>a.x?a.x+NW/2:a.x-NW/2;
+    const e=b.x>a.x?b.x-NW/2-5:b.x+NW/2+5;
+    return`M${s},${a.y} L${e},${b.y}`;
   }
-  const dy=ey-sy;
-  return`M${sx},${sy} C${sx},${sy+dy*.5} ${ex},${ey-dy*.5} ${ex},${ey}`;
+  const sy=a.y+NH/2,ey=b.y-NH/2-5,dy=ey-sy;
+  return`M${a.x},${sy} C${a.x},${sy+dy*.5} ${b.x},${ey-dy*.5} ${b.x},${ey}`;
 }
 
 function renderGraph(nodes,edges,container){
@@ -216,77 +229,50 @@ function renderGraph(nodes,edges,container){
   const eEls=edges.map(([fid,tid])=>{
     const p=document.createElementNS(NS,'path');
     p.setAttribute('d',makePath(nMap[fid],nMap[tid]));
-    p.setAttribute('class','edge-path');
-    p.setAttribute('marker-end','url(#arr)');
+    p.setAttribute('class','edge-path');p.setAttribute('marker-end','url(#arr)');
     p.dataset.from=fid;p.dataset.to=tid;
     container.appendChild(p);return p;
   });
   const nEls={};
   nodes.forEach(n=>{
-    const g=document.createElementNS(NS,'g');
-    g.setAttribute('class','node-group');
-    g.setAttribute('transform',`translate(${n.x},${n.y})`);
-    g.dataset.id=n.id;
-
+    const g=document.createElementNS(NS,'g');g.setAttribute('class','node-group');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);g.dataset.id=n.id;
     const box=document.createElementNS(NS,'rect');
-    box.setAttribute('x',-NW/2);box.setAttribute('y',-NH/2);
-    box.setAttribute('width',NW);box.setAttribute('height',NH);
-    box.setAttribute('rx',NR);box.setAttribute('fill','#0e1420');
-    box.setAttribute('class','node-box');g.appendChild(box);
-
+    box.setAttribute('x',-NW/2);box.setAttribute('y',-NH/2);box.setAttribute('width',NW);box.setAttribute('height',NH);
+    box.setAttribute('rx',NR);box.setAttribute('fill','#0e1420');box.setAttribute('class','node-box');g.appendChild(box);
     const bdr=document.createElementNS(NS,'rect');
-    bdr.setAttribute('x',-NW/2);bdr.setAttribute('y',-NH/2);
-    bdr.setAttribute('width',NW);bdr.setAttribute('height',NH);
-    bdr.setAttribute('rx',NR);bdr.setAttribute('fill','none');
-    bdr.setAttribute('stroke','#1e2e45');bdr.setAttribute('stroke-width','1');
+    bdr.setAttribute('x',-NW/2);bdr.setAttribute('y',-NH/2);bdr.setAttribute('width',NW);bdr.setAttribute('height',NH);
+    bdr.setAttribute('rx',NR);bdr.setAttribute('fill','none');bdr.setAttribute('stroke','#1e2e45');bdr.setAttribute('stroke-width','1');
     bdr.setAttribute('class','node-border');g.appendChild(bdr);
-
     const bar=document.createElementNS(NS,'rect');
-    bar.setAttribute('x',-NW/2+2);bar.setAttribute('y',-NH/2+5);
-    bar.setAttribute('width',3);bar.setAttribute('height',NH-10);
-    bar.setAttribute('rx',1);bar.setAttribute('fill','#2a3a55');bar.setAttribute('opacity','.5');
-    bar.setAttribute('class','node-bar');g.appendChild(bar);
-
-    const tag=document.createElementNS(NS,'text');
-    tag.textContent=n.tag;tag.setAttribute('x',-NW/2+14);tag.setAttribute('y',-NH/2+16);
-    tag.setAttribute('fill','#3a5070');tag.setAttribute('font-size','8');
-    tag.setAttribute('font-family',"'Fira Code',monospace");
+    bar.setAttribute('x',-NW/2+2);bar.setAttribute('y',-NH/2+5);bar.setAttribute('width',3);bar.setAttribute('height',NH-10);
+    bar.setAttribute('rx',1);bar.setAttribute('fill','#2a3a55');bar.setAttribute('opacity','.5');bar.setAttribute('class','node-bar');g.appendChild(bar);
+    const tag=document.createElementNS(NS,'text');tag.textContent=n.tag;
+    tag.setAttribute('x',-NW/2+14);tag.setAttribute('y',-NH/2+16);tag.setAttribute('fill','#3a5070');
+    tag.setAttribute('font-size','8');tag.setAttribute('font-family',"'Fira Code',monospace");
     tag.setAttribute('letter-spacing','.6');tag.setAttribute('class','node-tag');g.appendChild(tag);
-
-    const lbl=document.createElementNS(NS,'text');
-    lbl.textContent=n.label;lbl.setAttribute('x',-NW/2+14);lbl.setAttribute('y',-NH/2+33);
-    lbl.setAttribute('fill','#8a99b0');lbl.setAttribute('font-size','13');
-    lbl.setAttribute('font-family',"'DM Sans',sans-serif");lbl.setAttribute('font-weight','600');
-    lbl.setAttribute('class','node-label');g.appendChild(lbl);
-
-    const info=document.createElementNS(NS,'text');
-    info.textContent=n.zoomLabel||'';info.setAttribute('x',-NW/2+14);info.setAttribute('y',-NH/2+47);
-    info.setAttribute('fill','#2a3a50');info.setAttribute('font-size','9');
-    info.setAttribute('font-family',"'Fira Code',monospace");
+    const lbl=document.createElementNS(NS,'text');lbl.textContent=n.label;
+    lbl.setAttribute('x',-NW/2+14);lbl.setAttribute('y',-NH/2+33);lbl.setAttribute('fill','#8a99b0');
+    lbl.setAttribute('font-size','13');lbl.setAttribute('font-family',"'DM Sans',sans-serif");
+    lbl.setAttribute('font-weight','600');lbl.setAttribute('class','node-label');g.appendChild(lbl);
+    const info=document.createElementNS(NS,'text');info.textContent=n.zoomLabel||'';
+    info.setAttribute('x',-NW/2+14);info.setAttribute('y',-NH/2+47);info.setAttribute('fill','#2a3a50');
+    info.setAttribute('font-size','9');info.setAttribute('font-family',"'Fira Code',monospace");
     info.setAttribute('class','node-info');g.appendChild(info);
-
     if(n.zoomable){
-      const zh=document.createElementNS(NS,'text');
-      zh.textContent='EXPLORE ▸';zh.setAttribute('x',NW/2-8);zh.setAttribute('y',-NH/2+47);
-      zh.setAttribute('text-anchor','end');zh.setAttribute('class','zoom-hint');
-      g.appendChild(zh);
-      g.style.cursor='zoom-in';
+      const zh=document.createElementNS(NS,'text');zh.textContent='EXPLORE ▸';
+      zh.setAttribute('x',NW/2-8);zh.setAttribute('y',-NH/2+47);zh.setAttribute('text-anchor','end');
+      zh.setAttribute('class','zoom-hint');g.appendChild(zh);g.style.cursor='zoom-in';
     }
-
     const bdg=document.createElementNS(NS,'g');bdg.setAttribute('class','change-badge');bdg.setAttribute('opacity','0');
     bdg.setAttribute('transform',`translate(${NW/2-8},${-NH/2-6})`);
     const bb=document.createElementNS(NS,'rect');bb.setAttribute('x',-30);bb.setAttribute('y',-8);
     bb.setAttribute('width',38);bb.setAttribute('height',16);bb.setAttribute('rx',3);
-    bb.setAttribute('fill','#0a0f18');bb.setAttribute('stroke','#1e2e45');bb.setAttribute('stroke-width','1');
-    bdg.appendChild(bb);
+    bb.setAttribute('fill','#0a0f18');bb.setAttribute('stroke','#1e2e45');bb.setAttribute('stroke-width','1');bdg.appendChild(bb);
     const bt=document.createElementNS(NS,'text');bt.setAttribute('x',-11);bt.setAttribute('y',3);
     bt.setAttribute('text-anchor','middle');bt.setAttribute('font-size','9');bt.setAttribute('fill','#8a99b0');
-    bt.setAttribute('font-family',"'Fira Code',monospace");
-    bdg.appendChild(bt);g.appendChild(bdg);
-
-    g.addEventListener('mouseenter',e=>showTip(e,n));
-    g.addEventListener('mouseleave',hideTip);
-
+    bt.setAttribute('font-family',"'Fira Code',monospace");bdg.appendChild(bt);g.appendChild(bdg);
+    g.addEventListener('mouseenter',e=>showTip(e,n));g.addEventListener('mouseleave',hideTip);
     container.appendChild(g);
     nEls[n.id]={g,box,bdr,bar,tag,lbl,info,bdg,bb,bt};
   });
@@ -296,86 +282,79 @@ function renderGraph(nodes,edges,container){
 const arch=renderGraph(ARCH_NODES,ARCH_EDGES,gArch);
 const mod=renderGraph(MOD_NODES,MOD_EDGES,gMod);
 
-// ═══════════════ TOOLTIP ═══════════════
-const tip=document.getElementById('tip');
-function showTip(e,n){
-  let h=`<div class="tip-n">${n.label}</div>`;
-  if(n.zoomable)h+=`<div class="tip-f">click to explore internal modules</div>`;
-  if(activePR){
-    const data=level==='arch'?activePR.arch:activePR.mod;
-    const c=data[n.id];
-    if(c)h+=`<div class="tip-s">${c.summary}</div>`;
+// ════════════════════════════════════════════════════════════
+// SECTION: ANIMATION ENGINE
+// Ball animation, node highlighting, step queue.
+// To change animation style, modify animateBall() and highlightNode().
+// ════════════════════════════════════════════════════════════
+let animSteps=[];
+let animIdx=0;
+let animTimer=null;
+let animState='idle';
+let liveBalls=[];
+
+function animateBall(container,pathEl,color,reverse){
+  const ball=document.createElementNS(NS,'circle');
+  ball.setAttribute('r','4');ball.setAttribute('fill',color);ball.setAttribute('filter','url(#glow)');
+  const trail=document.createElementNS(NS,'circle');
+  trail.setAttribute('r','10');trail.setAttribute('fill',color);trail.setAttribute('opacity','0.15');
+  container.appendChild(trail);container.appendChild(ball);
+  const len=pathEl.getTotalLength();
+  const start=performance.now();
+  const entry={ball,trail,done:false};
+  liveBalls.push(entry);
+  function step(now){
+    if(entry.done)return;
+    const raw=(now-start)/BALL_MS;
+    const t=Math.min(raw,1);
+    const ease=t<.5?2*t*t:(1-Math.pow(-2*t+2,2)/2);
+    const at=reverse?len*(1-ease):len*ease;
+    const pt=pathEl.getPointAtLength(at);
+    ball.setAttribute('cx',pt.x);ball.setAttribute('cy',pt.y);
+    trail.setAttribute('cx',pt.x);trail.setAttribute('cy',pt.y);
+    trail.setAttribute('opacity',String(.2*(1-t)));
+    if(t<1){requestAnimationFrame(step)}
+    else{
+      ball.style.transition='opacity .3s';trail.style.transition='opacity .3s';
+      ball.setAttribute('opacity','0');trail.setAttribute('opacity','0');
+      setTimeout(()=>{ball.remove();trail.remove();entry.done=true},300);
+    }
   }
-  tip.innerHTML=h;tip.style.display='block';
-  tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
-}
-function hideTip(){tip.style.display='none'}
-document.addEventListener('mousemove',e=>{if(tip.style.display==='block'){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px'}});
-
-// ═══════════════ ZOOM ═══════════════
-const bc0=document.getElementById('bc0');
-const crumb=document.getElementById('crumb');
-
-function zoomIn(){
-  level='mod';
-  const gw=arch.nMap['gateway'];
-  gArch.style.transformOrigin=`${gw.x}px ${gw.y}px`;
-  gArch.style.transform='scale(3.5)';gArch.style.opacity='0';
-  gArch.style.pointerEvents='none';
-  setTimeout(()=>{
-    gMod.style.opacity='1';gMod.style.pointerEvents='auto';
-  },250);
-  bc0.classList.add('clickable');bc0.classList.remove('active');
-  let bc1=document.getElementById('bc1');
-  if(!bc1){
-    const sep=document.createElement('span');sep.className='crumb-sep';sep.textContent='›';sep.id='bcsep';
-    crumb.appendChild(sep);
-    bc1=document.createElement('span');bc1.className='crumb-item active';bc1.id='bc1';bc1.textContent='API Gateway';
-    crumb.appendChild(bc1);
-  }
-  bc0.onclick=zoomOut;
-  document.getElementById('view-sub').textContent='fastify · 9 modules';
-  if(activePR)showAnalysis(activePR);
-}
-
-function zoomOut(){
-  level='arch';
-  gMod.style.opacity='0';gMod.style.pointerEvents='none';
-  setTimeout(()=>{
-    gArch.style.transform='scale(1)';gArch.style.opacity='1';gArch.style.pointerEvents='auto';
-  },200);
-  bc0.classList.remove('clickable');bc0.classList.add('active');bc0.onclick=null;
-  const s=document.getElementById('bcsep'),b=document.getElementById('bc1');
-  if(s)s.remove();if(b)b.remove();
-  document.getElementById('view-sub').textContent='e-commerce · 13 components';
-  if(activePR)showAnalysis(activePR);
+  requestAnimationFrame(step);
 }
 
-// Click handler for zoomable nodes
-ARCH_NODES.forEach(n=>{
-  if(n.zoomable){
-    arch.nEls[n.id].g.addEventListener('click',()=>{ if(level==='arch')zoomIn(); });
-  }
-});
+function clearBalls(){liveBalls.forEach(b=>{b.done=true;b.ball.remove();b.trail.remove()});liveBalls=[]}
 
-// ═══════════════ PR LIST ═══════════════
-const prList=document.getElementById('pr-list');
-PRS.forEach(pr=>{
-  const btn=document.createElement('button');btn.className='pr-btn';
-  const ta=pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.add,0):0;
-  const td=pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.del,0):0;
-  btn.innerHTML=`<div class="pr-id"><span class="pr-type ${pr.type}">${pr.type}</span>${pr.id}</div>
-    <div class="pr-title">${pr.title}</div>
-    <div class="pr-meta">${pr.author} · +${ta} -${td}</div>`;
-  btn.addEventListener('click',()=>analyzePR(pr,btn));
-  prList.appendChild(btn);
-});
+function highlightNode(el,color,bg,stroke,data){
+  el.box.setAttribute('fill',bg);el.bdr.setAttribute('stroke',stroke);el.bdr.setAttribute('stroke-width','1.5');
+  el.bar.setAttribute('fill',color);el.bar.setAttribute('opacity','.8');
+  el.tag.setAttribute('fill',color);el.lbl.setAttribute('fill','#f0f4f8');el.info.setAttribute('fill',color);
+  if(data){el.bt.textContent=`+${data.add} -${data.del}`;el.bb.setAttribute('stroke',stroke);el.bdg.setAttribute('opacity','1')}
+}
 
-// ═══════════════ ANALYSIS ═══════════════
-let timers=[];
+function highlightIndirect(el){
+  el.g.classList.remove('dimmed');
+  el.bdr.setAttribute('stroke','#475569');el.bdr.setAttribute('stroke-dasharray','4 3');
+  el.lbl.setAttribute('fill','#64748b');el.tag.setAttribute('fill','#475569');
+}
+
+function highlightEdge(pathEl,color){
+  pathEl.setAttribute('stroke',color);pathEl.setAttribute('stroke-width','2.5');
+}
+
+// ════════════════════════════════════════════════════════════
+// SECTION: BLAST ANALYSIS
+// Computes direct + indirect impact, builds animation steps.
+// To add new analysis types (config, scaling), add PR type handling here.
+// ════════════════════════════════════════════════════════════
+let level='arch',activePR=null,activeBtn=null;
+
+function getView(){return level==='arch'?arch:mod}
+function getRev(){return level==='arch'?archRev:modRev}
+function getData(pr){return level==='arch'?pr.arch:pr.mod}
 
 function resetHighlights(){
-  timers.forEach(t=>clearTimeout(t));timers=[];
+  clearBalls();
   [arch,mod].forEach(v=>{
     Object.values(v.nEls).forEach(el=>{
       el.g.classList.remove('dimmed');
@@ -390,107 +369,237 @@ function resetHighlights(){
   });
 }
 
-function highlightNodes(view,data,prType,revAdj){
+function buildSteps(pr){
+  const view=getView(),rev=getRev(),data=getData(pr);
+  if(!data)return[];
   const direct=new Set(Object.keys(data));
-  const indirect=new Set();
+  const dist={};direct.forEach(id=>{dist[id]=0});
   const q=[...direct];
-  while(q.length){const c=q.shift();for(const d of(revAdj[c]||[])){if(!direct.has(d)&&!indirect.has(d)){indirect.add(d);q.push(d)}}}
+  while(q.length){const c=q.shift();for(const d of(rev[c]||[])){if(dist[d]===undefined){dist[d]=dist[c]+1;q.push(d)}}}
+  const maxHop=Math.max(...Object.values(dist),0);
+  const color=TC[pr.type],bg=TBG[pr.type],stroke=TSK[pr.type];
+  const steps=[];
+  const allIds=Object.keys(view.nEls);
 
-  const nodes=Object.keys(view.nEls);
-  nodes.forEach(id=>{if(!direct.has(id)&&!indirect.has(id))view.nEls[id].g.classList.add('dimmed')});
+  steps.push({delay:0,fn:()=>{
+    allIds.forEach(id=>{if(dist[id]===undefined)view.nEls[id].g.classList.add('dimmed')});
+  }});
 
-  const color=TC[prType],bg=TBG[prType],stroke=TS[prType];
-  const dArr=[...direct];
-  dArr.forEach((cid,i)=>{
-    timers.push(setTimeout(()=>{
+  steps.push({delay:300,fn:()=>{
+    direct.forEach(cid=>{
       const el=view.nEls[cid];if(!el)return;
-      el.box.setAttribute('fill',bg);el.bdr.setAttribute('stroke',stroke);el.bdr.setAttribute('stroke-width','1.5');
-      el.bar.setAttribute('fill',color);el.bar.setAttribute('opacity','.8');
-      el.tag.setAttribute('fill',color);el.lbl.setAttribute('fill','#f0f4f8');el.info.setAttribute('fill',color);
-      const c=data[cid];
-      el.bt.textContent=`+${c.add} -${c.del}`;el.bb.setAttribute('stroke',stroke);el.bdg.setAttribute('opacity','1');
+      highlightNode(el,color,bg,stroke,data[cid]);
+    });
+    view.eEls.forEach(p=>{
+      if(direct.has(p.dataset.from)&&direct.has(p.dataset.to)){
+        highlightEdge(p,color);
+      }
+    });
+  }});
+
+  for(let hop=1;hop<=maxHop;hop++){
+    const hopNodes=Object.entries(dist).filter(([,d])=>d===hop).map(([id])=>id);
+    const ballDelay=300+hop*HOP_DELAY;
+    const nodeDelay=ballDelay+BALL_MS*0.6;
+
+    steps.push({delay:ballDelay,fn:()=>{
+      const container=level==='arch'?gArch:gMod;
       view.eEls.forEach(p=>{
-        if((direct.has(p.dataset.from)&&p.dataset.to===cid)||(direct.has(p.dataset.to)&&p.dataset.from===cid)){
-          p.setAttribute('stroke',color);p.setAttribute('stroke-width','2');
+        const fd=dist[p.dataset.from],td=dist[p.dataset.to];
+        if(fd===undefined||td===undefined)return;
+        if(fd===hop&&td===hop-1){
+          highlightEdge(p,hop<=1?color:'#475569');
+          animateBall(container,p,hop<=1?color:'#64748b',true);
+        }
+        if(td===hop&&fd===hop-1){
+          highlightEdge(p,hop<=1?color:'#475569');
+          animateBall(container,p,hop<=1?color:'#64748b',false);
         }
       });
-    },200+i*220));
-  });
+    }});
 
-  const iDelay=200+dArr.length*220+150;
-  [...indirect].forEach((cid,i)=>{
-    timers.push(setTimeout(()=>{
-      const el=view.nEls[cid];if(!el)return;
-      el.g.classList.remove('dimmed');
-      el.bdr.setAttribute('stroke','#475569');el.bdr.setAttribute('stroke-dasharray','4 3');
-      el.lbl.setAttribute('fill','#64748b');el.tag.setAttribute('fill','#475569');
-    },iDelay+i*120));
-  });
+    steps.push({delay:nodeDelay,fn:()=>{
+      hopNodes.forEach(cid=>{
+        const el=view.nEls[cid];if(!el)return;
+        if(direct.has(cid)){highlightNode(el,color,bg,stroke,data[cid])}
+        else{highlightIndirect(el)}
+      });
+    }});
+  }
+
+  const panelDelay=300+((maxHop+1)*HOP_DELAY);
+  steps.push({delay:panelDelay,fn:()=>updatePanel(pr,dist,direct)});
+  return steps;
 }
 
-function showAnalysis(pr){
+function playAnimation(){
+  if(animState==='playing')return;
+  if(animState==='idle'&&activePR){
+    resetHighlights();
+    animSteps=buildSteps(activePR);
+    animIdx=0;
+  }
+  animState='playing';
+  updateControlUI();
+  runNextStep();
+}
+
+function runNextStep(){
+  if(animState!=='playing'||animIdx>=animSteps.length){
+    if(animIdx>=animSteps.length)animState='done';
+    updateControlUI();return;
+  }
+  const step=animSteps[animIdx];
+  const prev=animIdx>0?animSteps[animIdx-1].delay:0;
+  const wait=step.delay-prev;
+  animTimer=setTimeout(()=>{
+    step.fn();
+    animIdx++;
+    runNextStep();
+  },Math.max(0,wait));
+}
+
+function stopAnimation(){
+  clearTimeout(animTimer);
+  if(animState==='playing')animState='paused';
+  updateControlUI();
+}
+
+function resetAnimation(){
+  clearTimeout(animTimer);
+  animState='idle';animSteps=[];animIdx=0;
   resetHighlights();
-  const data=level==='arch'?pr.arch:pr.mod;
-  const view=level==='arch'?arch:mod;
-  const rev=level==='arch'?archRev:modRev;
-  if(!data){document.getElementById('analysis').innerHTML='<div class="div"></div><div class="ci-it">no changes at this level</div>';document.getElementById('analysis').style.display='block';return}
-  highlightNodes(view,data,pr.type,rev);
+  document.getElementById('analysis').style.display='none';
+  updateControlUI();
+}
 
-  const color=TC[pr.type];
-  const direct=Object.keys(data);
-  const indirect=new Set();
-  const q=[...direct];while(q.length){const c=q.shift();for(const d of(rev[c]||[])){if(!direct.includes(d)&&!indirect.has(d)){indirect.add(d);q.push(d)}}}
+function updateControlUI(){
+  const play=document.getElementById('btn-play');
+  const stop=document.getElementById('btn-stop');
+  const reset=document.getElementById('btn-reset');
+  play.disabled=animState==='playing'||animState==='done';
+  stop.disabled=animState!=='playing';
+  reset.disabled=animState==='idle';
+  play.classList.toggle('active-ctrl',animState==='playing');
+}
 
+document.getElementById('btn-play').onclick=playAnimation;
+document.getElementById('btn-stop').onclick=stopAnimation;
+document.getElementById('btn-reset').onclick=resetAnimation;
+
+// ════════════════════════════════════════════════════════════
+// SECTION: SIDEBAR & PANEL
+// PR list rendering, analysis panel, tooltips.
+// To add new sidebar sections, modify updatePanel().
+// ════════════════════════════════════════════════════════════
+function updatePanel(pr,dist,direct){
+  const data=getData(pr);if(!data)return;
+  const view=getView();
+  const indirectSet=new Set(Object.keys(dist).filter(id=>!direct.has(id)));
   const ta=Object.values(data).reduce((s,c)=>s+c.add,0);
   const td=Object.values(data).reduce((s,c)=>s+c.del,0);
-  const nf=Object.values(data).reduce((s,c)=>s+(c.files?c.files.length:0),0)||Object.keys(data).length;
+  const color=TC[pr.type];
 
   let html=`<div class="div"></div><div class="lbl">Impact</div>
     <div class="stat-row">
-      <div class="stat"><div class="stat-v">${direct.length}</div><div class="stat-u">direct</div></div>
-      <div class="stat"><div class="stat-v">${indirect.size}</div><div class="stat-u">indirect</div></div>
+      <div class="stat"><div class="stat-v">${direct.size}</div><div class="stat-u">direct</div></div>
+      <div class="stat"><div class="stat-v">${indirectSet.size}</div><div class="stat-u">indirect</div></div>
       <div class="stat"><div class="stat-v">${ta+td}</div><div class="stat-u">lines</div></div>
     </div><div class="div"></div><div class="lbl">Direct Changes</div>`;
 
   for(const cid of direct){
-    const c=data[cid];
-    const nameMap=level==='arch'?arch.nMap:mod.nMap;
-    const name=nameMap[cid]?nameMap[cid].label:cid;
+    const c=data[cid];if(!c)continue;
+    const name=view.nMap[cid]?view.nMap[cid].label:cid;
     html+=`<div class="ci" style="border-left:3px solid ${color}">
       <div class="ci-h"><span class="ci-n">${name}</span><span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span></div>
       ${c.files?`<div class="ci-f">${c.files.join(', ')}</div>`:''}
       <div class="ci-s">${c.summary}</div></div>`;
   }
-
-  if(indirect.size>0){
+  if(indirectSet.size>0){
     html+=`<div class="div"></div><div class="lbl">Indirect Impact</div>`;
-    const nameMap=level==='arch'?arch.nMap:mod.nMap;
-    for(const cid of indirect){
-      const name=nameMap[cid]?nameMap[cid].label:cid;
+    for(const cid of indirectSet){
+      const name=view.nMap[cid]?view.nMap[cid].label:cid;
       html+=`<div class="ci indirect"><div class="ci-n" style="font-size:11px">${name}</div><div class="ci-it">depends on changed components</div></div>`;
     }
   }
-
   if(level==='arch'&&pr.mod){
-    html+=`<div class="div"></div><div style="text-align:center;padding:6px 0">
+    html+=`<div class="div"></div><div style="text-align:center;padding:4px 0">
       <span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomIn()">zoom into API Gateway ▸</span></div>`;
   }
-
   document.getElementById('analysis').innerHTML=html;
   document.getElementById('analysis').style.display='block';
 }
 
-function analyzePR(pr,btn){
-  if(activeBtn)activeBtn.classList.remove('active');
-  btn.classList.add('active');activeBtn=btn;
-  activePR=pr;
-  showAnalysis(pr);
+const prList=document.getElementById('pr-list');
+PRS.forEach(pr=>{
+  const btn=document.createElement('button');btn.className='pr-btn';
+  const ta=pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.add,0):0;
+  const td=pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.del,0):0;
+  btn.innerHTML=`<div class="pr-id"><span class="pt ${pr.type}">${pr.type}</span>${pr.id}</div>
+    <div class="pr-title">${pr.title}</div>
+    <div class="pr-meta">${pr.author} · +${ta} -${td}</div>`;
+  btn.addEventListener('click',()=>{
+    if(activeBtn)activeBtn.classList.remove('active');
+    btn.classList.add('active');activeBtn=btn;
+    activePR=pr;
+    resetAnimation();
+    document.getElementById('controls').style.display='flex';
+    playAnimation();
+  });
+  prList.appendChild(btn);
+});
+
+// ════════════════════════════════════════════════════════════
+// SECTION: ZOOM / DRILL-DOWN
+// Handles level transitions (architecture ↔ module).
+// To add more zoomable services, register them in ARCH_NODES
+// with zoomable:true and create matching module data.
+// ════════════════════════════════════════════════════════════
+const bc0=document.getElementById('bc0'),crumb=document.getElementById('crumb');
+
+function zoomIn(){
+  level='mod';
+  const gw=arch.nMap['gateway'];
+  gArch.style.transformOrigin=`${gw.x}px ${gw.y}px`;
+  gArch.style.transform='scale(3.5)';gArch.style.opacity='0';gArch.style.pointerEvents='none';
+  setTimeout(()=>{gMod.style.opacity='1';gMod.style.pointerEvents='auto'},250);
+  bc0.classList.add('click');bc0.classList.remove('on');bc0.onclick=zoomOut;
+  if(!document.getElementById('bc1')){
+    const sep=document.createElement('span');sep.className='bcsep';sep.textContent='›';sep.id='bcsep';crumb.appendChild(sep);
+    const b=document.createElement('span');b.className='bc on';b.id='bc1';b.textContent='API Gateway';crumb.appendChild(b);
+  }
+  document.getElementById('vsub').textContent='fastify · 9 modules';
+  if(activePR){resetAnimation();playAnimation()}
 }
 
-// ═══════════════ PAN ═══════════════
+function zoomOut(){
+  level='arch';
+  gMod.style.opacity='0';gMod.style.pointerEvents='none';
+  setTimeout(()=>{gArch.style.transform='scale(1)';gArch.style.opacity='1';gArch.style.pointerEvents='auto'},200);
+  bc0.classList.remove('click');bc0.classList.add('on');bc0.onclick=null;
+  const s=document.getElementById('bcsep'),b=document.getElementById('bc1');if(s)s.remove();if(b)b.remove();
+  document.getElementById('vsub').textContent='e-commerce · 13 components';
+  if(activePR){resetAnimation();playAnimation()}
+}
+
+ARCH_NODES.forEach(n=>{if(n.zoomable)arch.nEls[n.id].g.addEventListener('click',()=>{if(level==='arch')zoomIn()})});
+
+// ════════════════════════════════════════════════════════════
+// SECTION: TOOLTIP & PAN
+// ════════════════════════════════════════════════════════════
+const tip=document.getElementById('tip');
+function showTip(e,n){
+  let h=`<div class="tip-n">${n.label}</div>`;
+  if(n.zoomable)h+=`<div class="tip-f">click to explore modules</div>`;
+  if(activePR){const d=getData(activePR);if(d&&d[n.id])h+=`<div class="tip-s">${d[n.id].summary}</div>`}
+  tip.innerHTML=h;tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
+}
+function hideTip(){tip.style.display='none'}
+document.addEventListener('mousemove',e=>{if(tip.style.display==='block'){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px'}});
+
 let pan={x:0,y:0},panning=false,ps=null;
 svg.addEventListener('mousedown',e=>{if(!e.target.closest('.node-group')){panning=true;ps={x:e.clientX-pan.x,y:e.clientY-pan.y}}});
-svg.addEventListener('mousemove',e=>{if(panning){pan.x=e.clientX-ps.x;pan.y=e.clientY-ps.y;const t=level==='arch'?gArch:gMod;t.style.transform=level==='arch'?`translate(${pan.x}px,${pan.y}px)`:`translate(${pan.x}px,${pan.y}px)`;if(level==='mod')gMod.style.transform=`translate(${pan.x}px,${pan.y}px)`}});
+svg.addEventListener('mousemove',e=>{if(panning){pan.x=e.clientX-ps.x;pan.y=e.clientY-ps.y;const g=level==='arch'?gArch:gMod;g.style.transform=level==='arch'?`translate(${pan.x}px,${pan.y}px) scale(1)`:`translate(${pan.x}px,${pan.y}px)`}});
 svg.addEventListener('mouseup',()=>{panning=false});
 svg.addEventListener('mouseleave',()=>{panning=false});
 </script>
