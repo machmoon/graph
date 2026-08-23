@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const { buildGraph, groupFiles, FASTIFY_GROUPS } = require('./lib/graph-builder');
 const { parseDiffStat, mapFilesToGroups } = require('./lib/pr-analyzer');
 const { computeBlastRadius } = require('./lib/blast-engine');
@@ -17,11 +18,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 // out, and keeps a node-keyed report per PR in memory. Nothing is hardcoded:
 // open a PR, Greptile reviews it, the next poll picks it up.
 //   GITHUB_TOKEN  (env or .env) — strongly recommended; unauthenticated = 60 req/h
-//   GITHUB_REPO   default machmoon/graph
+//   GITHUB_REPO   default machmoon/fastify (the Fastify fork; the submodule tracks its main)
+//   SYNC_SUBMODULE default 1 — each poll also fast-forwards ./fastify to the fork's main
 //   POLL_MS       default 60s with a token, 5min without
 const dotenv = readDotEnv();
 const GH_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || dotenv.GITHUB_TOKEN || '';
-const GH_REPO = process.env.GITHUB_REPO || dotenv.GITHUB_REPO || 'machmoon/graph';
+const GH_REPO = process.env.GITHUB_REPO || dotenv.GITHUB_REPO || 'machmoon/fastify';
+const SYNC_SUBMODULE = (process.env.SYNC_SUBMODULE ?? dotenv.SYNC_SUBMODULE ?? '1') !== '0';
+const FASTIFY_DIR = path.join(__dirname, 'fastify');
 const POLL_MS = Number(process.env.POLL_MS || dotenv.POLL_MS) || (GH_TOKEN ? 60_000 : 300_000);
 const gh = makeClient(GH_TOKEN);
 
@@ -31,12 +35,32 @@ const gh = makeClient(GH_TOKEN);
 const GREPTILE_KEY = process.env.GREPTILE_API_KEY || dotenv.GREPTILE_API_KEY || '';
 const GREPTILE_REPO = process.env.GREPTILE_REPO || dotenv.GREPTILE_REPO || 'machmoon/fastify';
 const GREPTILE_BRANCH = process.env.GREPTILE_BRANCH || dotenv.GREPTILE_BRANCH || 'main';
+let cachedGraph = null;
+let cachedGrouped = null;
 const reports = new Map();            // pr number -> report
-const poll = { last: null, error: null, inFlight: false };
+const poll = { last: null, error: null, inFlight: false, submodule: null };
+
+// Keep ./fastify (the submodule) on the fork's main so /api/graph reflects what PRs merge into.
+function git(...args) { return execFileSync('git', args, { cwd: FASTIFY_DIR, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); }
+function syncSubmodule() {
+  if (!SYNC_SUBMODULE) return;
+  try {
+    const before = git('rev-parse', 'HEAD');
+    git('fetch', '-q', 'origin', 'main');
+    const after = git('rev-parse', 'FETCH_HEAD');
+    if (before === after) return;
+    if (git('status', '--porcelain')) { console.warn('[submodule] ./fastify has local changes; not moving it'); return; }
+    git('checkout', '-q', '--detach', after);
+    cachedGraph = null; cachedGrouped = null;
+    poll.submodule = after;
+    console.log(`[submodule] fastify ${before.slice(0, 8)} → ${after.slice(0, 8)}; graph cache cleared`);
+  } catch (err) { console.warn(`[submodule] sync failed: ${err.message.split('\n')[0]}`); }
+}
 
 async function refreshReports() {
   if (poll.inFlight) return;
   poll.inFlight = true;
+  syncSubmodule();
   try {
     const prs = await gh(`/repos/${GH_REPO}/pulls?state=all&sort=updated&direction=desc`);
     for (const pr of prs.slice(0, 20)) {
@@ -73,8 +97,6 @@ app.get('/api/reports/:pr', async (req, res) => {
   } catch (err) { res.status(err.status || 500).json({ error: err.message }); }
 });
 
-let cachedGraph = null;
-let cachedGrouped = null;
 
 async function ensureGraph(repoPath, entry = 'fastify.js') {
   if (cachedGrouped) return cachedGrouped;

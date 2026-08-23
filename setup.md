@@ -158,7 +158,8 @@ Two directions, and they answer different questions.
 
 **Passive (polled).** Reacts to whatever Greptile decided to say about a PR diff:
 ```
-PR pushed → Greptile reviews & comments on GitHub → server polls GitHub → public/index.html updates
+PR opened on machmoon/fastify → Greptile reviews & comments → server polls GitHub, fast-forwards the
+`fastify/` submodule to the fork's `main`, rebuilds the graph if it moved → public/index.html updates
 ```
 
 **Active (on demand).** The graph does the asking, so the review covers modules the diff never touched:
@@ -184,7 +185,8 @@ panel (real patches from the GitHub API) from it. Open the page at
 2. Create `.env` (git-ignored) so the server isn't stuck on GitHub's 60 req/h anonymous limit:
    ```
    GITHUB_TOKEN=github_pat_...       # fine-grained: Pull requests: read, Contents: read
-   GITHUB_REPO=machmoon/graph        # repo the poller watches for PRs
+   GITHUB_REPO=machmoon/fastify      # repo the poller watches for PRs (default: the Fastify fork)
+   SYNC_SUBMODULE=1                  # optional; each poll fast-forwards ./fastify to the fork's main
    POLL_MS=60000                     # optional; default 60s with token, 5min without
 
    GREPTILE_API_KEY=...              # required for active review — app.greptile.com/settings/api

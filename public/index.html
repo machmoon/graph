@@ -194,7 +194,7 @@ svg{display:block;width:100vw;height:100vh}
 
   <button class="tour-btn" id="btn-tour" title="Step through the PR review story">Start Guided Tour</button>
 
-  <div class="lbl"><span>Select PR Scenario</span><span style="font-size:8px;color:var(--txd)">[1-4]</span></div>
+  <div class="lbl"><span>Pull Requests</span><span id="pr-count"></span></div>
   <div id="pr-list"></div>
 
   <div id="analysis"></div>
@@ -1153,6 +1153,7 @@ function updatePanel(pr,dist,direct){
 const prList=document.getElementById('pr-list');
 function renderPRList(){
   prList.innerHTML='';
+  const pc=document.getElementById('pr-count');if(pc)pc.textContent=liveMode==='live'?`${PRS.length} on ${liveData?liveData.repo:''}`.trim():`${PRS.length} demo`;
   if(!PRS.length){prList.innerHTML='<div class="ci-it" style="padding:4px 0">No pull requests yet — open one on GitHub and it will appear here after Greptile reviews it.</div>';return}
   PRS.forEach(pr=>{
     const btn=document.createElement('button');btn.className='pr-btn';btn.dataset.id=pr.id;
