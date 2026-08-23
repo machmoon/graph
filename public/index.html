@@ -340,6 +340,25 @@ const MOD_EDGES=[
 // ════════════════════════════════════════════════════════════
 // Offline demo data. Only used when /api/reports is unreachable (e.g. file://).
 const MOCK_PRS=[
+  { id:'#local-abort',title:'clean up request abort listeners',type:'fix',author:'local demo',
+    risk:'HIGH',riskClass:'risk-high',
+    story:[
+      'Origin: Keeps onRequestAbort close listeners from surviving completed requests.',
+      'Hop 1: Request and Reply lifecycle cleanup now covers normal responses and hijacks.',
+      'Hop 2: Routing, error, and internal request state remain consistent under aborts.',
+      'Review complete: Focused handler-timeout coverage passes locally.'
+    ],
+    aiFindings:{
+      reqres:'[High] Verify cleanup runs for both response finish and reply.hijack paths.',
+      routing:'[Medium] The close listener must be registered before onRequest hooks dispatch.'
+    },
+    arch:{ gateway:{summary:'4 files tighten request-abort listener lifecycle',add:69,del:15} },
+    mod:{
+      routing:{files:['route.js'],add:17,del:14,summary:'Registers and retains the abort listener before hook dispatch'},
+      reqres:{files:['reply.js'],add:9,del:0,summary:'Removes abort listeners after response finish or hijack'},
+      internals:{files:['symbols.js'],add:1,del:0,summary:'Stores the request-abort callback on the request'},
+    }
+  },
   { id:'#6580',title:'introduce log controller layer',type:'feat',author:'Manuel Spigolon',
     risk:'CRITICAL',riskClass:'risk-crit',
     story:[
@@ -427,6 +446,50 @@ const MOCK_PRS=[
 
 // Curated code diffs
 let CODE_DIFFS={
+  '#local-abort':{
+    routing:[
+      {file:'lib/route.js',add:17,del:14,diff:[
+        '@@ -546,7 +547,7 @@',
+        '-    if (hasLogger === true || context.onResponse !== null || handlerTimeout > 0) {',
+        '+    if (hasLogger === true || context.onResponse !== null || context.onRequestAbort !== null || handlerTimeout > 0) {',
+        '@@ -557,19 +558,8 @@',
+        '-    if (context.onRequestAbort !== null) {',
+        '-      req.on(\'close\', () => {',
+        '+    if (context.onRequestAbort !== null) {',
+        '+      const onRequestAbort = () => {',
+        '         if (req.aborted) {',
+        '           onAbortRequestHookRunner(',
+        '         }',
+        '-      })',
+        '+      }',
+        '+      req.on(\'close\', onRequestAbort)',
+        '+      request[kOnRequestAbort] = onRequestAbort',
+        '     }',
+        '+    // Dispatch onRequest hooks after the abort listener is retained.'
+      ]}
+    ],
+    reqres:[
+      {file:'lib/reply.js',add:9,del:0,diff:[
+        '@@ -142,6 +143,10 @@ Reply.prototype.hijack',
+        '+  if (this.request[kOnRequestAbort]) {',
+        '+    this.request.raw.removeListener(\'close\', this.request[kOnRequestAbort])',
+        '+    this.request[kOnRequestAbort] = null',
+        '+  }',
+        '@@ -983,6 +988,10 @@ function setupResponseListeners',
+        '+    if (reply.request[kOnRequestAbort]) {',
+        '+      reply.request.raw.removeListener(\'close\', reply.request[kOnRequestAbort])',
+        '+      reply.request[kOnRequestAbort] = null',
+        '+    }'
+      ]}
+    ],
+    internals:[
+      {file:'lib/symbols.js',add:1,del:0,diff:[
+        '@@ -37,6 +37,7 @@ const keys = {',
+        "   kOnAbort: Symbol('fastify.request.onAbort'),",
+        "+  kOnRequestAbort: Symbol('fastify.request.onRequestAbort'),"
+      ]}
+    ]
+  },
   '#6580':{
     logging:[
       {file:'lib/log-controller.js',add:169,del:0,diff:[
