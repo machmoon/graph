@@ -1,240 +1,586 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
 <meta charset="utf-8">
 <title>Blast Radius</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap">
 <style>
-:root{--bg:#070a10;--sf:#0c1018;--tx:#b0c0d5;--txd:#6a7a90;--txb:#e8eef5;--bd:#1a2a45;--acc:#38bdf8;--grn:#22c55e;--amb:#f59e0b;--blu:#3b82f6;--red:#ef4444}
+:root{--bg:#070a10;--sf:#0c1018;--tx:#8a99b0;--txd:#3a4a60;--txb:#dce6f0;--bd:#152035;--acc:#38bdf8;--grn:#22c55e;--amb:#f59e0b;--blu:#3b82f6;--red:#ef4444}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-serif;overflow:hidden;height:100vh}
-#crumb{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:12px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:7px 16px}
+
+#crumb{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:11px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:6px 14px}
 .bc{color:var(--txd);cursor:default}.bc.click{color:var(--acc);cursor:pointer}.bc.click:hover{color:var(--txb)}.bc.on{color:var(--txb)}.bcsep{color:var(--txd)}
-#sidebar{position:fixed;top:12px;left:12px;width:260px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:14px;z-index:10;font-size:12px;max-height:calc(100vh - 24px);overflow-y:auto}
+
+#sidebar{position:fixed;top:12px;left:12px;width:250px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:14px;z-index:10;font-size:11px;max-height:calc(100vh - 24px);overflow-y:auto}
 #sidebar::-webkit-scrollbar{width:3px}#sidebar::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
-#sidebar h1{font-size:17px;font-weight:700;color:var(--txb);margin-bottom:2px}
-.sub{color:var(--txd);font-size:11px;font-family:'Fira Code',monospace;margin-bottom:10px}
+#sidebar h1{font-size:15px;font-weight:700;color:var(--txb);margin-bottom:1px}
+.sub{color:var(--txd);font-size:10px;font-family:'Fira Code',monospace;margin-bottom:10px}
 .div{height:1px;background:var(--bd);margin:8px 0}
-.lbl{font-size:10px;font-weight:600;color:var(--txd);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'Fira Code',monospace}
-.pr-btn{display:block;width:100%;text-align:left;background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:8px 10px;margin-bottom:5px;cursor:pointer;font-family:inherit;font-size:12px;color:var(--tx);transition:border-color .2s,background .2s}
+.lbl{font-size:9px;font-weight:600;color:var(--txd);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'Fira Code',monospace}
+.pr-btn{display:block;width:100%;text-align:left;background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--tx);transition:border-color .2s,background .2s}
 .pr-btn:hover{border-color:#2a3a55;background:#0e1520}.pr-btn.active{border-color:var(--acc);background:#0c1a2e}
-.pr-id{font-family:'Fira Code',monospace;font-size:11px;color:var(--txd)}
-.pr-title{color:var(--txb);font-weight:500;margin-top:2px;font-size:13px}
-.pr-meta{font-size:10px;color:var(--txd);margin-top:2px;font-family:'Fira Code',monospace}
-.pt{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
+.pr-id{font-family:'Fira Code',monospace;font-size:10px;color:var(--txd)}
+.pr-title{color:var(--txb);font-weight:500;margin-top:1px}
+.pr-meta{font-size:9px;color:var(--txd);margin-top:1px;font-family:'Fira Code',monospace}
+.pt{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
 .pt.feat{background:#052e16;color:var(--grn)}.pt.fix{background:#2a1a05;color:var(--amb)}.pt.refactor{background:#0f1d3d;color:var(--blu)}
 .stat-row{display:flex;gap:10px;margin-bottom:6px}.stat{text-align:center;flex:1}
-.stat-v{font-size:22px;font-weight:700;color:var(--txb);line-height:1}.stat-u{font-size:10px;color:var(--txd);font-family:'Fira Code',monospace}
+.stat-v{font-size:20px;font-weight:700;color:var(--txb);line-height:1}.stat-u{font-size:9px;color:var(--txd);font-family:'Fira Code',monospace}
 #analysis{display:none}
-.ci{background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:8px 10px;margin-bottom:5px}
-.ci.indirect{border-style:dashed;opacity:.7}
+.ci{background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;margin-bottom:5px}
+.ci.has-diff{cursor:pointer;transition:border-color .15s,background .15s}.ci.has-diff:hover{border-color:#31506e;background:#0d1622}
+.ci-open{margin-top:5px;color:var(--acc);font-family:'Fira Code',monospace;font-size:9px;font-style:normal}
+.ci.indirect{border-style:dashed;opacity:.65}
 .ci-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
-.ci-n{font-weight:600;color:var(--txb);font-size:13px}
-.ci-b{font-family:'Fira Code',monospace;font-size:10px}.ci-b .a{color:var(--grn)}.ci-b .d{color:var(--red)}
-.ci-f{font-size:11px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.5}
-.ci-s{font-size:11px;color:var(--tx);margin-top:3px;line-height:1.3;font-style:italic}
-.ci-it{font-size:10px;color:var(--txd);font-style:italic}
+.ci-n{font-weight:600;color:var(--txb);font-size:12px}
+.ci-b{font-family:'Fira Code',monospace;font-size:9px}.ci-b .a{color:var(--grn)}.ci-b .d{color:var(--red)}
+.ci-f{font-size:10px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.4}
+.ci-s{font-size:10px;color:var(--tx);margin-top:3px;line-height:1.3;font-style:italic}
+.ci-it{font-size:9px;color:var(--txd);font-style:italic}
+
+/* ══ CODE DIFF PANEL ══ */
+#code-panel{position:fixed;top:12px;right:12px;width:min(640px,calc(100vw - 298px));height:calc(100vh - 24px);z-index:40;display:none;flex-direction:column;background:#090d14;border:1px solid #22324a;border-radius:7px;box-shadow:0 24px 80px rgba(0,0,0,.55);overflow:hidden}
+.code-head{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid var(--bd);background:#0c111a}
+.code-kicker{font-family:'Fira Code',monospace;font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--acc);margin-bottom:4px}
+.code-title{font-size:16px;font-weight:700;color:var(--txb)}
+.code-sub{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd);margin-top:3px}
+#code-close{border:1px solid var(--bd);background:#0a0f18;color:var(--tx);width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:16px;line-height:1}#code-close:hover{border-color:var(--acc);color:var(--txb)}
+#file-tabs{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--bd);overflow-x:auto;background:#0a0f17;flex-shrink:0}
+#file-tabs::-webkit-scrollbar{height:3px}#file-tabs::-webkit-scrollbar-thumb{background:#25344a}
+.file-tab{border:1px solid transparent;background:transparent;color:#65758c;padding:5px 8px;border-radius:4px;cursor:pointer;font-family:'Fira Code',monospace;font-size:9px;white-space:nowrap}.file-tab:hover{color:var(--txb);background:#101824}.file-tab.active{color:var(--txb);border-color:#29415e;background:#101b29}
+#diff-meta{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--bd);font-family:'Fira Code',monospace;font-size:9px;color:var(--txd);flex-shrink:0}.dm-add{color:#4ade80}.dm-del{color:#f87171}.dm-note{margin-left:auto;color:#53647b}
+#diff-view{overflow:auto;flex:1;background:#070a10;font-family:'Fira Code',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.55;padding:8px 0 24px}
+#diff-view::-webkit-scrollbar{width:7px;height:7px}#diff-view::-webkit-scrollbar-thumb{background:#25344a;border-radius:4px}
+.diff-row{display:grid;grid-template-columns:45px 45px 22px minmax(max-content,1fr);min-height:18px;border-left:3px solid transparent}
+.diff-row.add{background:rgba(34,197,94,.10);border-left-color:#22c55e}.diff-row.del{background:rgba(239,68,68,.10);border-left-color:#ef4444}.diff-row.hunk{display:block;background:#0b1724;color:#60a5fa;border-left-color:#2563eb;padding:5px 12px;margin:7px 0 3px}
+.diff-num{color:#34445a;text-align:right;padding:0 8px;border-right:1px solid #111b2a;user-select:none}.diff-mark{text-align:center;color:#45566d;user-select:none}.add .diff-mark{color:#4ade80}.del .diff-mark{color:#f87171}
+.diff-code{white-space:pre;padding:0 12px;color:#9aa9bb}.add .diff-code{color:#bbf7d0}.del .diff-code{color:#fecaca}
+.diff-empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;color:var(--txd);font-size:11px;line-height:1.6}.diff-empty strong{display:block;color:var(--txb);font-size:13px;margin-bottom:5px}
+@media(max-width:900px){#code-panel{left:12px;width:calc(100vw - 24px)}}
+
+/* ══ CONTROLS ══ */
 #controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;display:none;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:6px 10px}
-#controls button{background:#0a0f18;border:1px solid var(--bd);color:var(--tx);padding:5px 14px;border-radius:4px;font-family:'Fira Code',monospace;font-size:11px;cursor:pointer;transition:all .15s;white-space:nowrap}
+#controls button{background:#0a0f18;border:1px solid var(--bd);color:var(--tx);padding:5px 14px;border-radius:4px;font-family:'Fira Code',monospace;font-size:10px;cursor:pointer;transition:all .15s;white-space:nowrap}
 #controls button:hover{border-color:var(--acc);color:var(--txb)}
 #controls button.active-ctrl{border-color:var(--acc);color:var(--acc);background:#0c1a2e}
 #controls button:disabled{opacity:.3;cursor:default;border-color:var(--bd);color:var(--txd)}
-#node-detail{position:fixed;display:none;z-index:25;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;width:270px;font-size:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
-#pr-banner{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:19;display:none;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:10px 20px;max-width:620px;text-align:center}
-#pr-banner .bn-id{font-family:'Fira Code',monospace;font-size:11px;color:var(--txd);margin-bottom:2px}
-#pr-banner .bn-text{font-size:14px;color:var(--txb);font-weight:500;line-height:1.4}
+
 svg{display:block;width:100vw;height:100vh}
+.tier-label{font-family:'Fira Code',monospace;font-size:9px;fill:#1a2a40;letter-spacing:1.5px}
 .node-group{cursor:pointer}.node-box{transition:fill .5s}.node-border{transition:stroke .5s,stroke-width .4s,stroke-dasharray .3s}
 .node-tag,.node-label,.node-info{transition:fill .5s}
-.edge-path{fill:none;stroke:#1e2e48;stroke-width:1.2;transition:stroke .5s,stroke-width .4s}
+.edge-path{fill:none;stroke:#141e30;stroke-width:1.2;transition:stroke .5s,stroke-width .4s}
 .node-group.dimmed .node-box{fill:#080c12!important}.node-group.dimmed .node-border{stroke:#101820!important}
 .node-group.dimmed .node-tag{fill:#1a2535!important}.node-group.dimmed .node-label{fill:#2a3a4a!important}.node-group.dimmed .node-info{fill:#101820!important}
 .change-badge{transition:opacity .5s}
-.zoom-hint{font-family:'Fira Code',monospace;font-size:9px;fill:var(--acc);opacity:0;transition:opacity .2s;cursor:pointer}
-.node-group:hover .zoom-hint{opacity:.85}
-#gMod,#gFiles{transition:opacity .45s ease}
-.tip{position:fixed;background:var(--sf);border:1px solid var(--bd);padding:6px 10px;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:20;max-width:260px}
-.tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}.tip-f{font-family:'Fira Code',monospace;font-size:10px;color:var(--txd)}
-.tip-s{font-size:11px;color:var(--tx);margin-top:3px;font-style:italic}
+.zoom-hint{font-family:'Fira Code',monospace;font-size:8px;fill:var(--acc);opacity:0;transition:opacity .2s;cursor:pointer}
+.node-group:hover .zoom-hint{opacity:.8}
+#gArch,#gMod{transition:opacity .45s ease}
+.tip{position:fixed;background:var(--sf);border:1px solid var(--bd);padding:6px 10px;border-radius:4px;font-size:11px;pointer-events:none;display:none;z-index:20;max-width:240px}
+.tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}.tip-f{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd)}
+.tip-s{font-size:10px;color:var(--tx);margin-top:3px;font-style:italic}
+/* ══ GREPTILE REVIEW ══ */
+.gr-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Fira Code',monospace;font-size:8px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:1px 5px;border-radius:3px;border:1px solid currentColor;margin-left:6px;vertical-align:middle;white-space:nowrap}
+.gr-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.gr-row{display:block;margin:3px 10px 6px 112px;padding:6px 10px;border-radius:4px;background:#0c1420;border:1px solid #1e2e45;border-left:3px solid currentColor;font-family:'DM Sans',sans-serif;font-size:10.5px;line-height:1.45;color:#b8c4d4;white-space:normal;max-width:640px}
+.gr-row .gr-k{font-family:'Fira Code',monospace;font-size:8px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-right:6px}
+.gr-row code{font-family:'Fira Code',monospace;font-size:9.5px;color:#dce6f0;background:#111b2a;padding:0 3px;border-radius:2px}
+.gr-src{font-size:9px;color:var(--txd);font-family:'Fira Code',monospace;margin-bottom:5px;line-height:1.4}
+.gr-sum{font-size:10.5px;color:var(--tx);line-height:1.45;margin-bottom:6px}
+.gr-chip{display:inline-block;font-family:'Fira Code',monospace;font-size:9px;padding:1px 6px;border-radius:3px;background:#0a0f18;border:1px dashed #2a3a55;color:#8a99b0;margin:0 4px 4px 0}
+.pr-meta .gr-badge{margin-left:6px}
 </style>
-</head>
-<body>
-<div id="crumb"><span class="bc on" id="bc0">Fastify Modules</span></div>
+
+<div id="crumb"><span class="bc on" id="bc0">System Architecture</span></div>
+
 <div id="sidebar">
   <h1>Blast Radius</h1>
-  <div class="sub" id="vsub">fastify · 9 modules · 32 files</div>
-  <div class="lbl">Demo PRs</div>
+  <div class="sub" id="vsub">e-commerce · 13 components</div>
+  <div class="lbl">Pull Requests</div>
   <div id="pr-list"></div>
   <div id="analysis"></div>
 </div>
+
 <div id="controls">
   <button id="btn-play">&#9654; Play</button>
   <button id="btn-stop">&#9632; Stop</button>
   <button id="btn-reset">&#8634; Reset</button>
 </div>
-<div id="pr-banner"><div class="bn-id"></div><div class="bn-text"></div></div>
-<div id="node-detail"></div>
+
+<aside id="code-panel" aria-label="Code diff">
+  <div class="code-head">
+    <div>
+      <div class="code-kicker" id="code-kicker">Code changes</div>
+      <div class="code-title" id="code-title">Module diff</div>
+      <div class="code-sub" id="code-sub"></div>
+    </div>
+    <button id="code-close" aria-label="Close code panel">&times;</button>
+  </div>
+  <div id="file-tabs"></div>
+  <div id="diff-meta"></div>
+  <div id="diff-view"></div>
+</aside>
+
 <div class="tip" id="tip"></div>
 <svg id="g"></svg>
 
 <script>
+// ════════════════════════════════════════════════════════════
+// SECTION: CONFIG
+// Tune animation speed, colors, node sizes here.
+// ════════════════════════════════════════════════════════════
 const NS='http://www.w3.org/2000/svg';
-const W=window.innerWidth,H=window.innerHeight,CX=W/2+90;
-const NW=155,NH=56,NR=5;
-const HOP_DELAY=900,BALL_MS=550;
+const W=window.innerWidth,H=window.innerHeight,CX=W/2+80;
+const NW=150,NH=54,NR=5;
+const HOP_DELAY=900;
+const BALL_MS=550;
 const TC={feat:'#22c55e',fix:'#f59e0b',refactor:'#3b82f6'};
 const TBG={feat:'#062015',fix:'#1a1505',refactor:'#0c1530'};
 const TSK={feat:'#16a34a',fix:'#d97706',refactor:'#2563eb'};
 
-// ═══════════════════════════════════════════════════════
-// RAW MADGE DATA — real imports from github.com/fastify/fastify
-// ═══════════════════════════════════════════════════════
-const RAW={
-'fastify.js':['lib/content-type-parser.js','lib/context.js','lib/decorate.js','lib/error-handler.js','lib/errors.js','lib/four-oh-four.js','lib/hooks.js','lib/initial-config-validation.js','lib/logger-factory.js','lib/plugin-override.js','lib/plugin-utils.js','lib/reply.js','lib/req-id-gen-factory.js','lib/request.js','lib/route.js','lib/schema-controller.js','lib/server.js','lib/symbols.js'],
-'lib/config-validator.js':[],'lib/content-type-parser.js':['lib/content-type.js','lib/errors.js','lib/symbols.js','lib/warnings.js'],
-'lib/content-type.js':[],'lib/context.js':['lib/symbols.js'],
-'lib/decorate.js':['lib/errors.js','lib/symbols.js'],
-'lib/error-handler.js':['lib/error-serializer.js','lib/error-status.js','lib/errors.js','lib/schemas.js','lib/symbols.js','lib/wrap-thenable.js'],
-'lib/error-serializer.js':[],'lib/error-status.js':['lib/symbols.js'],'lib/errors.js':[],
-'lib/four-oh-four.js':['lib/context.js','lib/error-handler.js','lib/errors.js','lib/hooks.js','lib/logger-factory.js','lib/reply.js','lib/req-id-gen-factory.js','lib/request.js','lib/symbols.js'],
-'lib/handle-request.js':['lib/content-type.js','lib/error-status.js','lib/errors.js','lib/hooks.js','lib/symbols.js','lib/validation.js','lib/wrap-thenable.js'],
-'lib/head-route.js':[],'lib/hooks.js':['lib/errors.js','lib/symbols.js'],
-'lib/initial-config-validation.js':['lib/config-validator.js','lib/errors.js'],
-'lib/log-controller.js':[],
-'lib/logger-factory.js':['lib/errors.js','lib/log-controller.js','lib/logger-pino.js','lib/symbols.js'],
-'lib/logger-pino.js':['lib/errors.js'],'lib/noop-set.js':[],
-'lib/plugin-override.js':['lib/content-type-parser.js','lib/hooks.js','lib/plugin-utils.js','lib/reply.js','lib/request.js','lib/schema-controller.js','lib/symbols.js'],
-'lib/plugin-utils.js':['lib/decorate.js','lib/errors.js','lib/symbols.js'],
-'lib/reply.js':['lib/content-type.js','lib/decorate.js','lib/error-handler.js','lib/errors.js','lib/handle-request.js','lib/hooks.js','lib/logger-factory.js','lib/schemas.js','lib/symbols.js'],
-'lib/req-id-gen-factory.js':['lib/symbols.js'],
-'lib/request.js':['lib/content-type.js','lib/decorate.js','lib/errors.js','lib/symbols.js'],
-'lib/route.js':['lib/context.js','lib/error-handler.js','lib/errors.js','lib/handle-request.js','lib/head-route.js','lib/hooks.js','lib/initial-config-validation.js','lib/logger-factory.js','lib/req-id-gen-factory.js','lib/schemas.js','lib/symbols.js','lib/validation.js'],
-'lib/schema-controller.js':['lib/schemas.js'],
-'lib/schemas.js':['lib/content-type.js','lib/errors.js','lib/symbols.js'],
-'lib/server.js':['lib/errors.js','lib/hooks.js','lib/noop-set.js','lib/symbols.js','lib/warnings.js'],
-'lib/symbols.js':[],'lib/validation.js':['lib/errors.js','lib/symbols.js','lib/warnings.js'],
-'lib/warnings.js':[],'lib/wrap-thenable.js':['lib/error-status.js','lib/symbols.js']
-};
+// ════════════════════════════════════════════════════════════
+// SECTION: ARCHITECTURE DATA
+// Add/remove system components and connections here.
+// Each node: {id, label, tag, x, y, zoomable?, zoomLabel?}
+// Each edge: [fromId, toId] meaning "from calls/depends-on to"
+// ════════════════════════════════════════════════════════════
+const ARCH_NODES=[
+  {id:'clients',label:'Clients',tag:'USERS',x:CX,y:70},
+  {id:'lb',label:'Load Balancer',tag:'INFRA',x:CX,y:170},
+  {id:'gateway',label:'API Gateway',tag:'FASTIFY',x:CX,y:280,zoomable:true,zoomLabel:'9 modules'},
+  {id:'auth',label:'Auth',tag:'SERVICE',x:CX-320,y:420},
+  {id:'user',label:'User',tag:'SERVICE',x:CX-160,y:420},
+  {id:'product',label:'Product',tag:'SERVICE',x:CX,y:420},
+  {id:'order',label:'Order',tag:'SERVICE',x:CX+160,y:420},
+  {id:'notif',label:'Notifications',tag:'SERVICE',x:CX+320,y:420},
+  {id:'redis',label:'Redis',tag:'CACHE',x:CX-300,y:570},
+  {id:'postgres',label:'PostgreSQL',tag:'DATABASE',x:CX-100,y:570},
+  {id:'s3',label:'S3 Bucket',tag:'STORAGE',x:CX+80,y:570},
+  {id:'stripe',label:'Stripe',tag:'EXTERNAL',x:CX+240,y:570},
+  {id:'queue',label:'Message Queue',tag:'QUEUE',x:CX+400,y:570},
+];
+const ARCH_EDGES=[
+  ['clients','lb'],['lb','gateway'],
+  ['gateway','auth'],['gateway','user'],['gateway','product'],['gateway','order'],['gateway','notif'],
+  ['auth','redis'],['user','postgres'],['product','postgres'],['product','s3'],
+  ['order','postgres'],['order','stripe'],['notif','queue'],
+];
 
-// ═══════════════════════════════════════════════════════
-// MODULE DEFINITIONS — grouped from real file structure
-// ═══════════════════════════════════════════════════════
-const MODULES={
-  core:{label:'Core',tag:'ENTRY',files:['fastify.js']},
-  plugins:{label:'Plugins',tag:'EXTENSION',files:['lib/plugin-override.js','lib/plugin-utils.js']},
-  server:{label:'Server & Hooks',tag:'LIFECYCLE',files:['lib/server.js','lib/hooks.js']},
-  routing:{label:'Routing',tag:'HTTP',files:['lib/route.js','lib/four-oh-four.js','lib/handle-request.js','lib/head-route.js','lib/context.js']},
-  reqres:{label:'Request / Reply',tag:'I/O',files:['lib/reply.js','lib/request.js','lib/content-type-parser.js','lib/content-type.js']},
-  validation:{label:'Validation',tag:'SCHEMA',files:['lib/validation.js','lib/schemas.js','lib/schema-controller.js','lib/initial-config-validation.js']},
-  errors:{label:'Error Handling',tag:'ERRORS',files:['lib/error-handler.js','lib/error-serializer.js','lib/error-status.js','lib/errors.js']},
-  logging:{label:'Logging',tag:'OBSERVABILITY',files:['lib/logger-factory.js','lib/logger-pino.js','lib/log-controller.js']},
-  internals:{label:'Internals',tag:'SHARED',files:['lib/symbols.js','lib/wrap-thenable.js','lib/warnings.js','lib/noop-set.js','lib/decorate.js','lib/req-id-gen-factory.js','lib/config-validator.js']},
-};
-const fileToMod={};
-for(const[m,d]of Object.entries(MODULES))for(const f of d.files)fileToMod[f]=m;
-
-// compute ALL module-level edges from real imports
-const _es=new Set();const ALL_MOD_EDGES=[];
-for(const[file,imports]of Object.entries(RAW)){
-  const fm=fileToMod[file];if(!fm)continue;
-  for(const imp of imports){const tm=fileToMod[imp];if(!tm||tm===fm)continue;const k=fm+'>'+tm;if(!_es.has(k)){_es.add(k);ALL_MOD_EDGES.push([fm,tm])}}
-}
-
-// SHOWN EDGES: structural deps (hide utility deps to errors/internals, hide core→* starburst)
-const SHOWN_EDGES=ALL_MOD_EDGES.filter(([f,t])=>t!=='errors'&&t!=='internals'&&f!=='core');
-SHOWN_EDGES.unshift(['core','routing'],['core','server'],['core','plugins']);
-const shownSet=new Set(SHOWN_EDGES.map(([f,t])=>f+'>'+t));
-const bidiSet=new Set();
-SHOWN_EDGES.forEach(([f,t])=>{if(shownSet.has(t+'>'+f)){bidiSet.add(f+'>'+t);bidiSet.add(t+'>'+f)}});
-
-// MODULE NODE POSITIONS
+// ════════════════════════════════════════════════════════════
+// SECTION: MODULE DATA (inside API Gateway = Fastify)
+// Add internal module structure here. Same format as arch.
+// ════════════════════════════════════════════════════════════
+const COL=[-220,0,220],ROW=[80,220,370,520];
 const MOD_NODES=[
-  {id:'core',label:'Core',tag:'ENTRY',x:CX,y:80,info:'imports all modules · 1 file'},
-  {id:'plugins',label:'Plugins',tag:'EXTENSION',x:CX-220,y:220,info:'2 files'},
-  {id:'server',label:'Server & Hooks',tag:'LIFECYCLE',x:CX,y:220,info:'2 files'},
-  {id:'routing',label:'Routing',tag:'HTTP',x:CX+220,y:220,info:'5 files'},
-  {id:'reqres',label:'Request / Reply',tag:'I/O',x:CX-130,y:360,info:'4 files'},
-  {id:'validation',label:'Validation',tag:'SCHEMA',x:CX+130,y:360,info:'4 files'},
-  {id:'logging',label:'Logging',tag:'OBSERVABILITY',x:CX-220,y:500,info:'3 files'},
-  {id:'errors',label:'Error Handling',tag:'ERRORS',x:CX,y:500,info:'used by 7 modules · 4 files'},
-  {id:'internals',label:'Internals',tag:'SHARED',x:CX+220,y:500,info:'used by 8 modules · 7 files'},
+  {id:'core',label:'Core',tag:'ENTRY',x:CX,y:ROW[0]},
+  {id:'plugins',label:'Plugins',tag:'EXTENSION',x:CX+COL[0],y:ROW[1]},
+  {id:'server',label:'Server & Hooks',tag:'LIFECYCLE',x:CX+COL[1],y:ROW[1]},
+  {id:'routing',label:'Routing',tag:'HTTP',x:CX+COL[2],y:ROW[1]},
+  {id:'reqres',label:'Request / Reply',tag:'I/O',x:CX+COL[0],y:ROW[2]},
+  {id:'validation',label:'Validation',tag:'SCHEMA',x:CX+COL[1],y:ROW[2]},
+  {id:'errors',label:'Error Handling',tag:'ERRORS',x:CX+COL[2],y:ROW[2]},
+  {id:'logging',label:'Logging',tag:'OBSERVABILITY',x:CX+COL[0],y:ROW[3]},
+  {id:'internals',label:'Internals',tag:'SHARED',x:CX+COL[1],y:ROW[3]},
+];
+const MOD_EDGES=[
+  ['core','plugins'],['core','server'],['core','routing'],
+  ['routing','reqres'],['routing','validation'],['routing','errors'],
+  ['plugins','reqres'],['plugins','validation'],
+  ['server','internals'],['reqres','errors'],['reqres','logging'],
+  ['validation','internals'],['errors','internals'],['logging','internals'],
 ];
 
-// ═══════════════════════════════════════════════════════
-// PR DEFINITIONS — all real Fastify files
-// ═══════════════════════════════════════════════════════
-const PRS=[
-  {id:'#4533',title:'fix error serialization for nested errors',type:'fix',author:'dave',
-   oneliner:'Nested errors were losing their stack traces during serialization — fixes the recursive handler to walk Error.cause chains.',
-   files:{'lib/error-handler.js':{add:15,del:8,summary:'Fix recursive error handling for nested causes'},
-          'lib/error-serializer.js':{add:22,del:5,summary:'Preserve stack traces in Error.cause chains'}}},
-  {id:'#4521',title:'add content-type negotiation',type:'feat',author:'alice',
-   oneliner:'Adds content negotiation so the server handles Accept headers and responds with the right format automatically.',
-   files:{'lib/content-type-parser.js':{add:34,del:12,summary:'Parse Accept headers with quality values'},
-          'lib/content-type.js':{add:18,del:3,summary:'Add MIME type matching and ranking'},
-          'lib/reply.js':{add:8,del:2,summary:'Use negotiated type in response serialization'}}},
-  {id:'#4510',title:'lazy schema compilation',type:'refactor',author:'carol',
-   oneliner:'Schemas are now compiled on first use instead of at startup — cuts boot time for apps with many routes.',
-   files:{'lib/schemas.js':{add:45,del:30,summary:'Lazy compilation with LRU cache'},
-          'lib/schema-controller.js':{add:28,del:15,summary:'Deferred schema resolution API'},
-          'lib/validation.js':{add:32,del:20,summary:'Cache compiled validators per route'}}},
+// ════════════════════════════════════════════════════════════
+// SECTION: PR DEFINITIONS
+// Add new PRs here. Each PR needs:
+//   arch: {componentId: {summary, add, del}} — architecture-level changes
+//   mod:  {moduleId: {files, summary, add, del}} — module-level changes (optional)
+// The blast engine auto-computes indirect impact via reverse adjacency.
+// ════════════════════════════════════════════════════════════
+// Offline demo data. Only used when /api/reports is unreachable (e.g. file://).
+const MOCK_PRS=[
+  // Real Fastify PR used as a local demo scenario. Nothing is fetched or submitted.
+  { id:'#6580',title:'introduce log controller layer',type:'feat',author:'Manuel Spigolon',
+    arch:{ gateway:{summary:'24 files rewiring logging across the request lifecycle',add:782,del:127} },
+    mod:{
+      core:{files:['fastify.js'],add:21,del:21,summary:'Creates and exports the LogController extension point'},
+      server:{files:['context.js','four-oh-four.js'],add:8,del:13,summary:'Moves lifecycle and 404 logging behind the controller'},
+      routing:{files:['route.js'],add:6,del:21,summary:'Routes incoming requests and shutdown logs through the controller'},
+      reqres:{files:['reply.js'],add:9,del:33,summary:'Centralizes response completion and stream error logging'},
+      errors:{files:['error-handler.js','errors.js'],add:14,del:26,summary:'Delegates error, serializer, and writeHead logs'},
+      logging:{files:['log-controller.js','logger-factory.js'],add:191,del:2,summary:'Adds the controller and validates custom implementations'},
+      internals:{files:['symbols.js','warnings.js'],add:20,del:2,summary:'Adds shared controller state and migration warnings'},
+    }
+  },
+  { id:'#4533',title:'fix connection pool exhaustion',type:'fix',author:'dave',
+    arch:{
+      postgres:{summary:'Pool max 20→50, added idle timeout',add:12,del:3},
+      user:{summary:'Connection retry with exponential backoff',add:25,del:8},
+      product:{summary:'Batched catalog queries to reduce pool usage',add:18,del:6},
+      order:{summary:'Read replicas for non-critical queries',add:34,del:12},
+    },
+    mod:{
+      routing:{files:['route.js'],add:8,del:2,summary:'Routes handle DB timeout gracefully'},
+      errors:{files:['errors.js'],add:6,del:0,summary:'New FST_ERR_DB_TIMEOUT error code'},
+      server:{files:['server.js'],add:4,del:1,summary:'Health check includes pool status'},
+    }
+  },
+  { id:'#4521',title:'add rate limiting middleware',type:'feat',author:'alice',
+    arch:{ gateway:{summary:'5 files across hooks, routing, reply, errors',add:89,del:5} },
+    mod:{
+      server:{files:['hooks.js'],add:42,del:3,summary:'New onRequest hook slot for rate-limit checks'},
+      reqres:{files:['reply.js'],add:18,del:0,summary:'Added .tooManyRequests() 429 response helper'},
+      errors:{files:['errors.js'],add:5,del:0,summary:'New FST_ERR_RATE_LIMITED error code'},
+      routing:{files:['route.js'],add:23,del:2,summary:'Route config accepts rateLimit option'},
+      internals:{files:['symbols.js'],add:1,del:0,summary:'Added kRateLimit symbol'},
+    }
+  },
+  { id:'#4510',title:'refactor schema compilation',type:'refactor',author:'carol',
+    arch:{ gateway:{summary:'5 files across validation, routing, reply',add:119,del:71} },
+    mod:{
+      validation:{files:['schemas.js','schema-controller.js','validation.js'],add:105,del:65,summary:'Lazy schema compilation with caching'},
+      routing:{files:['route.js'],add:9,del:4,summary:'Routes use deferred schema resolution'},
+      reqres:{files:['reply.js'],add:5,del:2,summary:'Serializer updated for new schema format'},
+    }
+  },
 ];
 
-// ═══════════════════════════════════════════════════════
-// SVG SETUP
-// ═══════════════════════════════════════════════════════
+// Curated, real hunks from Fastify PR #6580. The demo keeps the most useful
+// sections in-page so it remains a single-file experience with no GitHub access.
+let CODE_DIFFS={
+  '#6580':{
+    core:[
+      {file:'fastify.js',add:21,del:21,diff:[
+        '@@ -44,7 +45,7 @@',
+        " const ContentTypeParser = require('./lib/content-type-parser.js')",
+        " const SchemaController = require('./lib/schema-controller')",
+        " const { Hooks, hookRunnerApplication, supportedHooks } = require('./lib/hooks')",
+        "-const { createChildLogger, defaultChildLoggerFactory, createLogger } = require('./lib/logger-factory')",
+        "+const { createChildLogger, defaultChildLoggerFactory, createLogger, createLogController, LogController } = require('./lib/logger-factory')",
+        " const pluginUtils = require('./lib/plugin-utils.js')",
+        '@@ -216,6 +217,7 @@',
+        '     },',
+        '     // expose logger instance',
+        '     log: options.logger,',
+        '+    [kLogController]: logController,',
+        '     // type provider',
+        '     withTypeProvider,',
+        '@@ -894,6 +891,10 @@',
+        ' ',
+        '   const { logger, hasLogger } = createLogger(options)',
+        ' ',
+        '+  // the internal logger uses the input logger to execute the logging. This allows the user',
+        '+  // to customize every internal log line',
+        '+  const logController = createLogController(options)',
+        '+',
+        '   // Update the options with the fixed values',
+        '@@ -1010,5 +1009,6 @@',
+        ' module.exports = fastify',
+        ' module.exports.errorCodes = errorCodes',
+        '+module.exports.LogController = LogController',
+        ' module.exports.fastify = fastify',
+        ' module.exports.default = fastify',
+      ]},
+    ],
+    server:[
+      {file:'lib/context.js',add:0,del:3,diff:[
+        '@@ -53,8 +51,7 @@',
+        '   this.onRequestAbort = null',
+        '   this.config = config',
+        '   this.errorHandler = errorHandler || server[kErrorHandler]',
+        '-  this.requestIdLogLabel = requestIdLogLabel || server[kOptions].requestIdLogLabel',
+        '   this.childLoggerFactory = childLoggerFactory || server[kChildLoggerFactory]',
+        '   this._middie = null',
+      ]},
+      {file:'lib/four-oh-four.js',add:8,del:10,diff:[
+        '@@ -51,14 +52,10 @@',
+        ' ',
+        '   function basic404 (request, reply) {',
+        '+    request.server[kLogController].routeNotFound(request, reply)',
+        '     const { url, method } = request.raw',
+        '-    const message = `Route ${method}:${url} not found`',
+        '-    const resolvedDisableRequestLogging = typeof disableRequestLogging === \'function\' ? disableRequestLogging(request.raw) : disableRequestLogging',
+        '-    if (!resolvedDisableRequestLogging) {',
+        '-      request.log.info(message)',
+        '-    }',
+        '     reply.code(404).send({',
+        '-      message,',
+        '+      message: `Route ${method}:${url} not found`,',
+        "       error: 'Not Found',",
+        '       statusCode: 404',
+      ]},
+    ],
+    routing:[
+      {file:'lib/route.js',add:6,del:21,diff:[
+        '@@ -471,8 +465,6 @@',
+        '       loggerOpts.serializers = context.logSerializers',
+        '     }',
+        '     const childLogger = createChildLogger(context, logger, req, id, loggerOpts)',
+        '-    // Set initial value; will be re-evaluated after FastifyRequest is constructed if it is a function',
+        '-    childLogger[kDisableRequestLogging] = disableRequestLoggingFn ? false : disableRequestLogging',
+        ' ',
+        '     if (closing === true) {',
+        '@@ -518,16 +512,7 @@',
+        '     const request = new context.Request(id, params, req, query, childLogger, context)',
+        '     const reply = new context.Reply(res, request, childLogger)',
+        ' ',
+        '-    // Evaluate disableRequestLogging after FastifyRequest is constructed',
+        '-    // so the caller has access to decorations and customizations',
+        '-    const resolvedDisableRequestLogging = disableRequestLoggingFn',
+        '-      ? disableRequestLoggingFn(request)',
+        '-      : disableRequestLogging',
+        '-    childLogger[kDisableRequestLogging] = resolvedDisableRequestLogging',
+        '-',
+        '-    if (resolvedDisableRequestLogging === false) {',
+        "-      childLogger.info({ req: request }, 'incoming request')",
+        '-    }',
+        '+    context.server[kLogController].incomingRequest(request, reply)',
+        ' ',
+        '     // Handler timeout setup — only when configured (zero overhead otherwise)',
+      ]},
+    ],
+    reqres:[
+      {file:'lib/reply.js',add:9,del:33,diff:[
+        '@@ -735,14 +735,8 @@',
+        ' }',
+        ' ',
+        '-function logStreamError (logger, err, res) {',
+        "-  if (err.code === 'ERR_STREAM_PREMATURE_CLOSE') {",
+        '-    if (!logger[kDisableRequestLogging]) {',
+        "-      logger.info({ res }, 'stream closed prematurely')",
+        '-    }',
+        '-  } else {',
+        "-    logger.warn({ err }, 'response terminated with an error with headers already sent')",
+        '-  }',
+        '+function logStreamError (err, reply, res) {',
+        '+  reply.server[kLogController].streamError(err, reply.request, reply)',
+        ' }',
+        '@@ -995,25 +989,7 @@',
+        ' ',
+        ' function onResponseCallback (err, request, reply) {',
+        '-  if (reply.log[kDisableRequestLogging]) {',
+        '-    return',
+        '-  }',
+        '-',
+        '-  const responseTime = reply.elapsedTime',
+        '-',
+        '-  if (err != null) {',
+        "-    reply.log.error({ res: reply, err, responseTime }, 'request errored')",
+        '-    return',
+        '-  }',
+        '-',
+        "-  reply.log.info({ res: reply, responseTime }, 'request completed')",
+        '+  reply.server[kLogController].requestCompleted(err, request, reply)',
+        ' }',
+      ]},
+    ],
+    errors:[
+      {file:'lib/error-handler.js',add:7,del:26,diff:[
+        '@@ -83,21 +78,7 @@',
+        ' function defaultErrorHandler (error, request, reply) {',
+        '   setErrorHeaders(error, reply)',
+        '   setErrorStatusCode(reply, error)',
+        '-  if (reply.statusCode < 500) {',
+        '-    if (!reply.log[kDisableRequestLogging]) {',
+        '-      reply.log.info({ res: reply, err: error }, error?.message)',
+        '-    }',
+        '-  } else {',
+        '-    if (!reply.log[kDisableRequestLogging]) {',
+        '-      reply.log.error({ req: request, res: reply, err: error }, error?.message)',
+        '-    }',
+        '-  }',
+        '+  request.server[kLogController].defaultErrorLog(error, request, reply)',
+        '   reply.send(error)',
+        ' }',
+        '@@ -123,10 +104,10 @@',
+        '       }))',
+        '     }',
+        '   } catch (err) {',
+        '-    if (!reply.log[kDisableRequestLogging]) {',
+        "-      reply.log.error({ err, statusCode: res.statusCode }, 'The serializer for the given status code failed')",
+        '-    }',
+        '+    reply.server[kLogController].serializerError(err, reply.request, reply, { statusCode: res.statusCode })',
+        '+',
+        '     reply.code(500)',
+      ]},
+      {file:'lib/errors.js',add:7,del:0,diff:[
+        '@@ -243,6 +243,13 @@',
+        '     TypeError',
+        '   ),',
+        ' ',
+        '+  FST_ERR_LOG_INVALID_LOG_CONTROLLER: createError(',
+        "+    'FST_ERR_LOG_INVALID_LOG_CONTROLLER',",
+        "+    \"logController option must be an instance of LogController, got '%s'.\",",
+        '+    500,',
+        '+    TypeError',
+        '+  ),',
+        '+',
+        '   /**',
+        '    * reply',
+      ]},
+    ],
+    logging:[
+      {file:'lib/log-controller.js',add:169,del:0,diff:[
+        '@@ -0,0 +1,32 @@',
+        "+'use strict'",
+        '+',
+        "+const { defaultInitOptions } = require('./initial-config-validation')",
+        '+',
+        '+/**',
+        "+ * Internal logger layer that wraps Fastify's log calls with",
+        '+ * request-lifecycle awareness (disable-check, level selection).',
+        '+ * Keeps the surface intentionally small so hot paths stay fast.',
+        '+ *',
+        '+ * Users can extend this class to customize internal log lines.',
+        '+ */',
+        '+class LogController {',
+        '+  constructor (options) {',
+        '+    const opts = options || {}',
+        '+    this.disableRequestLogging = opts.disableRequestLogging || defaultInitOptions.disableRequestLogging',
+        "+    this.isDisableRequestLoggingFunction = typeof this.disableRequestLogging === 'function'",
+        '+    this.requestIdLogLabel = opts.requestIdLogLabel || defaultInitOptions.requestIdLogLabel',
+        '+  }',
+        '+',
+        '+  isLogDisabled (req) {',
+        '+    return this.isDisableRequestLoggingFunction',
+        '+      ? this.disableRequestLogging(req)',
+        '+      : this.disableRequestLogging',
+        '+  }',
+        '@@ -0,0 +40,19 @@',
+        '+  incomingRequest (request, reply, metadata) {',
+        '+    if (this.isLogDisabled(request)) { return }',
+        '+',
+        "+    request.log.info({ req: request }, 'incoming request')",
+        '+  }',
+        '+',
+        '+  requestCompleted (error, request, reply, metadata) {',
+        '+    if (this.isLogDisabled(request)) { return }',
+        '+',
+        '+    if (error) {',
+        "+      reply.log.error({ res: reply, err: error, responseTime: reply.elapsedTime }, 'request errored')",
+        '+    } else {',
+        "+      reply.log.info({ res: reply, responseTime: reply.elapsedTime }, 'request completed')",
+        '+    }',
+        '+  }',
+        '@@ -0,0 +161,9 @@',
+        '+  serviceUnavailable (logger, server) {',
+        "+    logger.info({ res: { statusCode: 503 } }, 'request aborted - refusing to accept new requests as server is closing')",
+        '+  }',
+        '+}',
+        '+',
+        '+module.exports = { LogController }',
+      ]},
+      {file:'lib/logger-factory.js',add:22,del:2,diff:[
+        '@@ -122,6 +127,19 @@',
+        '   return { logger, hasLogger: true }',
+        ' }',
+        ' ',
+        '+function createLogController (options) {',
+        '+  const userController = options.logController',
+        '+  if (!userController) {',
+        '+    return new LogController(options)',
+        '+  }',
+        '+',
+        '+  if (userController instanceof LogController) {',
+        '+    return userController',
+        '+  }',
+        '+',
+        '+  throw new FST_ERR_LOG_INVALID_LOG_CONTROLLER(typeof userController)',
+        '+}',
+        '+',
+        ' function now () {',
+        '   const ts = process.hrtime()',
+      ]},
+    ],
+    internals:[
+      {file:'lib/symbols.js',add:1,del:1,diff:[
+        '@@ -13,7 +13,6 @@',
+        "   kContentTypeParser: Symbol('fastify.contentTypeParser'),",
+        "   kState: Symbol('fastify.state'),",
+        "   kOptions: Symbol('fastify.options'),",
+        "-  kDisableRequestLogging: Symbol('fastify.disableRequestLogging'),",
+        "   kPluginNameChain: Symbol('fastify.pluginNameChain'),",
+        '@@ -67,6 +66,7 @@',
+        "   kKeepAliveConnections: Symbol('fastify.keepAliveConnections'),",
+        "   kRouteByFastify: Symbol('fastify.routeByFastify'),",
+        "+  kLogController: Symbol('fastify.logController'),",
+        "   kDiagnosticsStore: Symbol('fastify.diagnosticsStore')",
+      ]},
+      {file:'lib/warnings.js',add:19,del:1,diff:[
+        '@@ -48,10 +50,26 @@',
+        '   unlimited: true',
+        ' })',
+        ' ',
+        '+const FSTDEP023 = createWarning({',
+        "+  name: 'FastifyDeprecation',",
+        "+  code: 'FSTDEP023',",
+        "+  message: 'disableRequestLogging option is deprecated. Use the logController option instead.',",
+        '+  unlimited: true',
+        '+})',
+        '+',
+        '+const FSTDEP024 = createWarning({',
+        "+  name: 'FastifyDeprecation',",
+        "+  code: 'FSTDEP024',",
+        "+  message: 'requestIdLogLabel option is deprecated. Use the logController option instead.',",
+        '+  unlimited: true',
+        '+})',
+        '+',
+        ' module.exports = {',
+        '   FSTWRN001,',
+      ]},
+    ],
+  },
+};
+
+// ════════════════════════════════════════════════════════════
+// SECTION: GRAPH ENGINE
+// Builds reverse adjacency, renders nodes/edges to SVG.
+// To change node appearance or layout, modify renderGraph().
+// ════════════════════════════════════════════════════════════
+function buildReverse(edges){const r={};edges.forEach(([f,t])=>{if(!r[t])r[t]=[];r[t].push(f)});return r}
+const archRev=buildReverse(ARCH_EDGES), modRev=buildReverse(MOD_EDGES);
+
 const svg=document.getElementById('g');
 svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+
 const defs=document.createElementNS(NS,'defs');
-const mkr=document.createElementNS(NS,'marker');
-mkr.setAttribute('id','arr');mkr.setAttribute('viewBox','0 0 8 6');
-mkr.setAttribute('refX','8');mkr.setAttribute('refY','3');mkr.setAttribute('markerWidth','7');mkr.setAttribute('markerHeight','5');mkr.setAttribute('orient','auto');
-const ap=document.createElementNS(NS,'path');ap.setAttribute('d','M0,.5 L7,3 L0,5.5');ap.setAttribute('fill','#2a3a55');
-mkr.appendChild(ap);defs.appendChild(mkr);
+['arr','arr-b'].forEach(id=>{
+  const m=document.createElementNS(NS,'marker');
+  m.setAttribute('id',id);m.setAttribute('viewBox','0 0 8 6');
+  m.setAttribute('refX','8');m.setAttribute('refY','3');m.setAttribute('markerWidth','7');m.setAttribute('markerHeight','5');m.setAttribute('orient','auto');
+  const p=document.createElementNS(NS,'path');p.setAttribute('d','M0,.5 L7,3 L0,5.5');
+  p.setAttribute('fill',id==='arr'?'#1a2a40':'currentColor');
+  m.appendChild(p);defs.appendChild(m);
+});
 const glow=document.createElementNS(NS,'filter');glow.setAttribute('id','glow');
 const blur=document.createElementNS(NS,'feGaussianBlur');blur.setAttribute('stdDeviation','4');blur.setAttribute('result','b');glow.appendChild(blur);
 const merge=document.createElementNS(NS,'feMerge');
 const mn1=document.createElementNS(NS,'feMergeNode');mn1.setAttribute('in','b');merge.appendChild(mn1);
 const mn2=document.createElementNS(NS,'feMergeNode');mn2.setAttribute('in','SourceGraphic');merge.appendChild(mn2);
-glow.appendChild(merge);defs.appendChild(glow);svg.appendChild(defs);
+glow.appendChild(merge);defs.appendChild(glow);
+svg.appendChild(defs);
 
-const gMod=document.createElementNS(NS,'g');gMod.id='gMod';
-const gFiles=document.createElementNS(NS,'g');gFiles.id='gFiles';gFiles.style.opacity='0';gFiles.style.pointerEvents='none';
-svg.appendChild(gMod);svg.appendChild(gFiles);
+const gArch=document.createElementNS(NS,'g');gArch.id='gArch';
+const gMod=document.createElementNS(NS,'g');gMod.id='gMod';gMod.style.opacity='0';gMod.style.pointerEvents='none';
+svg.appendChild(gArch);svg.appendChild(gMod);
 
-// ═══════════════════════════════════════════════════════
-// GRAPH RENDERING
-// ═══════════════════════════════════════════════════════
-function makePath(a,b,off){
-  off=off||0;
-  const dx=b.x-a.x,dy=b.y-a.y;
-  if(Math.abs(dy)<NH+20){
-    const sx=dx>0?a.x+NW/2:a.x-NW/2;
-    const ex=dx>0?b.x-NW/2-6:b.x+NW/2+6;
-    const my=(a.y+b.y)/2-20+off;
-    return`M${sx},${a.y+off} Q${(sx+ex)/2},${my} ${ex},${b.y+off}`;
+function makePath(a,b){
+  if(Math.abs(a.y-b.y)<NH+20){
+    const s=b.x>a.x?a.x+NW/2:a.x-NW/2;
+    const e=b.x>a.x?b.x-NW/2-5:b.x+NW/2+5;
+    return`M${s},${a.y} L${e},${b.y}`;
   }
-  const goDown=dy>0;
-  const sy=goDown?a.y+NH/2:a.y-NH/2;
-  const ey=goDown?b.y-NH/2-6:b.y+NH/2+6;
-  const cdy=ey-sy;
-  return`M${a.x+off},${sy} C${a.x+off},${sy+cdy*.45} ${b.x+off},${ey-cdy*.45} ${b.x+off},${ey}`;
+  const sy=a.y+NH/2,ey=b.y-NH/2-5,dy=ey-sy;
+  return`M${a.x},${sy} C${a.x},${sy+dy*.5} ${b.x},${ey-dy*.5} ${b.x},${ey}`;
 }
 
-function renderGraph(nodes,edges,container,opts){
-  opts=opts||{};
-  container.innerHTML='';
+function renderGraph(nodes,edges,container){
   const nMap={};nodes.forEach(n=>nMap[n.id]=n);
   const eEls=edges.map(([fid,tid])=>{
-    if(!nMap[fid]||!nMap[tid])return null;
-    const isBidi=opts.bidiSet&&opts.bidiSet.has(fid+'>'+tid);
-    const off=isBidi?(fid<tid?12:-12):0;
     const p=document.createElementNS(NS,'path');
-    p.setAttribute('d',makePath(nMap[fid],nMap[tid],off));
+    p.setAttribute('d',makePath(nMap[fid],nMap[tid]));
     p.setAttribute('class','edge-path');p.setAttribute('marker-end','url(#arr)');
     p.dataset.from=fid;p.dataset.to=tid;
     container.appendChild(p);return p;
-  }).filter(Boolean);
+  });
   const nEls={};
   nodes.forEach(n=>{
     const g=document.createElementNS(NS,'g');g.setAttribute('class','node-group');
@@ -249,29 +595,21 @@ function renderGraph(nodes,edges,container,opts){
     const bar=document.createElementNS(NS,'rect');
     bar.setAttribute('x',-NW/2+2);bar.setAttribute('y',-NH/2+5);bar.setAttribute('width',3);bar.setAttribute('height',NH-10);
     bar.setAttribute('rx',1);bar.setAttribute('fill','#2a3a55');bar.setAttribute('opacity','.5');bar.setAttribute('class','node-bar');g.appendChild(bar);
-
-    let tagEl=null,infoEl=null;
-    if(n.tag){
-      tagEl=document.createElementNS(NS,'text');tagEl.textContent=n.tag;
-      tagEl.setAttribute('x',-NW/2+14);tagEl.setAttribute('y',-NH/2+16);tagEl.setAttribute('fill','#6a8aaa');
-      tagEl.setAttribute('font-size','10');tagEl.setAttribute('font-family',"'Fira Code',monospace");
-      tagEl.setAttribute('letter-spacing','.6');tagEl.setAttribute('class','node-tag');g.appendChild(tagEl);
-    }
+    const tag=document.createElementNS(NS,'text');tag.textContent=n.tag;
+    tag.setAttribute('x',-NW/2+14);tag.setAttribute('y',-NH/2+16);tag.setAttribute('fill','#3a5070');
+    tag.setAttribute('font-size','8');tag.setAttribute('font-family',"'Fira Code',monospace");
+    tag.setAttribute('letter-spacing','.6');tag.setAttribute('class','node-tag');g.appendChild(tag);
     const lbl=document.createElementNS(NS,'text');lbl.textContent=n.label;
-    lbl.setAttribute('x',-NW/2+14);lbl.setAttribute('y',n.tag?-NH/2+34:5);
-    lbl.setAttribute('fill','#d0dce8');lbl.setAttribute('font-size',n.tag?'15':'13');
-    lbl.setAttribute('font-family',"'DM Sans',sans-serif");lbl.setAttribute('font-weight','600');
-    lbl.setAttribute('class','node-label');g.appendChild(lbl);
-
-    if(n.info){
-      infoEl=document.createElementNS(NS,'text');infoEl.textContent=n.info;
-      infoEl.setAttribute('x',-NW/2+14);infoEl.setAttribute('y',-NH/2+48);infoEl.setAttribute('fill','#5a7a98');
-      infoEl.setAttribute('font-size','10');infoEl.setAttribute('font-family',"'Fira Code',monospace");
-      infoEl.setAttribute('class','node-info');g.appendChild(infoEl);
-    }
-    if(opts.zoomable!==false&&n.tag){
+    lbl.setAttribute('x',-NW/2+14);lbl.setAttribute('y',-NH/2+33);lbl.setAttribute('fill','#8a99b0');
+    lbl.setAttribute('font-size','13');lbl.setAttribute('font-family',"'DM Sans',sans-serif");
+    lbl.setAttribute('font-weight','600');lbl.setAttribute('class','node-label');g.appendChild(lbl);
+    const info=document.createElementNS(NS,'text');info.textContent=n.zoomLabel||'';
+    info.setAttribute('x',-NW/2+14);info.setAttribute('y',-NH/2+47);info.setAttribute('fill','#2a3a50');
+    info.setAttribute('font-size','9');info.setAttribute('font-family',"'Fira Code',monospace");
+    info.setAttribute('class','node-info');g.appendChild(info);
+    if(n.zoomable){
       const zh=document.createElementNS(NS,'text');zh.textContent='EXPLORE ▸';
-      zh.setAttribute('x',NW/2-8);zh.setAttribute('y',-NH/2+48);zh.setAttribute('text-anchor','end');
+      zh.setAttribute('x',NW/2-8);zh.setAttribute('y',-NH/2+47);zh.setAttribute('text-anchor','end');
       zh.setAttribute('class','zoom-hint');g.appendChild(zh);g.style.cursor='zoom-in';
     }
     const bdg=document.createElementNS(NS,'g');bdg.setAttribute('class','change-badge');bdg.setAttribute('opacity','0');
@@ -280,25 +618,28 @@ function renderGraph(nodes,edges,container,opts){
     bb.setAttribute('width',38);bb.setAttribute('height',16);bb.setAttribute('rx',3);
     bb.setAttribute('fill','#0a0f18');bb.setAttribute('stroke','#1e2e45');bb.setAttribute('stroke-width','1');bdg.appendChild(bb);
     const bt=document.createElementNS(NS,'text');bt.setAttribute('x',-11);bt.setAttribute('y',3);
-    bt.setAttribute('text-anchor','middle');bt.setAttribute('font-size','10');bt.setAttribute('fill','#b0c0d5');
+    bt.setAttribute('text-anchor','middle');bt.setAttribute('font-size','9');bt.setAttribute('fill','#8a99b0');
     bt.setAttribute('font-family',"'Fira Code',monospace");bdg.appendChild(bt);g.appendChild(bdg);
+    g.addEventListener('mouseenter',e=>showTip(e,n));g.addEventListener('mouseleave',hideTip);
     container.appendChild(g);
-    nEls[n.id]={g,box,bdr,bar,tag:tagEl,lbl,info:infoEl,bdg,bb,bt};
+    nEls[n.id]={g,box,bdr,bar,tag,lbl,info,bdg,bb,bt};
   });
   return{nEls,eEls,nMap};
 }
 
-const modGraph=renderGraph(MOD_NODES,SHOWN_EDGES,gMod,{bidiSet});
+const arch=renderGraph(ARCH_NODES,ARCH_EDGES,gArch);
+const mod=renderGraph(MOD_NODES,MOD_EDGES,gMod);
 
-// wire module click → zoom
-MOD_NODES.forEach(n=>{
-  modGraph.nEls[n.id].g.addEventListener('click',()=>{if(level==='mod')showDetail(n.id)});
-});
-
-// ═══════════════════════════════════════════════════════
-// ANIMATION ENGINE
-// ═══════════════════════════════════════════════════════
-let animSteps=[],animIdx=0,animTimer=null,animState='idle',liveBalls=[];
+// ════════════════════════════════════════════════════════════
+// SECTION: ANIMATION ENGINE
+// Ball animation, node highlighting, step queue.
+// To change animation style, modify animateBall() and highlightNode().
+// ════════════════════════════════════════════════════════════
+let animSteps=[];
+let animIdx=0;
+let animTimer=null;
+let animState='idle';
+let liveBalls=[];
 
 function animateBall(container,pathEl,color,reverse){
   const ball=document.createElementNS(NS,'circle');
@@ -306,415 +647,524 @@ function animateBall(container,pathEl,color,reverse){
   const trail=document.createElementNS(NS,'circle');
   trail.setAttribute('r','10');trail.setAttribute('fill',color);trail.setAttribute('opacity','0.15');
   container.appendChild(trail);container.appendChild(ball);
-  const len=pathEl.getTotalLength();const start=performance.now();
-  const entry={ball,trail,done:false};liveBalls.push(entry);
+  const len=pathEl.getTotalLength();
+  const start=performance.now();
+  const entry={ball,trail,done:false};
+  liveBalls.push(entry);
   function step(now){
     if(entry.done)return;
-    const t=Math.min((now-start)/BALL_MS,1);
+    const raw=(now-start)/BALL_MS;
+    const t=Math.min(raw,1);
     const ease=t<.5?2*t*t:(1-Math.pow(-2*t+2,2)/2);
     const at=reverse?len*(1-ease):len*ease;
     const pt=pathEl.getPointAtLength(at);
     ball.setAttribute('cx',pt.x);ball.setAttribute('cy',pt.y);
     trail.setAttribute('cx',pt.x);trail.setAttribute('cy',pt.y);
     trail.setAttribute('opacity',String(.2*(1-t)));
-    if(t<1)requestAnimationFrame(step);
-    else{ball.style.transition='opacity .3s';trail.style.transition='opacity .3s';
+    if(t<1){requestAnimationFrame(step)}
+    else{
+      ball.style.transition='opacity .3s';trail.style.transition='opacity .3s';
       ball.setAttribute('opacity','0');trail.setAttribute('opacity','0');
-      setTimeout(()=>{ball.remove();trail.remove();entry.done=true},300)}
+      setTimeout(()=>{ball.remove();trail.remove();entry.done=true},300);
+    }
   }
   requestAnimationFrame(step);
 }
+
 function clearBalls(){liveBalls.forEach(b=>{b.done=true;b.ball.remove();b.trail.remove()});liveBalls=[]}
 
 function highlightNode(el,color,bg,stroke,data){
   el.box.setAttribute('fill',bg);el.bdr.setAttribute('stroke',stroke);el.bdr.setAttribute('stroke-width','1.5');
   el.bar.setAttribute('fill',color);el.bar.setAttribute('opacity','.8');
-  if(el.tag)el.tag.setAttribute('fill',color);el.lbl.setAttribute('fill','#f0f4f8');
-  if(el.info)el.info.setAttribute('fill',color);
+  el.tag.setAttribute('fill',color);el.lbl.setAttribute('fill','#f0f4f8');el.info.setAttribute('fill',color);
   if(data){el.bt.textContent=`+${data.add} -${data.del}`;el.bb.setAttribute('stroke',stroke);el.bdg.setAttribute('opacity','1')}
 }
+
 function highlightIndirect(el){
   el.g.classList.remove('dimmed');
   el.bdr.setAttribute('stroke','#475569');el.bdr.setAttribute('stroke-dasharray','4 3');
-  el.lbl.setAttribute('fill','#7a8a9a');if(el.tag)el.tag.setAttribute('fill','#475569');
-}
-function highlightEdge(pathEl,color){pathEl.setAttribute('stroke',color);pathEl.setAttribute('stroke-width','2.5')}
-
-// ═══════════════════════════════════════════════════════
-// BLAST COMPUTATION
-// ═══════════════════════════════════════════════════════
-let level='mod',zoomedMod=null,activePR=null,activeBtn=null;
-let fileGraph=null,fileDist=null,modDist=null,modData=null,lastDist=null;
-
-function buildReverse(edges){const r={};edges.forEach(([f,t])=>{if(!r[t])r[t]=[];r[t].push(f)});return r}
-const allModRev=buildReverse(ALL_MOD_EDGES);
-
-function computeBlast(pr){
-  if(!pr){fileDist=null;modDist=null;modData=null;return}
-  modData={};
-  for(const[f,info]of Object.entries(pr.files)){
-    const m=fileToMod[f];if(!m)continue;
-    if(!modData[m])modData[m]={files:[],add:0,del:0,summary:''};
-    modData[m].files.push(f.replace('lib/','').replace('.js',''));
-    modData[m].add+=info.add;modData[m].del+=info.del;
-    if(!modData[m].summary)modData[m].summary=info.summary;
-  }
-  // file-level BFS on full graph
-  const allFileEdges=[];
-  for(const[file,imports]of Object.entries(RAW))for(const imp of imports)allFileEdges.push([file,imp]);
-  const fileRev=buildReverse(allFileEdges);
-  fileDist={};
-  const seeds=Object.keys(pr.files);
-  seeds.forEach(f=>{fileDist[f]=0});
-  const q=[...seeds];
-  while(q.length){const c=q.shift();for(const d of(fileRev[c]||[]))if(fileDist[d]===undefined){fileDist[d]=fileDist[c]+1;q.push(d)}}
-  // module distances
-  modDist={};
-  for(const[f,d]of Object.entries(fileDist)){const m=fileToMod[f];if(m&&(modDist[m]===undefined||d<modDist[m]))modDist[m]=d}
+  el.lbl.setAttribute('fill','#64748b');el.tag.setAttribute('fill','#475569');
 }
 
-function getView(){return level==='mod'?modGraph:fileGraph}
-function getContainer(){return level==='mod'?gMod:gFiles}
-
-function buildSteps(pr){
-  computeBlast(pr);
-  const view=getView();if(!view)return[];
-  const container=getContainer();
-  let dist,data,direct;
-  if(level==='mod'){
-    dist=modDist||{};data=modData||{};direct=new Set(Object.keys(data));
-  }else{
-    const mf=new Set(MODULES[zoomedMod].files);
-    dist={};for(const[f,d]of Object.entries(fileDist||{}))if(mf.has(f))dist[f]=d;
-    data={};for(const[f,info]of Object.entries(pr.files))if(mf.has(f))data[f]=info;
-    direct=new Set(Object.keys(data));
-  }
-  if(!Object.keys(dist).length)return[];
-  lastDist=dist;
-  const maxHop=Math.max(...Object.values(dist),0);
-  const color=TC[pr.type],bg=TBG[pr.type],stroke=TSK[pr.type];
-  const steps=[],allIds=Object.keys(view.nEls);
-
-  steps.push({delay:0,fn:()=>{allIds.forEach(id=>{if(dist[id]===undefined)view.nEls[id].g.classList.add('dimmed')})}});
-  steps.push({delay:300,fn:()=>{
-    direct.forEach(cid=>{const el=view.nEls[cid];if(el)highlightNode(el,color,bg,stroke,data[cid])});
-    view.eEls.forEach(p=>{if(direct.has(p.dataset.from)&&direct.has(p.dataset.to))highlightEdge(p,color)});
-  }});
-
-  for(let hop=1;hop<=maxHop;hop++){
-    const hopNodes=Object.entries(dist).filter(([id,d])=>d===hop&&view.nEls[id]).map(([id])=>id);
-    if(!hopNodes.length)continue;
-    const ballDelay=300+hop*HOP_DELAY,nodeDelay=ballDelay+BALL_MS*.6;
-    steps.push({delay:ballDelay,fn:()=>{
-      view.eEls.forEach(p=>{
-        const fd=dist[p.dataset.from],td=dist[p.dataset.to];
-        if(fd===undefined||td===undefined)return;
-        if((fd===hop&&td===hop-1)||(td===hop&&fd===hop-1)){
-          highlightEdge(p,hop<=1?color:'#475569');
-          animateBall(container,p,hop<=1?color:'#64748b',fd===hop);
-        }
-      });
-    }});
-    steps.push({delay:nodeDelay,fn:()=>{
-      hopNodes.forEach(cid=>{const el=view.nEls[cid];if(!el)return;
-        if(direct.has(cid))highlightNode(el,color,bg,stroke,data[cid]);else highlightIndirect(el)});
-    }});
-  }
-  if(level==='mod'){
-    steps.push({delay:300+((maxHop+1)*HOP_DELAY),fn:()=>updatePanel(pr,dist,direct)});
-  }
-  return steps;
+function highlightEdge(pathEl,color){
+  pathEl.setAttribute('stroke',color);pathEl.setAttribute('stroke-width','2.5');
 }
 
-// ═══════════════════════════════════════════════════════
-// ANIMATION CONTROLS
-// ═══════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+// SECTION: BLAST ANALYSIS
+// Computes direct + indirect impact, builds animation steps.
+// To add new analysis types (config, scaling), add PR type handling here.
+// ════════════════════════════════════════════════════════════
+let level='arch',activePR=null,activeBtn=null;
+let PRS=[];
+
+function getView(){return level==='arch'?arch:mod}
+function getRev(){return level==='arch'?archRev:modRev}
+function getData(pr){return level==='arch'?pr.arch:pr.mod}
+
 function resetHighlights(){
   clearBalls();
-  [modGraph,fileGraph].forEach(v=>{if(!v)return;
+  [arch,mod].forEach(v=>{
     Object.values(v.nEls).forEach(el=>{
       el.g.classList.remove('dimmed');
       el.box.setAttribute('fill','#0e1420');el.bdr.setAttribute('stroke','#1e2e45');
       el.bdr.setAttribute('stroke-width','1');el.bdr.setAttribute('stroke-dasharray','');
       el.bar.setAttribute('fill','#2a3a55');el.bar.setAttribute('opacity','.5');
-      if(el.tag)el.tag.setAttribute('fill','#6a8aaa');el.lbl.setAttribute('fill','#d0dce8');
-      if(el.info)el.info.setAttribute('fill','#5a7a98');
-      el.bdg.setAttribute('opacity','0');el.bb.setAttribute('stroke','#1e2e45');
+      el.tag.setAttribute('fill','#3a5070');el.lbl.setAttribute('fill','#8a99b0');
+      el.info.setAttribute('fill','#2a3a50');el.bdg.setAttribute('opacity','0');
+      el.bb.setAttribute('stroke','#1e2e45');
     });
-    v.eEls.forEach(p=>{p.setAttribute('stroke','#1e2e48');p.setAttribute('stroke-width','1.2')});
+    v.eEls.forEach(p=>{p.setAttribute('stroke','#141e30');p.setAttribute('stroke-width','1.2');p.setAttribute('marker-end','url(#arr)')});
   });
+}
+
+function buildSteps(pr){
+  const view=getView(),rev=getRev(),data=getData(pr);
+  if(!data)return[];
+  const direct=new Set(Object.keys(data));
+  const dist={};direct.forEach(id=>{dist[id]=0});
+  const q=[...direct];
+  while(q.length){const c=q.shift();for(const d of(rev[c]||[])){if(dist[d]===undefined){dist[d]=dist[c]+1;q.push(d)}}}
+  const maxHop=Math.max(...Object.values(dist),0);
+  const color=TC[pr.type],bg=TBG[pr.type],stroke=TSK[pr.type];
+  const steps=[];
+  const allIds=Object.keys(view.nEls);
+
+  steps.push({delay:0,fn:()=>{
+    allIds.forEach(id=>{if(dist[id]===undefined)view.nEls[id].g.classList.add('dimmed')});
+  }});
+
+  steps.push({delay:300,fn:()=>{
+    direct.forEach(cid=>{
+      const el=view.nEls[cid];if(!el)return;
+      highlightNode(el,color,bg,stroke,data[cid]);
+    });
+    view.eEls.forEach(p=>{
+      if(direct.has(p.dataset.from)&&direct.has(p.dataset.to)){
+        highlightEdge(p,color);
+      }
+    });
+  }});
+
+  for(let hop=1;hop<=maxHop;hop++){
+    const hopNodes=Object.entries(dist).filter(([,d])=>d===hop).map(([id])=>id);
+    const ballDelay=300+hop*HOP_DELAY;
+    const nodeDelay=ballDelay+BALL_MS*0.6;
+
+    steps.push({delay:ballDelay,fn:()=>{
+      const container=level==='arch'?gArch:gMod;
+      view.eEls.forEach(p=>{
+        const fd=dist[p.dataset.from],td=dist[p.dataset.to];
+        if(fd===undefined||td===undefined)return;
+        if(fd===hop&&td===hop-1){
+          highlightEdge(p,hop<=1?color:'#475569');
+          animateBall(container,p,hop<=1?color:'#64748b',true);
+        }
+        if(td===hop&&fd===hop-1){
+          highlightEdge(p,hop<=1?color:'#475569');
+          animateBall(container,p,hop<=1?color:'#64748b',false);
+        }
+      });
+    }});
+
+    steps.push({delay:nodeDelay,fn:()=>{
+      hopNodes.forEach(cid=>{
+        const el=view.nEls[cid];if(!el)return;
+        if(direct.has(cid)){highlightNode(el,color,bg,stroke,data[cid])}
+        else{highlightIndirect(el)}
+      });
+    }});
+  }
+
+  const panelDelay=300+((maxHop+1)*HOP_DELAY);
+  steps.push({delay:panelDelay,fn:()=>updatePanel(pr,dist,direct)});
+  return steps;
 }
 
 function playAnimation(){
   if(animState==='playing')return;
-  if(animState==='idle'&&activePR){resetHighlights();animSteps=buildSteps(activePR);animIdx=0}
-  animState='playing';updateControlUI();runNextStep();
+  if(animState==='idle'&&activePR){
+    resetHighlights();
+    animSteps=buildSteps(activePR);
+    animIdx=0;
+  }
+  animState='playing';
+  updateControlUI();
+  runNextStep();
 }
+
 function runNextStep(){
-  if(animState!=='playing'||animIdx>=animSteps.length){if(animIdx>=animSteps.length)animState='done';updateControlUI();return}
-  const step=animSteps[animIdx],prev=animIdx>0?animSteps[animIdx-1].delay:0;
-  animTimer=setTimeout(()=>{step.fn();animIdx++;runNextStep()},Math.max(0,step.delay-prev));
+  if(animState!=='playing'||animIdx>=animSteps.length){
+    if(animIdx>=animSteps.length)animState='done';
+    updateControlUI();return;
+  }
+  const step=animSteps[animIdx];
+  const prev=animIdx>0?animSteps[animIdx-1].delay:0;
+  const wait=step.delay-prev;
+  animTimer=setTimeout(()=>{
+    step.fn();
+    animIdx++;
+    runNextStep();
+  },Math.max(0,wait));
 }
-function stopAnimation(){clearTimeout(animTimer);if(animState==='playing')animState='paused';updateControlUI()}
+
+function stopAnimation(){
+  clearTimeout(animTimer);
+  if(animState==='playing')animState='paused';
+  updateControlUI();
+}
+
 function resetAnimation(){
-  clearTimeout(animTimer);animState='idle';animSteps=[];animIdx=0;lastDist=null;
+  clearTimeout(animTimer);
+  animState='idle';animSteps=[];animIdx=0;
   resetHighlights();
+  closeCodePanel();
   document.getElementById('analysis').style.display='none';
-  document.getElementById('pr-banner').style.display='none';
-  hideDetail();updateControlUI();
+  updateControlUI();
 }
+
 function updateControlUI(){
-  const p=document.getElementById('btn-play'),s=document.getElementById('btn-stop'),r=document.getElementById('btn-reset');
-  p.disabled=animState==='playing'||animState==='done';
-  s.disabled=animState!=='playing';r.disabled=animState==='idle';
-  p.classList.toggle('active-ctrl',animState==='playing');
+  const play=document.getElementById('btn-play');
+  const stop=document.getElementById('btn-stop');
+  const reset=document.getElementById('btn-reset');
+  play.disabled=animState==='playing'||animState==='done';
+  stop.disabled=animState!=='playing';
+  reset.disabled=animState==='idle';
+  play.classList.toggle('active-ctrl',animState==='playing');
 }
+
 document.getElementById('btn-play').onclick=playAnimation;
 document.getElementById('btn-stop').onclick=stopAnimation;
 document.getElementById('btn-reset').onclick=resetAnimation;
 
-// ═══════════════════════════════════════════════════════
-// SIDEBAR & PANEL
-// ═══════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+// SECTION: SIDEBAR & PANEL
+// PR list rendering, analysis panel, tooltips.
+// To add new sidebar sections, modify updatePanel().
+// ════════════════════════════════════════════════════════════
+let lastPanel=null;
 function updatePanel(pr,dist,direct){
-  if(!modData)return;
-  const indirectSet=new Set(Object.keys(dist).filter(id=>!direct.has(id)&&modGraph.nEls[id]));
-  const ta=Object.values(modData).reduce((s,c)=>s+c.add,0);
-  const td=Object.values(modData).reduce((s,c)=>s+c.del,0);
+  const data=getData(pr);if(!data)return;
+  lastPanel={pr,dist,direct};
+  const view=getView();
+  const indirectSet=new Set(Object.keys(dist).filter(id=>!direct.has(id)));
+  const ta=Object.values(data).reduce((s,c)=>s+c.add,0);
+  const td=Object.values(data).reduce((s,c)=>s+c.del,0);
   const color=TC[pr.type];
+
   let html=`<div class="div"></div><div class="lbl">Impact</div>
     <div class="stat-row">
       <div class="stat"><div class="stat-v">${direct.size}</div><div class="stat-u">direct</div></div>
       <div class="stat"><div class="stat-v">${indirectSet.size}</div><div class="stat-u">indirect</div></div>
       <div class="stat"><div class="stat-v">${ta+td}</div><div class="stat-u">lines</div></div>
     </div><div class="div"></div><div class="lbl">Direct Changes</div>`;
+
+  if(!direct.size){
+    const r=greptileReport(pr);const n=r?r.files.length:0;
+    html+=`<div class="ci-it" style="margin-bottom:4px">${n?`None of the ${n} changed file${n===1?'':'s'} map to a ${level==='arch'?'component':'module'} — see unmapped below, or add rules to scripts/component-map.json.`:'No changed files.'}</div>`;
+  }
   for(const cid of direct){
-    const c=modData[cid];if(!c)continue;
-    const name=modGraph.nMap[cid]?modGraph.nMap[cid].label:cid;
-    html+=`<div class="ci" style="border-left:3px solid ${color}">
-      <div class="ci-h"><span class="ci-n">${name}</span><span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span></div>
-      <div class="ci-f">${c.files.join(', ')}</div>
-      ${c.summary?`<div class="ci-s">${c.summary}</div>`:''}
-      <div style="margin-top:4px"><span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomToFiles('${cid}')">explore files ▸</span></div>
-    </div>`;
+    const c=data[cid];if(!c)continue;
+    const name=view.nMap[cid]?view.nMap[cid].label:cid;
+    const canDiff=level==='mod'&&hasCodeDiff(pr,cid);
+    const gi=greptileImpact(pr,cid);
+    html+=`<div class="ci${canDiff?' has-diff':''}" style="border-left:3px solid ${color}"${canDiff?` onclick="openCodePanel('${cid}')"`:''}>
+      <div class="ci-h"><span class="ci-n">${name}${greptileBadge(gi)}</span><span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span></div>
+      ${c.files?`<div class="ci-f">${c.files.join(', ')}</div>`:''}
+      <div class="ci-s">${c.summary}</div>
+      ${canDiff?'<div class="ci-open">view code diff →</div>':''}</div>`;
   }
   if(indirectSet.size>0){
     html+=`<div class="div"></div><div class="lbl">Indirect Impact</div>`;
     for(const cid of indirectSet){
-      const name=modGraph.nMap[cid]?modGraph.nMap[cid].label:cid;
-      const hop=dist[cid];
-      html+=`<div class="ci indirect"><div class="ci-n" style="font-size:12px">${name}</div><div class="ci-it">${hop} hop${hop>1?'s':''} from change</div></div>`;
+      const name=view.nMap[cid]?view.nMap[cid].label:cid;
+      const gi=greptileImpact(pr,cid);
+      html+=`<div class="ci indirect"${gi&&(gi.findings||gi.downstream)?' style="opacity:.9;border-color:#3a5070"':''}><div class="ci-n" style="font-size:11px">${name}${greptileBadge(gi)}</div><div class="ci-it">${gi&&gi.downstream?'Greptile: named as downstream impact':'depends on changed components'}</div></div>`;
     }
+  }
+  html+=greptileSection(pr);
+  if(level==='arch'&&pr.mod&&Object.keys(pr.mod).length){
+    html+=`<div class="div"></div><div style="text-align:center;padding:4px 0">
+      <span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomIn()">zoom into API Gateway ▸</span></div>`;
   }
   document.getElementById('analysis').innerHTML=html;
   document.getElementById('analysis').style.display='block';
 }
 
-const banner=document.getElementById('pr-banner');
-function showBanner(pr){
-  if(!pr||!pr.oneliner){banner.style.display='none';return}
-  banner.querySelector('.bn-id').textContent=pr.id+' · '+pr.author;
-  banner.querySelector('.bn-text').textContent=pr.oneliner;
-  banner.style.display='block';
-}
-
 const prList=document.getElementById('pr-list');
+function renderPRList(){
+prList.innerHTML='';
+if(!PRS.length){prList.innerHTML='<div class="ci-it" style="padding:4px 0">No pull requests yet — open one on GitHub and it will appear here after Greptile reviews it.</div>';return}
 PRS.forEach(pr=>{
   const btn=document.createElement('button');btn.className='pr-btn';
-  const ta=Object.values(pr.files).reduce((s,c)=>s+c.add,0);
-  const td=Object.values(pr.files).reduce((s,c)=>s+c.del,0);
+  if(activePR&&activePR.id===pr.id){btn.classList.add('active');activeBtn=btn;activePR=pr}
+  const ta=pr.totalAdd??(pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.add,0):0);
+  const td=pr.totalDel??(pr.arch?Object.values(pr.arch).reduce((s,c)=>s+c.del,0):0);
   btn.innerHTML=`<div class="pr-id"><span class="pt ${pr.type}">${pr.type}</span>${pr.id}</div>
     <div class="pr-title">${pr.title}</div>
     <div class="pr-meta">${pr.author} · +${ta} -${td}</div>`;
+  pr._btn=btn;
   btn.addEventListener('click',()=>{
     if(activeBtn)activeBtn.classList.remove('active');
-    btn.classList.add('active');activeBtn=btn;activePR=pr;
+    btn.classList.add('active');activeBtn=btn;
+    activePR=pr;
     resetAnimation();
     document.getElementById('controls').style.display='flex';
-    showBanner(pr);playAnimation();
+    playAnimation();
   });
   prList.appendChild(btn);
+  if(GREPTILE[pr.id])markPRButton(pr,GREPTILE[pr.id]);
 });
-
-// ═══════════════════════════════════════════════════════
-// NODE DETAIL POPUP
-// ═══════════════════════════════════════════════════════
-const detailEl=document.getElementById('node-detail');
-let detailOpen=null;
-
-function showDetail(nodeId){
-  if(detailOpen===nodeId){hideDetail();return}
-  detailOpen=nodeId;
-  const view=getView();const n=view.nMap[nodeId];
-  if(!n){hideDetail();return}
-
-  let data,c,color,isDirect,isIndirect,dist;
-  if(level==='mod'){
-    data=modData;c=data?data[nodeId]:null;dist=modDist||{};
-  }else{
-    const mf=new Set(MODULES[zoomedMod].files);
-    data={};for(const[f,info]of Object.entries((activePR||{}).files||{}))if(mf.has(f))data[f]=info;
-    c=data[nodeId]||null;dist={};for(const[f,d]of Object.entries(fileDist||{}))if(mf.has(f))dist[f]=d;
-  }
-  color=activePR?(TC[activePR.type]||'var(--acc)'):'var(--acc)';
-  isDirect=c!==undefined&&c!==null;
-  isIndirect=!isDirect&&lastDist&&lastDist[nodeId]!==undefined;
-
-  const displayLabel=n.label||(n.tag?n.tag:nodeId);
-  const displayTag=n.tag||(level==='files'?MODULES[zoomedMod].tag:'');
-  let html=`<div style="border-left:3px solid ${isDirect?color:isIndirect?'#475569':'var(--bd)'};padding-left:8px">
-    <div style="font-weight:600;color:var(--txb);font-size:14px">${displayLabel}</div>
-    <div style="font-family:'Fira Code',monospace;font-size:10px;color:var(--txd)">${displayTag}</div>
-  </div>`;
-
-  if(isDirect){
-    if(c.summary)html+=`<div style="color:var(--tx);font-size:12px;margin:8px 0;line-height:1.4">${c.summary}</div>`;
-    if(c.files&&c.files.length)html+=`<div class="lbl" style="margin-top:6px">Files</div>${c.files.map(f=>`<div style="font-family:'Fira Code',monospace;font-size:11px;color:var(--txd);padding:2px 0">${f}</div>`).join('')}`;
-    html+=`<div style="display:flex;gap:12px;margin-top:8px;font-family:'Fira Code',monospace;font-size:12px">
-      <span style="color:var(--grn)">+${c.add}</span><span style="color:var(--red)">-${c.del}</span></div>`;
-  }else if(isIndirect){
-    const hop=lastDist[nodeId];
-    html+=`<div style="color:var(--tx);font-size:12px;margin:8px 0;line-height:1.4">
-      Indirectly affected (${hop} hop${hop>1?'s':''} from change)</div>`;
-  }else if(!activePR){
-    html+=`<div style="color:var(--txd);font-size:12px;margin:8px 0">Select a PR to see impact</div>`;
-  }else{
-    html+=`<div style="color:var(--txd);font-size:12px;margin:8px 0">Not affected by this PR</div>`;
-  }
-
-  if(level==='mod'){
-    const m=MODULES[nodeId];
-    if(m){
-      const fc=m.files.length;
-      html+=`<div style="margin-top:8px;border-top:1px solid var(--bd);padding-top:8px;text-align:center">
-        <span style="color:var(--acc);cursor:pointer;font-size:12px;font-family:'Fira Code',monospace" onclick="hideDetail();zoomToFiles('${nodeId}')">explore ${fc} file${fc>1?'s':''} ▸</span></div>`;
-    }
-  }else{
-    const imports=(RAW[nodeId]||[]).map(f=>f.replace('lib/','').replace('.js',''));
-    const importedBy=[];
-    for(const[file,deps]of Object.entries(RAW))if(deps.includes(nodeId))importedBy.push(file.replace('lib/','').replace('.js',''));
-    if(imports.length||importedBy.length){
-      html+=`<div style="margin-top:8px;border-top:1px solid var(--bd);padding-top:6px;font-size:11px">`;
-      if(imports.length)html+=`<div style="margin-bottom:4px"><span style="color:var(--txd)">imports:</span> <span style="color:var(--tx)">${imports.slice(0,6).join(', ')}${imports.length>6?' ...':''}</span></div>`;
-      if(importedBy.length)html+=`<div><span style="color:var(--txd)">imported by:</span> <span style="color:var(--tx)">${importedBy.slice(0,6).join(', ')}${importedBy.length>6?' ...':''}</span></div>`;
-      html+=`</div>`;
-    }
-  }
-
-  detailEl.innerHTML=html;detailEl.style.display='block';
-  const nx=n.x+NW/2+16,ny=n.y-NH/2;
-  detailEl.style.left=Math.min(nx,W-290)+'px';detailEl.style.top=Math.max(ny,10)+'px';
-}
-function hideDetail(){detailOpen=null;detailEl.style.display='none'}
-
-// ═══════════════════════════════════════════════════════
-// ZOOM: MODULE ↔ FILES
-// ═══════════════════════════════════════════════════════
-const bc0=document.getElementById('bc0'),crumb=document.getElementById('crumb');
-
-function getFileNodes(modId){
-  const files=MODULES[modId].files;
-  const n=files.length;
-  const cols=n<=3?1:2;
-  const rows=Math.ceil(n/cols);
-  const gapX=210,gapY=90;
-  const sx=CX-(cols-1)*gapX/2;
-  const sy=120;
-  return files.map((f,i)=>({
-    id:f,label:f.replace('lib/','').replace('.js',''),
-    x:sx+(i%cols)*gapX,y:sy+Math.floor(i/cols)*gapY,
-  }));
 }
 
-function getFileEdges(modId){
-  const fs=new Set(MODULES[modId].files);
-  const edges=[];
-  for(const f of fs)for(const imp of(RAW[f]||[]))if(fs.has(imp))edges.push([f,imp]);
-  return edges;
+// ════════════════════════════════════════════════════════════
+// SECTION: CODE DIFF PANEL
+// Final leaf: module → changed file → unified diff.
+// ════════════════════════════════════════════════════════════
+const codePanel=document.getElementById('code-panel');
+const fileTabs=document.getElementById('file-tabs');
+const diffMeta=document.getElementById('diff-meta');
+const diffView=document.getElementById('diff-view');
+let openDiffFiles=[];
+
+function hasCodeDiff(pr,moduleId){
+  return Boolean(pr&&CODE_DIFFS[pr.id]&&CODE_DIFFS[pr.id][moduleId]);
 }
 
-function zoomToFiles(modId){
-  level='files';zoomedMod=modId;hideDetail();
-  pan={x:0,y:0};gMod.style.transform='';gFiles.style.transform='';
-  const n=modGraph.nMap[modId];
-  gMod.style.transformOrigin=`${n.x}px ${n.y}px`;
-  gMod.style.transform='scale(3)';gMod.style.opacity='0';gMod.style.pointerEvents='none';
+function closeCodePanel(){
+  codePanel.style.display='none';
+  openDiffFiles=[];
+}
 
-  const fNodes=getFileNodes(modId);
-  const fEdges=getFileEdges(modId);
-  fileGraph=renderGraph(fNodes,fEdges,gFiles,{zoomable:false});
-  fNodes.forEach(fn=>{
-    fileGraph.nEls[fn.id].g.addEventListener('click',()=>showDetail(fn.id));
+let lastOpenModule=null;
+function openCodePanel(moduleId){
+  if(level!=='mod'||!activePR)return;
+  lastOpenModule=moduleId;
+  const node=mod.nMap[moduleId];
+  const moduleChange=activePR.mod&&activePR.mod[moduleId];
+  openDiffFiles=(CODE_DIFFS[activePR.id]&&CODE_DIFFS[activePR.id][moduleId])||[];
+
+  document.getElementById('code-kicker').textContent=`${activePR.type} ${activePR.id} · FASTIFY`;
+  document.getElementById('code-title').textContent=node?node.label:moduleId;
+  document.getElementById('code-sub').textContent=moduleChange
+    ? moduleChange.summary
+    : 'Indirect impact only — this module has no lines changed in the PR';
+  codePanel.style.display='flex';
+
+  if(openDiffFiles.length===0){
+    fileTabs.style.display='none';
+    diffMeta.style.display='none';
+    const reason=moduleChange
+      ? 'This mock scenario does not have an embedded source patch yet.'
+      : 'This module depends on changed code, but the PR does not modify it directly.';
+    diffView.innerHTML=`<div class="diff-empty"><div><strong>No direct diff</strong>${reason}</div></div>`;
+    return;
+  }
+
+  fileTabs.style.display='flex';
+  diffMeta.style.display='flex';
+  renderDiffFile(0);
+}
+
+let openDiffIndex=0;
+function renderDiffFile(index){
+  const file=openDiffFiles[index];if(!file)return;
+  openDiffIndex=index;
+  const findings=greptileFindingsFor(activePR,file.file);
+  fileTabs.innerHTML='';
+  openDiffFiles.forEach((f,i)=>{
+    const btn=document.createElement('button');
+    btn.className=`file-tab${i===index?' active':''}`;
+    btn.textContent=f.file;
+    btn.title=f.file;
+    btn.onclick=()=>renderDiffFile(i);
+    fileTabs.appendChild(btn);
   });
 
-  // external deps footer
-  const deps=new Set(),users=new Set();
-  for(const f of MODULES[modId].files){for(const imp of(RAW[f]||[])){const m=fileToMod[imp];if(m&&m!==modId)deps.add(MODULES[m].label)}}
-  for(const[file,imps]of Object.entries(RAW)){const m=fileToMod[file];if(m&&m!==modId)for(const imp of imps)if(MODULES[modId].files.includes(imp))users.add(MODULES[m].label)}
-  const parts=[];
-  if(deps.size)parts.push('imports from: '+[...deps].join(', '));
-  if(users.size)parts.push('used by: '+[...users].join(', '));
-  if(parts.length){
-    const ft=document.createElementNS(NS,'text');ft.textContent=parts.join('  ·  ');
-    ft.setAttribute('x',CX);ft.setAttribute('y',H-60);ft.setAttribute('text-anchor','middle');
-    ft.setAttribute('fill','#4a6a85');ft.setAttribute('font-size','11');ft.setAttribute('font-family',"'Fira Code',monospace");
-    gFiles.appendChild(ft);
-  }
+  diffMeta.innerHTML=`<span>${file.file}</span><span class="dm-add">+${file.add}</span><span class="dm-del">-${file.del}</span>${findings.length?`<span class="gr-badge" style="color:${SEV_COLOR[maxSeverity(findings)]}">${findings.length} greptile</span>`:''}<span class="dm-note">focused real hunks</span>`;
+  renderDiffRows(file.diff,findings);
+}
 
-  setTimeout(()=>{gFiles.style.opacity='1';gFiles.style.pointerEvents='auto'},250);
-  bc0.classList.add('click');bc0.classList.remove('on');bc0.onclick=zoomToModules;
-  const oldSep=document.getElementById('bcsep'),oldB=document.getElementById('bc1');
-  if(oldSep)oldSep.remove();if(oldB)oldB.remove();
-  const sep=document.createElement('span');sep.className='bcsep';sep.textContent='›';sep.id='bcsep';crumb.appendChild(sep);
-  const b=document.createElement('span');b.className='bc on';b.id='bc1';b.textContent=MODULES[modId].label;crumb.appendChild(b);
-  document.getElementById('vsub').textContent=`${MODULES[modId].label} · ${MODULES[modId].files.length} files`;
+function renderDiffRows(lines,findings=[]){
+  diffView.innerHTML='';
+  let oldLine=0,newLine=0;
+  lines.forEach(line=>{
+    if(line.startsWith('@@')){
+      const m=line.match(/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+      if(m){oldLine=Number(m[1]);newLine=Number(m[2])}
+      const h=document.createElement('div');h.className='diff-row hunk';h.textContent=line;diffView.appendChild(h);return;
+    }
+
+    const kind=line.startsWith('+')?'add':line.startsWith('-')?'del':'ctx';
+    const row=document.createElement('div');row.className=`diff-row ${kind}`;
+    const oldNum=document.createElement('span');oldNum.className='diff-num';
+    const newNum=document.createElement('span');newNum.className='diff-num';
+    const mark=document.createElement('span');mark.className='diff-mark';
+    const code=document.createElement('span');code.className='diff-code';
+
+    if(kind==='add'){newNum.textContent=newLine++;mark.textContent='+'}
+    else if(kind==='del'){oldNum.textContent=oldLine++;mark.textContent='−'}
+    else{oldNum.textContent=oldLine++;newNum.textContent=newLine++;mark.textContent=' '}
+    code.textContent=line.length?line.slice(1):'';
+    row.append(oldNum,newNum,mark,code);diffView.appendChild(row);
+    if(kind!=='del'){const ln=newLine-1;findings.filter(f=>f.line===ln).forEach(f=>diffView.appendChild(greptileRow(f)))}
+  });
+  diffView.scrollTop=0;diffView.scrollLeft=0;
+}
+
+document.getElementById('code-close').onclick=closeCodePanel;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCodePanel()});
+MOD_NODES.forEach(n=>mod.nEls[n.id].g.addEventListener('click',()=>{if(level==='mod')openCodePanel(n.id)}));
+
+// ════════════════════════════════════════════════════════════
+// SECTION: GREPTILE REVIEW
+// Reports come from GET /api/reports (server.js polls GitHub and rebuilds
+// each PR's report from Greptile's comments). Findings are overlaid on the
+// change cards, the diff rows, and the tooltip. Falls back to MOCK_PRS when
+// the API is unreachable (e.g. opened over file://).
+// ════════════════════════════════════════════════════════════
+const GREPTILE={};
+const SEV_COLOR={critical:'#ef4444',high:'#f97316',medium:'#f59e0b',low:'#3b82f6'};
+const SEV_RANK=['low','medium','high','critical'];
+function esc(t){return String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function stripHtml(t){return String(t??'').replace(/<img[^>]*>/gi,'').replace(/<\/?a[^>]*>/gi,'').replace(/<\/?(h[1-6]|p|div|br|ul|li|details|summary|strong|em|b)[^>]*>/gi,'\n').replace(/\n{3,}/g,'\n\n').trim()}
+function md(t){return esc(stripHtml(t)).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>')}
+function maxSeverity(fs){return fs.reduce((m,f)=>SEV_RANK.indexOf(f.severity)>SEV_RANK.indexOf(m)?f.severity:m,'low')}
+function greptileReport(pr){return pr?GREPTILE[pr.id]:null}
+function greptileImpact(pr,nodeId){const r=greptileReport(pr);return r&&r.impact&&r.impact[level]?r.impact[level][nodeId]||null:null}
+function greptileBadge(gi){
+  if(!gi||!gi.findings)return'';
+  const sev=gi.maxSeverity||'low';
+  return`<span class="gr-badge" style="color:${SEV_COLOR[sev]}">${gi.findings} · ${sev}</span>`;
+}
+function samePath(a,b){return a===b||a.endsWith('/'+b)||b.endsWith('/'+a)}
+function greptileFindingsFor(pr,file){const r=greptileReport(pr);return r?r.findings.filter(f=>f.path&&samePath(f.path,file)):[]}
+function greptileRow(f){
+  const el=document.createElement('div');el.className='gr-row';el.style.color=SEV_COLOR[f.severity]||SEV_COLOR.low;
+  const body=stripHtml(f.body).replace(/^\s*(\*\*)?\[(critical|high|medium|low)\]\s*/i,'$1');
+  el.innerHTML=`<span class="gr-k">greptile · ${esc(f.severity)}</span><span style="color:#b8c4d4">${md(body)}</span>`;
+  return el;
+}
+function greptileSection(pr){
+  const r=greptileReport(pr);if(!r)return'';
+  const view=getView();
+  const sev=r.findings.length?maxSeverity(r.findings):null;
+  const downstream=(r.summary&&r.summary.downstream||[]).map(d=>d[level]).filter(Boolean);
+  const chips=[...new Set(downstream)].map(id=>`<span class="gr-chip">${esc(view.nMap[id]?view.nMap[id].label:id)}</span>`).join('');
+  const firstPara=stripHtml(r.summary&&r.summary.body||'').split(/\n\s*\n/).map(x=>x.trim()).filter(x=>x&&!/^greptile summary$/i.test(x))[0]||'';
+  return`<div class="div"></div><div class="lbl">Greptile Review${sev?`<span class="gr-badge" style="color:${SEV_COLOR[sev]}">${r.findings.length} finding${r.findings.length===1?'':'s'} · ${sev}</span>`:''}</div>
+    <div class="gr-src">${esc(r.generatedFrom||'greptile')}</div>
+    ${firstPara?`<div class="gr-sum">${md(firstPara)}</div>`:''}
+    ${chips?`<div class="ci-it" style="margin-bottom:3px">named downstream</div>${chips}`:''}
+    ${r.unmapped&&r.unmapped.length?`<div class="ci-it">unmapped: ${esc(r.unmapped.join(', '))}</div>`:''}`;
+}
+function markPRButton(pr,r){
+  if(!pr._btn||!r.findings.length)return;
+  const meta=pr._btn.querySelector('.pr-meta');if(!meta||meta.querySelector('.gr-badge'))return;
+  const sev=maxSeverity(r.findings);
+  meta.insertAdjacentHTML('beforeend',`<span class="gr-badge" style="color:${SEV_COLOR[sev]}">${r.findings.length} greptile</span>`);
+}
+
+// ── Live data ────────────────────────────────────────────
+// PR list + diffs come from the server (GET /api/reports), which polls GitHub
+// and rebuilds each report from Greptile's comments. Nothing here is hardcoded.
+function inferType(pr){
+  const t=(pr.title||'').toLowerCase(),labels=(pr.labels||[]).map(l=>l.toLowerCase());
+  if(/^(fix|bugfix|hotfix)\b/.test(t)||labels.includes('bug'))return'fix';
+  if(/^(refactor|chore|cleanup)\b/.test(t)||labels.includes('refactor'))return'refactor';
+  return'feat';
+}
+function reportToPR(r){
+  const base=p=>p.split('/').pop();
+  const toLevel=(imp,withFiles)=>{const o={};for(const [id,n] of Object.entries(imp||{})){if(!n.files.length)continue;
+    o[id]={add:n.add,del:n.del,files:withFiles?n.files.map(base):undefined,
+      summary:`${n.files.length} file${n.files.length===1?'':'s'} changed`+(n.findings?` · ${n.findings} Greptile finding${n.findings===1?'':'s'}`:'')}}return o};
+  const pr={id:r.pr.id,number:r.pr.number,title:r.pr.title,type:inferType(r.pr),author:r.pr.author||'',url:r.pr.url,state:r.pr.merged?'merged':r.pr.state,
+    arch:toLevel(r.impact.arch,false),mod:toLevel(r.impact.mod,true),
+    totalAdd:r.files.reduce((a,f)=>a+f.additions,0),totalDel:r.files.reduce((a,f)=>a+f.deletions,0)};
+  const diffs={};
+  for(const f of r.files){if(!f.mod||!f.patch)continue;(diffs[f.mod]??=[]).push({file:f.path,add:f.additions,del:f.deletions,diff:f.patch.split('\n')})}
+  CODE_DIFFS[pr.id]=diffs;GREPTILE[pr.id]=r;
+  return pr;
+}
+let liveSig='',liveMode=null;
+async function loadLiveReports(){
+  let data=null;
+  try{const res=await fetch('/api/reports',{cache:'no-store'});if(res.ok)data=await res.json()}catch(e){}
+  if(!data||!Array.isArray(data.reports)){
+    if(liveMode!=='mock'){liveMode='mock';PRS=MOCK_PRS;renderPRList();document.getElementById('vsub').textContent='offline demo data · start the server (npm start) for live PRs'}
+    return;
+  }
+  const sig=JSON.stringify(data.reports.map(r=>[r.pr.number,r.pr.updatedAt,r.findings.length]));
+  if(liveMode==='live'&&sig===liveSig)return;
+  liveMode='live';liveSig=sig;
+  PRS=data.reports.map(reportToPR);
+  renderPRList();
+  const sub=document.getElementById('vsub');
+  sub.textContent=`${data.repo} · ${PRS.length} PR${PRS.length===1?'':'s'}${data.authenticated?'':' · no GITHUB_TOKEN'}${data.error?' · poll error':''}`;
+  sub.title=data.error||`last poll ${data.lastPoll}`;
+  if(activePR){
+    if(lastPanel&&animState==='done')updatePanel(activePR,lastPanel.dist,lastPanel.direct);
+    if(codePanel.style.display==='flex'&&openDiffFiles.length){openDiffFiles=(CODE_DIFFS[activePR.id]&&CODE_DIFFS[activePR.id][lastOpenModule])||openDiffFiles;renderDiffFile(Math.min(openDiffIndex,openDiffFiles.length-1))}
+  }
+}
+loadLiveReports();
+setInterval(loadLiveReports,30000);
+
+// ════════════════════════════════════════════════════════════
+// SECTION: ZOOM / DRILL-DOWN
+// Handles level transitions (architecture ↔ module).
+// To add more zoomable services, register them in ARCH_NODES
+// with zoomable:true and create matching module data.
+// ════════════════════════════════════════════════════════════
+const bc0=document.getElementById('bc0'),crumb=document.getElementById('crumb');
+
+function zoomIn(){
+  level='mod';
+  const gw=arch.nMap['gateway'];
+  gArch.style.transformOrigin=`${gw.x}px ${gw.y}px`;
+  gArch.style.transform='scale(3.5)';gArch.style.opacity='0';gArch.style.pointerEvents='none';
+  setTimeout(()=>{gMod.style.opacity='1';gMod.style.pointerEvents='auto'},250);
+  bc0.classList.add('click');bc0.classList.remove('on');bc0.onclick=zoomOut;
+  if(!document.getElementById('bc1')){
+    const sep=document.createElement('span');sep.className='bcsep';sep.textContent='›';sep.id='bcsep';crumb.appendChild(sep);
+    const b=document.createElement('span');b.className='bc on';b.id='bc1';b.textContent='API Gateway';crumb.appendChild(b);
+  }
+  document.getElementById('vsub').textContent='fastify · 9 modules';
   if(activePR){resetAnimation();playAnimation()}
 }
 
-function zoomToModules(){
-  level='mod';zoomedMod=null;hideDetail();
-  pan={x:0,y:0};gFiles.style.transform='';
-  gFiles.style.opacity='0';gFiles.style.pointerEvents='none';
-  setTimeout(()=>{gMod.style.transform='scale(1)';gMod.style.opacity='1';gMod.style.pointerEvents='auto'},200);
+function zoomOut(){
+  closeCodePanel();
+  level='arch';
+  gMod.style.opacity='0';gMod.style.pointerEvents='none';
+  setTimeout(()=>{gArch.style.transform='scale(1)';gArch.style.opacity='1';gArch.style.pointerEvents='auto'},200);
   bc0.classList.remove('click');bc0.classList.add('on');bc0.onclick=null;
   const s=document.getElementById('bcsep'),b=document.getElementById('bc1');if(s)s.remove();if(b)b.remove();
-  document.getElementById('vsub').textContent='fastify · 9 modules · 32 files';
+  if(liveMode!=='live')document.getElementById('vsub').textContent='e-commerce · 13 components';else loadLiveReports.sig='',liveSig='',loadLiveReports();
   if(activePR){resetAnimation();playAnimation()}
 }
 
-// ═══════════════════════════════════════════════════════
-// TOOLTIP & PAN
-// ═══════════════════════════════════════════════════════
+ARCH_NODES.forEach(n=>{if(n.zoomable)arch.nEls[n.id].g.addEventListener('click',()=>{if(level==='arch')zoomIn()})});
+
+// ════════════════════════════════════════════════════════════
+// SECTION: TOOLTIP & PAN
+// ════════════════════════════════════════════════════════════
 const tip=document.getElementById('tip');
 function showTip(e,n){
-  let h=`<div class="tip-n">${n.label||n.id}</div>`;
-  if(level==='mod')h+=`<div class="tip-f">click to see details · hover for EXPLORE</div>`;
-  if(activePR&&modData&&modData[n.id])h+=`<div class="tip-s">${modData[n.id].summary}</div>`;
+  let h=`<div class="tip-n">${n.label}</div>`;
+  if(n.zoomable)h+=`<div class="tip-f">click to explore modules</div>`;
+  if(level==='mod'&&hasCodeDiff(activePR,n.id))h+=`<div class="tip-f">click to inspect code diff</div>`;
+  if(activePR){const d=getData(activePR);if(d&&d[n.id])h+=`<div class="tip-s">${d[n.id].summary}</div>`;
+    const gi=greptileImpact(activePR,n.id);if(gi&&(gi.findings||gi.downstream))h+=`<div class="tip-f" style="color:${SEV_COLOR[gi.maxSeverity||'low']}">greptile: ${gi.findings?`${gi.findings} finding${gi.findings===1?'':'s'} · ${gi.maxSeverity}`:'named as downstream impact'}</div>`}
   tip.innerHTML=h;tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
 }
 function hideTip(){tip.style.display='none'}
 document.addEventListener('mousemove',e=>{if(tip.style.display==='block'){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px'}});
 
-// add tooltips to module nodes
-MOD_NODES.forEach(n=>{
-  modGraph.nEls[n.id].g.addEventListener('mouseenter',e=>showTip(e,n));
-  modGraph.nEls[n.id].g.addEventListener('mouseleave',hideTip);
-});
-
 let pan={x:0,y:0},panning=false,ps=null;
-svg.addEventListener('mousedown',e=>{
-  if(!e.target.closest('.node-group')){hideDetail();panning=true;ps={x:e.clientX-pan.x,y:e.clientY-pan.y}}
-});
-svg.addEventListener('mousemove',e=>{
-  if(!panning)return;
-  pan.x=e.clientX-ps.x;pan.y=e.clientY-ps.y;
-  const g=level==='mod'?gMod:gFiles;
-  if(level==='mod')g.style.transform=`translate(${pan.x}px,${pan.y}px) scale(1)`;
-  else g.style.transform=`translate(${pan.x}px,${pan.y}px)`;
-});
+svg.addEventListener('mousedown',e=>{if(!e.target.closest('.node-group')){panning=true;ps={x:e.clientX-pan.x,y:e.clientY-pan.y}}});
+svg.addEventListener('mousemove',e=>{if(panning){pan.x=e.clientX-ps.x;pan.y=e.clientY-ps.y;const g=level==='arch'?gArch:gMod;g.style.transform=level==='arch'?`translate(${pan.x}px,${pan.y}px) scale(1)`:`translate(${pan.x}px,${pan.y}px)`}});
 svg.addEventListener('mouseup',()=>{panning=false});
 svg.addEventListener('mouseleave',()=>{panning=false});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&level==='files')zoomToModules()});
 </script>
-</body>
-</html>

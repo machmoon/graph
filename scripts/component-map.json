@@ -1,5 +1,5 @@
 {
-  "_comment": "Path prefix -> node IDs in blast-radius.html. First matching prefix wins; longest prefixes listed first. 'arch' = ARCH_NODES id, 'mod' = MOD_NODES id (only for gateway/Fastify internals).",
+  "_comment": "Path prefix -> node IDs in public/index.html. First matching prefix wins; longest prefixes listed first. 'arch' = ARCH_NODES id, 'mod' = MOD_NODES id (only for gateway/Fastify internals).",
   "rules": [
     { "prefix": "demo-repo/api-gateway/router",     "arch": "gateway", "mod": "routing" },
     { "prefix": "demo-repo/api-gateway/",           "arch": "gateway", "mod": "core" },
