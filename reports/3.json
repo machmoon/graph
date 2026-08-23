@@ -1,0 +1,94 @@
+{
+  "generatedFrom": "greptile",
+  "repo": "machmoon/graph",
+  "pr": {
+    "id": "#3",
+    "number": 3,
+    "title": "Demo/fastify log controller submodule",
+    "author": "hardikgoyal",
+    "url": "https://github.com/machmoon/graph/pull/3",
+    "head": "03da303f9deb7bc0dffc412457d108bc00fa4750",
+    "base": "main",
+    "state": "open"
+  },
+  "greptileReviewed": true,
+  "files": [
+    {
+      "path": ".gitignore",
+      "additions": 0,
+      "deletions": 1,
+      "status": "modified",
+      "arch": null,
+      "mod": null
+    },
+    {
+      "path": ".gitmodules",
+      "additions": 3,
+      "deletions": 0,
+      "status": "added",
+      "arch": null,
+      "mod": null
+    },
+    {
+      "path": "blast-radius.html",
+      "additions": 743,
+      "deletions": 472,
+      "status": "modified",
+      "arch": null,
+      "mod": null
+    },
+    {
+      "path": "fastify",
+      "additions": 1,
+      "deletions": 1,
+      "status": "modified",
+      "arch": null,
+      "mod": null
+    },
+    {
+      "path": "setup.md",
+      "additions": 2,
+      "deletions": 2,
+      "status": "modified",
+      "arch": null,
+      "mod": null
+    }
+  ],
+  "findings": [
+    {
+      "path": "blast-radius.html",
+      "line": 657,
+      "severity": "high",
+      "body": "<a href=\"#\"><img alt=\"P1\" src=\"https://greptile-static-assets.s3.amazonaws.com/badges/p1.svg?v=9\" align=\"top\"></a> **[high] Edge tooltip handler is undefined**\n\nWhen a user hovers over any architecture or module edge, the new listener calls undefined `showEdgeTip`, causing an uncaught `ReferenceError` and preventing the coupling tooltip from appearing. Other dependents: `setup.md` presents `blast-radius.html` as the self-contained demo entry point; no demo-repo service consumes this static page.\n\n**Context Used:** This repository models a microservice system (demo... ([source](https://github.com/machmoon/graph/blob/03da303f9deb7bc0dffc412457d108bc00fa4750/greptile.json))",
+      "url": "https://github.com/machmoon/graph/pull/3#discussion_r3839882075",
+      "arch": null,
+      "mod": null,
+      "mentions": []
+    },
+    {
+      "path": "blast-radius.html",
+      "line": 233,
+      "severity": "high",
+      "body": "<a href=\"#\"><img alt=\"P1\" src=\"https://greptile-static-assets.s3.amazonaws.com/badges/p1.svg?v=9\" align=\"top\"></a> **[high] Help and keyboard handlers are missing**\n\nWhen a user clicks either help control, the page calls undefined `toggleHelp` and throws a `ReferenceError`; the advertised Space, arrow, T, Z, 1–4, Escape, and ? shortcuts also do nothing because no keyboard listener is registered. Other dependents: `setup.md` directs users to this standalone demo; no demo-repo service imports the page.\n\n**Context Used:** This repository models a microservice system (demo... ([source](https://github.com/machmoon/graph/blob/03da303f9deb7bc0dffc412457d108bc00fa4750/greptile.json))",
+      "url": "https://github.com/machmoon/graph/pull/3#discussion_r3839882079",
+      "arch": null,
+      "mod": null,
+      "mentions": []
+    }
+  ],
+  "summary": {
+    "body": "<h3>Greptile Summary</h3>\n\nThe PR pins Fastify as a submodule, updates setup documentation, and substantially expands the standalone blast-radius demo with guided review, hop controls, richer diffs, tooltips, and review state.\n\n- Adds a pinned Fastify submodule and aligns setup instructions with it.\n- Reworks the architecture visualization and code-diff experience.\n- Adds guided-tour, help, keyboard-shortcut, and edge-inspection UI, but some new interactions lack implementations.\n- **Downstream impact:** no `demo-repo/*` service is directly affected; the impacted standalone surface is the repository-root `blast-radius.html` demo documented by `setup.md`.\n\n<h3>Confidence Score: 3/5</h3>\n\nThe PR should not merge until the undefined edge-tooltip and help/keyboard handlers are implemented because multiple newly advertised demo interactions currently fail.\n\nHovering graph edges or clicking help controls reaches undefined functions, while every keyboard shortcut shown by the new modal lacks an event handler.\n\n**Files Needing Attention:** blast-radius.html\n\n<details><summary><h3>Important Files Changed</h3></summary>\n\n\n\n\n| Filename | Overview |\n|----------|----------|\n| blast-radius.html | Major standalone-demo rewrite; edge hover and shortcut/help interactions are currently broken by missing handlers. |\n| .gitmodules | Registers the Fastify repository as the submodule backing the demo. |\n| fastify | Pins the Fastify submodule to the log-controller demo revision. |\n| setup.md | Replaces manual Fastify cloning with submodule initialization and documents the pinned checkout. |\n\n</details>\n\n\n<!-- greptile_other_comments_section -->\n\n<sub>Reviews (1): Last reviewed commit: [\"feat(ui): add hop scrubber, guided tour,...\"](https://github.com/machmoon/graph/commit/03da303f9deb7bc0dffc412457d108bc00fa4750) | [Re-trigger Greptile](https://app.greptile.com/api/retrigger?id=56088086)</sub>",
+    "downstream": []
+  },
+  "impact": {
+    "arch": {},
+    "mod": {}
+  },
+  "unmapped": [
+    ".gitignore",
+    ".gitmodules",
+    "blast-radius.html",
+    "fastify",
+    "setup.md"
+  ]
+}
