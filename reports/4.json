@@ -1,0 +1,53 @@
+{
+  "generatedFrom": "greptile",
+  "repo": "machmoon/graph",
+  "pr": {
+    "id": "#4",
+    "number": 4,
+    "title": "chore: update Fastify submodule across modules",
+    "author": "hardikgoyal",
+    "url": "https://github.com/machmoon/graph/pull/4",
+    "head": "81e072fd646ba1c113179052b209b171b4301ac9",
+    "base": "main",
+    "state": "open"
+  },
+  "greptileReviewed": true,
+  "files": [
+    {
+      "path": "fastify",
+      "additions": 1,
+      "deletions": 1,
+      "status": "modified",
+      "arch": null,
+      "mod": null
+    }
+  ],
+  "findings": [],
+  "summary": {
+    "body": "<h3>Greptile Summary</h3>\n\nUpdates the `fastify` submodule from `75d74e1af74598deb18f2c052d64f815a5eec8f8` to `1beaf7e72d24b2fc63a02a7f5806772a00e45454`.\n\n- Changes the Fastify source revision analyzed by the repository’s graph and blast-radius endpoints.\n- No concrete regression was established in the available PR context.\n\n## Downstream impact\n- Root graph/analyzer service: `server.js` uses `fastify/` as its default analysis repository.\n- No affected `demo-repo/*` service was established.\n\n<h3>Confidence Score: 5/5</h3>\n\nThe PR appears safe to merge because no concrete changed-code failure was established.\n\nThe change only advances the Fastify submodule pointer, and the available repository evidence does not demonstrate a broken build, incompatible caller, or incorrect graph-analysis result at the new revision.\n\n<details><summary><h3>Important Files Changed</h3></summary>\n\n\n\n\n| Filename | Overview |\n|----------|----------|\n| fastify | Updates the pinned Fastify revision consumed by `server.js`, `lib/graph-builder.js`, and `scripts/component-map.json`; no actionable failure was established. |\n\n</details>\n\n\n<details open><summary><h3>Flowchart</h3></summary>\n\n```mermaid\n%%{init: {'theme': 'neutral'}}%%\nflowchart LR\n  S[\"fastify submodule revision\"] --> G[\"server.js graph/analyze endpoints\"]\n  S --> B[\"lib/graph-builder.js\"]\n  B --> G\n  G --> V[\"Graph and blast-radius visualization\"]\n```\n</details>\n\n\n<!-- greptile_other_comments_section -->\n\n<sub>Reviews (1): Last reviewed commit: [\"chore: update Fastify submodule across m...\"](https://github.com/machmoon/graph/commit/81e072fd646ba1c113179052b209b171b4301ac9) | [Re-trigger Greptile](https://app.greptile.com/api/retrigger?id=56088808)</sub>",
+    "downstream": [
+      {
+        "path": "server.js",
+        "arch": null,
+        "mod": null
+      },
+      {
+        "path": "lib/graph-builder.js",
+        "arch": null,
+        "mod": null
+      },
+      {
+        "path": "scripts/component-map.json",
+        "arch": null,
+        "mod": null
+      }
+    ]
+  },
+  "impact": {
+    "arch": {},
+    "mod": {}
+  },
+  "unmapped": [
+    "fastify"
+  ]
+}
