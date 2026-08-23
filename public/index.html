@@ -723,8 +723,8 @@ function renderGraph(nodes,edges,container){
     info.setAttribute('font-size','12');info.setAttribute('font-family',"'Fira Code',monospace");
     info.setAttribute('class','node-info');g.appendChild(info);
 
-    if(n.zoomable){
-      const zh=document.createElementNS(NS,'text');zh.textContent='DRILL DOWN ▸';
+    {
+      const zh=document.createElementNS(NS,'text');zh.textContent='EXPLORE ▸';
       zh.setAttribute('x',NW/2-8);zh.setAttribute('y',-NH/2+46);zh.setAttribute('text-anchor','end');
       zh.setAttribute('class','zoom-hint');g.appendChild(zh);g.style.cursor='zoom-in';
     }
@@ -1550,7 +1550,7 @@ function zoomOut(){
   if(activePR){resetAnimation();playAnimation()}
 }
 
-ARCH_NODES.forEach(n=>{if(n.zoomable)arch.nEls[n.id].g.addEventListener('click',()=>{if(level==='arch')zoomIn()})});
+ARCH_NODES.forEach(n=>{arch.nEls[n.id].g.addEventListener('click',()=>{if(level==='arch')zoomIn()})});
 
 // ════════════════════════════════════════════════════════════
 // SECTION: TOOLTIP & PAN
@@ -1558,7 +1558,7 @@ ARCH_NODES.forEach(n=>{if(n.zoomable)arch.nEls[n.id].g.addEventListener('click',
 const tip=document.getElementById('tip');
 function showTip(e,n){
   let h=`<div class="tip-n">${n.label}</div>`;
-  if(n.zoomable)h+=`<div class="tip-f">click to explore modules</div>`;
+  if(level==='arch')h+=`<div class="tip-f">click to explore modules</div>`;
   if(level==='mod'&&hasCodeDiff(activePR,n.id))h+=`<div class="tip-f">click to inspect code diff</div>`;
   if(activePR){const d=getData(activePR);if(d&&d[n.id])h+=`<div class="tip-s">${esc(d[n.id].summary)}</div>`;
     const gi=greptileImpact(activePR,n.id);if(gi&&(gi.findings||gi.downstream))h+=`<div class="tip-f" style="color:${SEV_COLOR[gi.maxSeverity||'low']}">greptile: ${gi.findings?`${gi.findings} finding${gi.findings===1?'':'s'} · ${gi.maxSeverity}`:'named as downstream impact'}</div>`}
