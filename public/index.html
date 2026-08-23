@@ -8,41 +8,41 @@
 :root{--bg:#070a10;--sf:#0c1018;--tx:#b0c0d5;--txd:#6a7a90;--txb:#e8eef5;--bd:#1a2a45;--acc:#38bdf8;--grn:#22c55e;--amb:#f59e0b;--blu:#3b82f6;--red:#ef4444}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-serif;overflow:hidden;height:100vh}
-#crumb{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:12px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:7px 16px}
+#crumb{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:14px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:7px 16px}
 .bc{color:var(--txd);cursor:default}.bc.click{color:var(--acc);cursor:pointer}.bc.click:hover{color:var(--txb)}.bc.on{color:var(--txb)}.bcsep{color:var(--txd)}
-#sidebar{position:fixed;top:12px;left:12px;width:260px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:14px;z-index:10;font-size:12px;max-height:calc(100vh - 24px);overflow-y:auto}
+#sidebar{position:fixed;top:12px;left:12px;width:280px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:14px;z-index:10;font-size:15px;max-height:calc(100vh - 24px);overflow-y:auto}
 #sidebar::-webkit-scrollbar{width:3px}#sidebar::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
-#sidebar h1{font-size:17px;font-weight:700;color:var(--txb);margin-bottom:2px}
-.sub{color:var(--txd);font-size:11px;font-family:'Fira Code',monospace;margin-bottom:10px}
+#sidebar h1{font-size:22px;font-weight:700;color:var(--txb);margin-bottom:2px}
+.sub{color:var(--txd);font-size:13px;font-family:'Fira Code',monospace;margin-bottom:10px}
 .div{height:1px;background:var(--bd);margin:8px 0}
-.lbl{font-size:10px;font-weight:600;color:var(--txd);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'Fira Code',monospace}
-.pr-btn{display:block;width:100%;text-align:left;background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:8px 10px;margin-bottom:5px;cursor:pointer;font-family:inherit;font-size:12px;color:var(--tx);transition:border-color .2s,background .2s}
+.lbl{font-size:13px;font-weight:600;color:var(--txd);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'Fira Code',monospace}
+.pr-btn{display:block;width:100%;text-align:left;background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:8px 10px;margin-bottom:5px;cursor:pointer;font-family:inherit;font-size:14px;color:var(--tx);transition:border-color .2s,background .2s}
 .pr-btn:hover{border-color:#2a3a55;background:#0e1520}.pr-btn.active{border-color:var(--acc);background:#0c1a2e}
-.pr-id{font-family:'Fira Code',monospace;font-size:11px;color:var(--txd)}
-.pr-title{color:var(--txb);font-weight:500;margin-top:2px;font-size:13px}
-.pr-meta{font-size:10px;color:var(--txd);margin-top:2px;font-family:'Fira Code',monospace}
-.pt{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
+.pr-id{font-family:'Fira Code',monospace;font-size:13px;color:var(--txd)}
+.pr-title{color:var(--txb);font-weight:500;margin-top:2px;font-size:16px}
+.pr-meta{font-size:12px;color:var(--txd);margin-top:2px;font-family:'Fira Code',monospace}
+.pt{display:inline-block;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
 .pt.feat{background:#052e16;color:var(--grn)}.pt.fix{background:#2a1a05;color:var(--amb)}.pt.refactor{background:#0f1d3d;color:var(--blu)}
 .stat-row{display:flex;gap:10px;margin-bottom:6px}.stat{text-align:center;flex:1}
-.stat-v{font-size:22px;font-weight:700;color:var(--txb);line-height:1}.stat-u{font-size:10px;color:var(--txd);font-family:'Fira Code',monospace}
+.stat-v{font-size:28px;font-weight:700;color:var(--txb);line-height:1}.stat-u{font-size:12px;color:var(--txd);font-family:'Fira Code',monospace}
 #analysis{display:none}
 .ci{background:#0a0f18;border:1px solid var(--bd);border-radius:5px;padding:8px 10px;margin-bottom:5px}
 .ci.indirect{border-style:dashed;opacity:.7}
 .ci-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
-.ci-n{font-weight:600;color:var(--txb);font-size:13px}
-.ci-b{font-family:'Fira Code',monospace;font-size:10px}.ci-b .a{color:var(--grn)}.ci-b .d{color:var(--red)}
-.ci-f{font-size:11px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.5}
-.ci-s{font-size:11px;color:var(--tx);margin-top:3px;line-height:1.3;font-style:italic}
-.ci-it{font-size:10px;color:var(--txd);font-style:italic}
+.ci-n{font-weight:600;color:var(--txb);font-size:15px}
+.ci-b{font-family:'Fira Code',monospace;font-size:12px}.ci-b .a{color:var(--grn)}.ci-b .d{color:var(--red)}
+.ci-f{font-size:13px;color:var(--txd);font-family:'Fira Code',monospace;line-height:1.5}
+.ci-s{font-size:13px;color:var(--tx);margin-top:3px;line-height:1.3;font-style:italic}
+.ci-it{font-size:12px;color:var(--txd);font-style:italic}
 #controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;display:none;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:6px 10px}
-#controls button{background:#0a0f18;border:1px solid var(--bd);color:var(--tx);padding:5px 14px;border-radius:4px;font-family:'Fira Code',monospace;font-size:11px;cursor:pointer;transition:all .15s;white-space:nowrap}
+#controls button{background:#0a0f18;border:1px solid var(--bd);color:var(--tx);padding:5px 14px;border-radius:4px;font-family:'Fira Code',monospace;font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap}
 #controls button:hover{border-color:var(--acc);color:var(--txb)}
 #controls button.active-ctrl{border-color:var(--acc);color:var(--acc);background:#0c1a2e}
 #controls button:disabled{opacity:.3;cursor:default;border-color:var(--bd);color:var(--txd)}
-#node-detail{position:fixed;display:none;z-index:25;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;width:270px;font-size:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+#node-detail{position:fixed;display:none;z-index:25;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;width:290px;font-size:14px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 #pr-banner{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:19;display:none;background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:10px 20px;max-width:620px;text-align:center}
-#pr-banner .bn-id{font-family:'Fira Code',monospace;font-size:11px;color:var(--txd);margin-bottom:2px}
-#pr-banner .bn-text{font-size:14px;color:var(--txb);font-weight:500;line-height:1.4}
+#pr-banner .bn-id{font-family:'Fira Code',monospace;font-size:13px;color:var(--txd);margin-bottom:2px}
+#pr-banner .bn-text{font-size:18px;color:var(--txb);font-weight:500;line-height:1.4}
 svg{display:block;width:100vw;height:100vh}
 .node-group{cursor:pointer}.node-box{transition:fill .5s}.node-border{transition:stroke .5s,stroke-width .4s,stroke-dasharray .3s}
 .node-tag,.node-label,.node-info{transition:fill .5s}
@@ -50,12 +50,12 @@ svg{display:block;width:100vw;height:100vh}
 .node-group.dimmed .node-box{fill:#080c12!important}.node-group.dimmed .node-border{stroke:#101820!important}
 .node-group.dimmed .node-tag{fill:#1a2535!important}.node-group.dimmed .node-label{fill:#2a3a4a!important}.node-group.dimmed .node-info{fill:#101820!important}
 .change-badge{transition:opacity .5s}
-.zoom-hint{font-family:'Fira Code',monospace;font-size:9px;fill:var(--acc);opacity:0;transition:opacity .2s;cursor:pointer}
+.zoom-hint{font-family:'Fira Code',monospace;font-size:12px;fill:var(--acc);opacity:0;transition:opacity .2s;cursor:pointer}
 .node-group:hover .zoom-hint{opacity:.85}
 #gMod,#gFiles{transition:opacity .45s ease}
-.tip{position:fixed;background:var(--sf);border:1px solid var(--bd);padding:6px 10px;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:20;max-width:260px}
-.tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}.tip-f{font-family:'Fira Code',monospace;font-size:10px;color:var(--txd)}
-.tip-s{font-size:11px;color:var(--tx);margin-top:3px;font-style:italic}
+.tip{position:fixed;background:var(--sf);border:1px solid var(--bd);padding:6px 10px;border-radius:4px;font-size:14px;pointer-events:none;display:none;z-index:20;max-width:280px}
+.tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}.tip-f{font-family:'Fira Code',monospace;font-size:12px;color:var(--txd)}
+.tip-s{font-size:13px;color:var(--tx);margin-top:3px;font-style:italic}
 </style>
 </head>
 <body>
@@ -164,6 +164,9 @@ const MOD_NODES=[
 // PR DEFINITIONS — all real Fastify files
 // ═══════════════════════════════════════════════════════
 const PRS=[
+  {id:'#6580',title:'rename kRouteContext symbol',type:'refactor',author:'intern',
+   oneliner:'A harmless 3-line rename in symbols.js — but this Symbol is imported by 17 files across every single module. Did all consumers get updated?',
+   files:{'lib/symbols.js':{add:3,del:3,summary:'Rename kRouteContext → kRouteCtx'}}},
   {id:'#4533',title:'fix error serialization for nested errors',type:'fix',author:'dave',
    oneliner:'Nested errors were losing their stack traces during serialization — fixes the recursive handler to walk Error.cause chains.',
    files:{'lib/error-handler.js':{add:15,del:8,summary:'Fix recursive error handling for nested causes'},
@@ -254,19 +257,19 @@ function renderGraph(nodes,edges,container,opts){
     if(n.tag){
       tagEl=document.createElementNS(NS,'text');tagEl.textContent=n.tag;
       tagEl.setAttribute('x',-NW/2+14);tagEl.setAttribute('y',-NH/2+16);tagEl.setAttribute('fill','#6a8aaa');
-      tagEl.setAttribute('font-size','10');tagEl.setAttribute('font-family',"'Fira Code',monospace");
+      tagEl.setAttribute('font-size','13');tagEl.setAttribute('font-family',"'Fira Code',monospace");
       tagEl.setAttribute('letter-spacing','.6');tagEl.setAttribute('class','node-tag');g.appendChild(tagEl);
     }
     const lbl=document.createElementNS(NS,'text');lbl.textContent=n.label;
     lbl.setAttribute('x',-NW/2+14);lbl.setAttribute('y',n.tag?-NH/2+34:5);
-    lbl.setAttribute('fill','#d0dce8');lbl.setAttribute('font-size',n.tag?'15':'13');
+    lbl.setAttribute('fill','#d0dce8');lbl.setAttribute('font-size',n.tag?'18':'15');
     lbl.setAttribute('font-family',"'DM Sans',sans-serif");lbl.setAttribute('font-weight','600');
     lbl.setAttribute('class','node-label');g.appendChild(lbl);
 
     if(n.info){
       infoEl=document.createElementNS(NS,'text');infoEl.textContent=n.info;
       infoEl.setAttribute('x',-NW/2+14);infoEl.setAttribute('y',-NH/2+48);infoEl.setAttribute('fill','#5a7a98');
-      infoEl.setAttribute('font-size','10');infoEl.setAttribute('font-family',"'Fira Code',monospace");
+      infoEl.setAttribute('font-size','13');infoEl.setAttribute('font-family',"'Fira Code',monospace");
       infoEl.setAttribute('class','node-info');g.appendChild(infoEl);
     }
     if(opts.zoomable!==false&&n.tag){
@@ -280,7 +283,7 @@ function renderGraph(nodes,edges,container,opts){
     bb.setAttribute('width',38);bb.setAttribute('height',16);bb.setAttribute('rx',3);
     bb.setAttribute('fill','#0a0f18');bb.setAttribute('stroke','#1e2e45');bb.setAttribute('stroke-width','1');bdg.appendChild(bb);
     const bt=document.createElementNS(NS,'text');bt.setAttribute('x',-11);bt.setAttribute('y',3);
-    bt.setAttribute('text-anchor','middle');bt.setAttribute('font-size','10');bt.setAttribute('fill','#b0c0d5');
+    bt.setAttribute('text-anchor','middle');bt.setAttribute('font-size','12');bt.setAttribute('fill','#b0c0d5');
     bt.setAttribute('font-family',"'Fira Code',monospace");bdg.appendChild(bt);g.appendChild(bdg);
     container.appendChild(g);
     nEls[n.id]={g,box,bdr,bar,tag:tagEl,lbl,info:infoEl,bdg,bb,bt};
@@ -300,14 +303,30 @@ MOD_NODES.forEach(n=>{
 // ═══════════════════════════════════════════════════════
 let animSteps=[],animIdx=0,animTimer=null,animState='idle',liveBalls=[];
 
-function animateBall(container,pathEl,color,reverse){
-  const ball=document.createElementNS(NS,'circle');
-  ball.setAttribute('r','4');ball.setAttribute('fill',color);ball.setAttribute('filter','url(#glow)');
+function animateBall(container,pathEl,color,reverse,labelText){
+  const g=document.createElementNS(NS,'g');
+  g.setAttribute('pointer-events','none');
   const trail=document.createElementNS(NS,'circle');
-  trail.setAttribute('r','10');trail.setAttribute('fill',color);trail.setAttribute('opacity','0.15');
-  container.appendChild(trail);container.appendChild(ball);
+  trail.setAttribute('r','14');trail.setAttribute('fill',color);trail.setAttribute('opacity','0.10');
+  const ball=document.createElementNS(NS,'circle');
+  ball.setAttribute('r','5');ball.setAttribute('fill',color);ball.setAttribute('filter','url(#glow)');
+  g.appendChild(trail);g.appendChild(ball);
+  if(labelText){
+    const bg=document.createElementNS(NS,'rect');
+    bg.setAttribute('rx','4');bg.setAttribute('ry','4');bg.setAttribute('fill','#1a2030');
+    bg.setAttribute('fill-opacity','0.85');bg.setAttribute('stroke',color);bg.setAttribute('stroke-width','0.8');
+    bg.setAttribute('stroke-opacity','0.6');
+    const lbl=document.createElementNS(NS,'text');
+    lbl.textContent=labelText;lbl.setAttribute('fill',color);lbl.setAttribute('font-size','12');
+    lbl.setAttribute('font-family',"'Fira Code',monospace");lbl.setAttribute('font-weight','bold');
+    lbl.setAttribute('text-anchor','middle');lbl.setAttribute('dominant-baseline','auto');
+    g.appendChild(bg);g.appendChild(lbl);
+    g._lbl=lbl;g._bg=bg;
+  }
+  container.appendChild(g);
   const len=pathEl.getTotalLength();const start=performance.now();
-  const entry={ball,trail,done:false};liveBalls.push(entry);
+  const entry={g,done:false};liveBalls.push(entry);
+  let measured=false;
   function step(now){
     if(entry.done)return;
     const t=Math.min((now-start)/BALL_MS,1);
@@ -316,15 +335,52 @@ function animateBall(container,pathEl,color,reverse){
     const pt=pathEl.getPointAtLength(at);
     ball.setAttribute('cx',pt.x);ball.setAttribute('cy',pt.y);
     trail.setAttribute('cx',pt.x);trail.setAttribute('cy',pt.y);
-    trail.setAttribute('opacity',String(.2*(1-t)));
+    trail.setAttribute('opacity',String(.15*(1-t)));
+    if(g._lbl){
+      g._lbl.setAttribute('x',pt.x);g._lbl.setAttribute('y',pt.y-14);
+      if(!measured){measured=true;try{
+        const bb=g._lbl.getBBox();
+        g._bg.setAttribute('x',bb.x-4);g._bg.setAttribute('y',bb.y-2);
+        g._bg.setAttribute('width',bb.width+8);g._bg.setAttribute('height',bb.height+4);
+      }catch(e){}}
+      else if(g._bg.getAttribute('width')){
+        const bw=+g._bg.getAttribute('width'),bh=+g._bg.getAttribute('height');
+        g._bg.setAttribute('x',pt.x-bw/2);g._bg.setAttribute('y',pt.y-14-bh+2);
+      }
+    }
     if(t<1)requestAnimationFrame(step);
-    else{ball.style.transition='opacity .3s';trail.style.transition='opacity .3s';
-      ball.setAttribute('opacity','0');trail.setAttribute('opacity','0');
-      setTimeout(()=>{ball.remove();trail.remove();entry.done=true},300)}
+    else{
+      const pt2=pathEl.getPointAtLength(reverse?0:len);
+      const ripple=document.createElementNS(NS,'circle');
+      ripple.setAttribute('cx',pt2.x);ripple.setAttribute('cy',pt2.y);
+      ripple.setAttribute('r','6');ripple.setAttribute('fill','none');
+      ripple.setAttribute('stroke',color);ripple.setAttribute('stroke-width','2');
+      ripple.setAttribute('opacity','0.8');
+      ripple.style.transition='all .5s ease-out';
+      container.appendChild(ripple);
+      requestAnimationFrame(()=>{ripple.setAttribute('r','22');ripple.setAttribute('opacity','0')});
+      setTimeout(()=>ripple.remove(),600);
+      g.style.transition='opacity .3s';g.setAttribute('opacity','0');
+      setTimeout(()=>{g.remove();entry.done=true},300)}
   }
   requestAnimationFrame(step);
 }
-function clearBalls(){liveBalls.forEach(b=>{b.done=true;b.ball.remove();b.trail.remove()});liveBalls=[]}
+function clearBalls(){liveBalls.forEach(b=>{b.done=true;b.g.remove()});liveBalls=[]}
+
+// impact tags — floating labels at nodes explaining dependency chain
+let impactTags=[];
+function showImpactTag(container,node,text,color){
+  const g=document.createElementNS(NS,'g');
+  g.setAttribute('transform',`translate(${node.x},${node.y-NH/2-14})`);
+  g.style.opacity='0';g.style.transition='opacity .5s';
+  const t=document.createElementNS(NS,'text');t.textContent=text;
+  t.setAttribute('text-anchor','middle');t.setAttribute('fill',color);
+  t.setAttribute('font-size','13');t.setAttribute('font-family',"'Fira Code',monospace");
+  g.appendChild(t);container.appendChild(g);
+  requestAnimationFrame(()=>{g.style.opacity='1'});
+  impactTags.push(g);
+}
+function clearImpactTags(){impactTags.forEach(g=>g.remove());impactTags=[]}
 
 function highlightNode(el,color,bg,stroke,data){
   el.box.setAttribute('fill',bg);el.bdr.setAttribute('stroke',stroke);el.bdr.setAttribute('stroke-width','1.5');
@@ -345,12 +401,13 @@ function highlightEdge(pathEl,color){pathEl.setAttribute('stroke',color);pathEl.
 // ═══════════════════════════════════════════════════════
 let level='mod',zoomedMod=null,activePR=null,activeBtn=null;
 let fileGraph=null,fileDist=null,modDist=null,modData=null,lastDist=null;
+let fileParent={},modCause={};
 
 function buildReverse(edges){const r={};edges.forEach(([f,t])=>{if(!r[t])r[t]=[];r[t].push(f)});return r}
 const allModRev=buildReverse(ALL_MOD_EDGES);
 
 function computeBlast(pr){
-  if(!pr){fileDist=null;modDist=null;modData=null;return}
+  if(!pr){fileDist=null;modDist=null;modData=null;fileParent={};modCause={};return}
   modData={};
   for(const[f,info]of Object.entries(pr.files)){
     const m=fileToMod[f];if(!m)continue;
@@ -363,14 +420,17 @@ function computeBlast(pr){
   const allFileEdges=[];
   for(const[file,imports]of Object.entries(RAW))for(const imp of imports)allFileEdges.push([file,imp]);
   const fileRev=buildReverse(allFileEdges);
-  fileDist={};
+  fileDist={};fileParent={};
   const seeds=Object.keys(pr.files);
   seeds.forEach(f=>{fileDist[f]=0});
   const q=[...seeds];
-  while(q.length){const c=q.shift();for(const d of(fileRev[c]||[]))if(fileDist[d]===undefined){fileDist[d]=fileDist[c]+1;q.push(d)}}
-  // module distances
-  modDist={};
-  for(const[f,d]of Object.entries(fileDist)){const m=fileToMod[f];if(m&&(modDist[m]===undefined||d<modDist[m]))modDist[m]=d}
+  while(q.length){const c=q.shift();for(const d of(fileRev[c]||[]))if(fileDist[d]===undefined){fileDist[d]=fileDist[c]+1;fileParent[d]=c;q.push(d)}}
+  // module distances + cause tracking
+  modDist={};modCause={};
+  for(const[f,d]of Object.entries(fileDist)){
+    const m=fileToMod[f];if(!m)continue;
+    if(modDist[m]===undefined||d<modDist[m]){modDist[m]=d;if(fileParent[f])modCause[m]=fileParent[f]}
+  }
 }
 
 function getView(){return level==='mod'?modGraph:fileGraph}
@@ -397,7 +457,13 @@ function buildSteps(pr){
 
   steps.push({delay:0,fn:()=>{allIds.forEach(id=>{if(dist[id]===undefined)view.nEls[id].g.classList.add('dimmed')})}});
   steps.push({delay:300,fn:()=>{
-    direct.forEach(cid=>{const el=view.nEls[cid];if(el)highlightNode(el,color,bg,stroke,data[cid])});
+    direct.forEach(cid=>{const el=view.nEls[cid];if(!el)return;
+      highlightNode(el,color,bg,stroke,data[cid]);
+      const n=view.nMap[cid];if(n){
+        const lbl=level==='mod'&&data[cid].files?'✎ '+data[cid].files.join(', '):'✎ changed';
+        showImpactTag(container,n,lbl,color);
+      }
+    });
     view.eEls.forEach(p=>{if(direct.has(p.dataset.from)&&direct.has(p.dataset.to))highlightEdge(p,color)});
   }});
 
@@ -411,13 +477,26 @@ function buildSteps(pr){
         if(fd===undefined||td===undefined)return;
         if((fd===hop&&td===hop-1)||(td===hop&&fd===hop-1)){
           highlightEdge(p,hop<=1?color:'#475569');
-          animateBall(container,p,hop<=1?color:'#64748b',fd===hop);
+          const srcId=fd===hop?p.dataset.from:p.dataset.to;
+          const dstId=fd===hop?p.dataset.to:p.dataset.from;
+          const srcN=view.nMap[srcId],dstN=view.nMap[dstId];
+          const srcLabel=srcN?(srcN.label||srcId).replace(/^lib\//,''):'';
+          const dstLabel=dstN?(dstN.label||dstId).replace(/^lib\//,''):'';
+          const ballLabel=srcLabel+' → '+dstLabel;
+          animateBall(container,p,hop<=1?color:'#64748b',fd===hop,ballLabel);
         }
       });
     }});
     steps.push({delay:nodeDelay,fn:()=>{
       hopNodes.forEach(cid=>{const el=view.nEls[cid];if(!el)return;
-        if(direct.has(cid))highlightNode(el,color,bg,stroke,data[cid]);else highlightIndirect(el)});
+        if(direct.has(cid)){highlightNode(el,color,bg,stroke,data[cid])}else{
+          highlightIndirect(el);
+          const n=view.nMap[cid];if(n){
+            const cause=level==='mod'?modCause[cid]:fileParent[cid];
+            const tag=cause?'← imports '+cause.replace(/^lib\//,''):'← indirect';
+            showImpactTag(container,n,tag,'#f0c060');
+          }
+        }});
     }});
   }
   if(level==='mod'){
@@ -430,7 +509,7 @@ function buildSteps(pr){
 // ANIMATION CONTROLS
 // ═══════════════════════════════════════════════════════
 function resetHighlights(){
-  clearBalls();
+  clearBalls();clearImpactTags();
   [modGraph,fileGraph].forEach(v=>{if(!v)return;
     Object.values(v.nEls).forEach(el=>{
       el.g.classList.remove('dimmed');
