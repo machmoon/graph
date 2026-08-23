@@ -9,6 +9,9 @@ const PORT = 8777;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+// Standalone demo + Greptile reports (reports/<pr>.json are read by blast-radius.html)
+app.get('/blast-radius.html', (_req, res) => res.sendFile(path.join(__dirname, 'blast-radius.html')));
+app.use('/reports', express.static(path.join(__dirname, 'reports')));
 
 let cachedGraph = null;
 let cachedGrouped = null;

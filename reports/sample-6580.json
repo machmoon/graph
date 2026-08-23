@@ -1,0 +1,48 @@
+{
+  "generatedFrom": "sample (hand-written to demo the panel — NOT real Greptile output)",
+  "repo": "fastify/fastify",
+  "pr": { "id": "#6580", "number": 6580, "title": "introduce log controller layer", "author": "Eomm", "url": "https://github.com/fastify/fastify/pull/6580", "base": "main", "state": "merged" },
+  "greptileReviewed": true,
+  "files": [
+    { "path": "lib/reply.js", "additions": 9, "deletions": 33, "status": "modified", "arch": "gateway", "mod": "reqres" },
+    { "path": "lib/log-controller.js", "additions": 169, "deletions": 0, "status": "added", "arch": "gateway", "mod": "logging" },
+    { "path": "lib/logger-factory.js", "additions": 22, "deletions": 2, "status": "modified", "arch": "gateway", "mod": "logging" }
+  ],
+  "findings": [
+    {
+      "path": "lib/reply.js", "line": 738, "severity": "high",
+      "body": "[high] `logStreamError` changed signature from `(logger, err, res)` to `(err, reply, res)`. Any caller still passing a logger as the first argument will now hand a pino instance to `streamError` as `err`. Callers in `lib/route.js` and `lib/four-oh-four.js` must be updated in the same PR.",
+      "arch": "gateway", "mod": "reqres",
+      "mentions": [ { "path": "lib/route.js", "arch": "gateway", "mod": "routing" }, { "path": "lib/four-oh-four.js", "arch": "gateway", "mod": "server" } ]
+    },
+    {
+      "path": "lib/log-controller.js", "line": 15, "severity": "medium",
+      "body": "[medium] `opts.disableRequestLogging || defaultInitOptions.disableRequestLogging` treats an explicit `false` the same as `undefined`. If the default ever becomes truthy, users cannot opt out. Prefer `??`.",
+      "arch": "gateway", "mod": "logging", "mentions": []
+    },
+    {
+      "path": "lib/logger-factory.js", "line": 140, "severity": "low",
+      "body": "[low] `instanceof LogController` rejects duck-typed controllers and any controller built from a second copy of fastify in `node_modules` (monorepos, peer-dep mismatches). Consider a structural check on the required methods instead.",
+      "arch": "gateway", "mod": "logging",
+      "mentions": [ { "path": "lib/log-controller.js", "arch": "gateway", "mod": "logging" } ]
+    }
+  ],
+  "summary": {
+    "body": "Introduces a `LogController` extension point and routes all internal request-lifecycle logging through it. The refactor is mechanically consistent, but the `logStreamError` signature change is a silent breaking change for any internal caller not updated here.\n\n## Downstream impact\n- `lib/route.js` — calls `logStreamError` for request-stream errors\n- `lib/four-oh-four.js` — shares the 404 logging path now behind the controller\n- `lib/reply.js` — response completion and stream error logging",
+    "downstream": [
+      { "path": "lib/route.js", "arch": "gateway", "mod": "routing" },
+      { "path": "lib/four-oh-four.js", "arch": "gateway", "mod": "server" },
+      { "path": "lib/reply.js", "arch": "gateway", "mod": "reqres" }
+    ]
+  },
+  "impact": {
+    "arch": { "gateway": { "files": ["lib/reply.js", "lib/log-controller.js", "lib/logger-factory.js"], "findings": 3, "maxSeverity": "high", "add": 200, "del": 35, "downstream": true } },
+    "mod": {
+      "reqres":  { "files": ["lib/reply.js"], "findings": 1, "maxSeverity": "high", "add": 9, "del": 33, "downstream": true },
+      "logging": { "files": ["lib/log-controller.js", "lib/logger-factory.js"], "findings": 2, "maxSeverity": "medium", "add": 191, "del": 2, "downstream": false },
+      "routing": { "files": [], "findings": 1, "maxSeverity": "high", "add": 0, "del": 0, "downstream": true },
+      "server":  { "files": [], "findings": 1, "maxSeverity": "high", "add": 0, "del": 0, "downstream": true }
+    }
+  },
+  "unmapped": []
+}

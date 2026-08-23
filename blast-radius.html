@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Blast Radius</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap">
 <style>
@@ -76,6 +77,16 @@ svg{display:block;width:100vw;height:100vh}
 .tip{position:fixed;background:var(--sf);border:1px solid var(--bd);padding:6px 10px;border-radius:4px;font-size:11px;pointer-events:none;display:none;z-index:20;max-width:240px}
 .tip-n{font-weight:600;color:var(--txb);margin-bottom:2px}.tip-f{font-family:'Fira Code',monospace;font-size:9px;color:var(--txd)}
 .tip-s{font-size:10px;color:var(--tx);margin-top:3px;font-style:italic}
+/* ══ GREPTILE REVIEW ══ */
+.gr-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Fira Code',monospace;font-size:8px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:1px 5px;border-radius:3px;border:1px solid currentColor;margin-left:6px;vertical-align:middle;white-space:nowrap}
+.gr-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.gr-row{display:block;margin:3px 10px 6px 112px;padding:6px 10px;border-radius:4px;background:#0c1420;border:1px solid #1e2e45;border-left:3px solid currentColor;font-family:'DM Sans',sans-serif;font-size:10.5px;line-height:1.45;color:#b8c4d4;white-space:normal;max-width:640px}
+.gr-row .gr-k{font-family:'Fira Code',monospace;font-size:8px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-right:6px}
+.gr-row code{font-family:'Fira Code',monospace;font-size:9.5px;color:#dce6f0;background:#111b2a;padding:0 3px;border-radius:2px}
+.gr-src{font-size:9px;color:var(--txd);font-family:'Fira Code',monospace;margin-bottom:5px;line-height:1.4}
+.gr-sum{font-size:10.5px;color:var(--tx);line-height:1.45;margin-bottom:6px}
+.gr-chip{display:inline-block;font-family:'Fira Code',monospace;font-size:9px;padding:1px 6px;border-radius:3px;background:#0a0f18;border:1px dashed #2a3a55;color:#8a99b0;margin:0 4px 4px 0}
+.pr-meta .gr-badge{margin-left:6px}
 </style>
 
 <div id="crumb"><span class="bc on" id="bc0">System Architecture</span></div>
@@ -186,7 +197,7 @@ const MOD_EDGES=[
 // ════════════════════════════════════════════════════════════
 const PRS=[
   // Real Fastify PR used as a local demo scenario. Nothing is fetched or submitted.
-  { id:'#6580',title:'introduce log controller layer',type:'feat',author:'Manuel Spigolon',
+  { id:'#6580',title:'introduce log controller layer',type:'feat',author:'Manuel Spigolon',report:'reports/sample-6580.json',
     arch:{ gateway:{summary:'24 files rewiring logging across the request lifecycle',add:782,del:127} },
     mod:{
       core:{files:['fastify.js'],add:21,del:21,summary:'Creates and exports the LogController extension point'},
@@ -829,8 +840,10 @@ document.getElementById('btn-reset').onclick=resetAnimation;
 // PR list rendering, analysis panel, tooltips.
 // To add new sidebar sections, modify updatePanel().
 // ════════════════════════════════════════════════════════════
+let lastPanel=null;
 function updatePanel(pr,dist,direct){
   const data=getData(pr);if(!data)return;
+  lastPanel={pr,dist,direct};
   const view=getView();
   const indirectSet=new Set(Object.keys(dist).filter(id=>!direct.has(id)));
   const ta=Object.values(data).reduce((s,c)=>s+c.add,0);
@@ -848,8 +861,9 @@ function updatePanel(pr,dist,direct){
     const c=data[cid];if(!c)continue;
     const name=view.nMap[cid]?view.nMap[cid].label:cid;
     const canDiff=level==='mod'&&hasCodeDiff(pr,cid);
+    const gi=greptileImpact(pr,cid);
     html+=`<div class="ci${canDiff?' has-diff':''}" style="border-left:3px solid ${color}"${canDiff?` onclick="openCodePanel('${cid}')"`:''}>
-      <div class="ci-h"><span class="ci-n">${name}</span><span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span></div>
+      <div class="ci-h"><span class="ci-n">${name}${greptileBadge(gi)}</span><span class="ci-b"><span class="a">+${c.add}</span> <span class="d">-${c.del}</span></span></div>
       ${c.files?`<div class="ci-f">${c.files.join(', ')}</div>`:''}
       <div class="ci-s">${c.summary}</div>
       ${canDiff?'<div class="ci-open">view code diff →</div>':''}</div>`;
@@ -858,9 +872,11 @@ function updatePanel(pr,dist,direct){
     html+=`<div class="div"></div><div class="lbl">Indirect Impact</div>`;
     for(const cid of indirectSet){
       const name=view.nMap[cid]?view.nMap[cid].label:cid;
-      html+=`<div class="ci indirect"><div class="ci-n" style="font-size:11px">${name}</div><div class="ci-it">depends on changed components</div></div>`;
+      const gi=greptileImpact(pr,cid);
+      html+=`<div class="ci indirect"${gi&&(gi.findings||gi.downstream)?' style="opacity:.9;border-color:#3a5070"':''}><div class="ci-n" style="font-size:11px">${name}${greptileBadge(gi)}</div><div class="ci-it">${gi&&gi.downstream?'Greptile: named as downstream impact':'depends on changed components'}</div></div>`;
     }
   }
+  html+=greptileSection(pr);
   if(level==='arch'&&pr.mod){
     html+=`<div class="div"></div><div style="text-align:center;padding:4px 0">
       <span style="color:var(--acc);cursor:pointer;font-size:11px;font-family:'Fira Code',monospace" onclick="zoomIn()">zoom into API Gateway ▸</span></div>`;
@@ -877,6 +893,7 @@ PRS.forEach(pr=>{
   btn.innerHTML=`<div class="pr-id"><span class="pt ${pr.type}">${pr.type}</span>${pr.id}</div>
     <div class="pr-title">${pr.title}</div>
     <div class="pr-meta">${pr.author} · +${ta} -${td}</div>`;
+  pr._btn=btn;
   btn.addEventListener('click',()=>{
     if(activeBtn)activeBtn.classList.remove('active');
     btn.classList.add('active');activeBtn=btn;
@@ -935,8 +952,11 @@ function openCodePanel(moduleId){
   renderDiffFile(0);
 }
 
+let openDiffIndex=0;
 function renderDiffFile(index){
   const file=openDiffFiles[index];if(!file)return;
+  openDiffIndex=index;
+  const findings=greptileFindingsFor(activePR,file.file);
   fileTabs.innerHTML='';
   openDiffFiles.forEach((f,i)=>{
     const btn=document.createElement('button');
@@ -947,11 +967,11 @@ function renderDiffFile(index){
     fileTabs.appendChild(btn);
   });
 
-  diffMeta.innerHTML=`<span>${file.file}</span><span class="dm-add">+${file.add}</span><span class="dm-del">-${file.del}</span><span class="dm-note">focused real hunks</span>`;
-  renderDiffRows(file.diff);
+  diffMeta.innerHTML=`<span>${file.file}</span><span class="dm-add">+${file.add}</span><span class="dm-del">-${file.del}</span>${findings.length?`<span class="gr-badge" style="color:${SEV_COLOR[maxSeverity(findings)]}">${findings.length} greptile</span>`:''}<span class="dm-note">focused real hunks</span>`;
+  renderDiffRows(file.diff,findings);
 }
 
-function renderDiffRows(lines){
+function renderDiffRows(lines,findings=[]){
   diffView.innerHTML='';
   let oldLine=0,newLine=0;
   lines.forEach(line=>{
@@ -973,6 +993,7 @@ function renderDiffRows(lines){
     else{oldNum.textContent=oldLine++;newNum.textContent=newLine++;mark.textContent=' '}
     code.textContent=line.length?line.slice(1):'';
     row.append(oldNum,newNum,mark,code);diffView.appendChild(row);
+    if(kind!=='del'){const ln=newLine-1;findings.filter(f=>f.line===ln).forEach(f=>diffView.appendChild(greptileRow(f)))}
   });
   diffView.scrollTop=0;diffView.scrollLeft=0;
 }
@@ -980,6 +1001,70 @@ function renderDiffRows(lines){
 document.getElementById('code-close').onclick=closeCodePanel;
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCodePanel()});
 MOD_NODES.forEach(n=>mod.nEls[n.id].g.addEventListener('click',()=>{if(level==='mod')openCodePanel(n.id)}));
+
+// ════════════════════════════════════════════════════════════
+// SECTION: GREPTILE REVIEW
+// Loads reports/<pr>.json (written by scripts/greptile-report.mjs via the
+// "Greptile blast-radius report" workflow) and overlays findings on the
+// change cards, the diff rows, and the tooltip. Silently no-ops when a report
+// is missing or the page is opened over file:// (fetch is blocked there).
+// Override the path per PR with `report:'reports/foo.json'`.
+// ════════════════════════════════════════════════════════════
+const GREPTILE={};
+const SEV_COLOR={critical:'#ef4444',high:'#f97316',medium:'#f59e0b',low:'#3b82f6'};
+const SEV_RANK=['low','medium','high','critical'];
+function esc(t){return String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function md(t){return esc(t).replace(/`([^`]+)`/g,'<code>$1</code>')}
+function maxSeverity(fs){return fs.reduce((m,f)=>SEV_RANK.indexOf(f.severity)>SEV_RANK.indexOf(m)?f.severity:m,'low')}
+function reportPath(pr){return pr.report||`reports/${String(pr.id).replace('#','')}.json`}
+function greptileReport(pr){return pr?GREPTILE[pr.id]:null}
+function greptileImpact(pr,nodeId){const r=greptileReport(pr);return r&&r.impact&&r.impact[level]?r.impact[level][nodeId]||null:null}
+function greptileBadge(gi){
+  if(!gi||!gi.findings)return'';
+  const sev=gi.maxSeverity||'low';
+  return`<span class="gr-badge" style="color:${SEV_COLOR[sev]}">${gi.findings} · ${sev}</span>`;
+}
+function samePath(a,b){return a===b||a.endsWith('/'+b)||b.endsWith('/'+a)}
+function greptileFindingsFor(pr,file){const r=greptileReport(pr);return r?r.findings.filter(f=>f.path&&samePath(f.path,file)):[]}
+function greptileRow(f){
+  const el=document.createElement('div');el.className='gr-row';el.style.color=SEV_COLOR[f.severity]||SEV_COLOR.low;
+  const body=f.body.replace(/^\s*\[(critical|high|medium|low)\]\s*/i,'');
+  el.innerHTML=`<span class="gr-k">greptile · ${esc(f.severity)}</span><span style="color:#b8c4d4">${md(body)}</span>`;
+  return el;
+}
+function greptileSection(pr){
+  const r=greptileReport(pr);if(!r)return'';
+  const view=getView();
+  const sev=r.findings.length?maxSeverity(r.findings):null;
+  const downstream=(r.summary&&r.summary.downstream||[]).map(d=>d[level]).filter(Boolean);
+  const chips=[...new Set(downstream)].map(id=>`<span class="gr-chip">${esc(view.nMap[id]?view.nMap[id].label:id)}</span>`).join('');
+  const firstPara=(r.summary&&r.summary.body||'').split(/\n\s*\n/)[0];
+  return`<div class="div"></div><div class="lbl">Greptile Review${sev?`<span class="gr-badge" style="color:${SEV_COLOR[sev]}">${r.findings.length} finding${r.findings.length===1?'':'s'} · ${sev}</span>`:''}</div>
+    <div class="gr-src">${esc(r.generatedFrom||'greptile')}</div>
+    ${firstPara?`<div class="gr-sum">${md(firstPara)}</div>`:''}
+    ${chips?`<div class="ci-it" style="margin-bottom:3px">named downstream</div>${chips}`:''}
+    ${r.unmapped&&r.unmapped.length?`<div class="ci-it">unmapped: ${esc(r.unmapped.join(', '))}</div>`:''}`;
+}
+function markPRButton(pr,r){
+  if(!pr._btn||!r.findings.length)return;
+  const meta=pr._btn.querySelector('.pr-meta');if(!meta||meta.querySelector('.gr-badge'))return;
+  const sev=maxSeverity(r.findings);
+  meta.insertAdjacentHTML('beforeend',`<span class="gr-badge" style="color:${SEV_COLOR[sev]}">${r.findings.length} greptile</span>`);
+}
+async function loadGreptileReports(){
+  for(const pr of PRS){
+    try{
+      const res=await fetch(reportPath(pr),{cache:'no-store'});if(!res.ok)continue;
+      const r=await res.json();if(!r||!Array.isArray(r.findings))continue;
+      GREPTILE[pr.id]=r;markPRButton(pr,r);
+      if(activePR===pr){
+        if(lastPanel&&lastPanel.pr===pr&&animState==='done')updatePanel(lastPanel.pr,lastPanel.dist,lastPanel.direct);
+        if(codePanel.style.display==='flex'&&openDiffFiles.length)renderDiffFile(openDiffIndex);
+      }
+    }catch(e){/* no report for this PR, or file:// */}
+  }
+}
+loadGreptileReports();
 
 // ════════════════════════════════════════════════════════════
 // SECTION: ZOOM / DRILL-DOWN
@@ -1025,7 +1110,8 @@ function showTip(e,n){
   let h=`<div class="tip-n">${n.label}</div>`;
   if(n.zoomable)h+=`<div class="tip-f">click to explore modules</div>`;
   if(level==='mod'&&hasCodeDiff(activePR,n.id))h+=`<div class="tip-f">click to inspect code diff</div>`;
-  if(activePR){const d=getData(activePR);if(d&&d[n.id])h+=`<div class="tip-s">${d[n.id].summary}</div>`}
+  if(activePR){const d=getData(activePR);if(d&&d[n.id])h+=`<div class="tip-s">${d[n.id].summary}</div>`;
+    const gi=greptileImpact(activePR,n.id);if(gi&&(gi.findings||gi.downstream))h+=`<div class="tip-f" style="color:${SEV_COLOR[gi.maxSeverity||'low']}">greptile: ${gi.findings?`${gi.findings} finding${gi.findings===1?'':'s'} · ${gi.maxSeverity}`:'named as downstream impact'}</div>`}
   tip.innerHTML=h;tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
 }
 function hideTip(){tip.style.display='none'}
