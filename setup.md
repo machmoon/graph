@@ -99,3 +99,34 @@ In `lib/pr-analyzer.js`:
 - **AI summaries**: LLM generates "what changed and why" per module
 - **Level 3 zoom**: file-level or function-level graphs inside a module
 - **Multi-repo**: cross-repo dependency visualization
+
+## Greptile Integration
+
+Greptile reviews each PR with whole-repo context; we pull its findings back out of GitHub and turn them into a node-keyed report the visualizer can overlay on the blast radius.
+
+### One-time setup (in the browser — cannot be scripted)
+1. Go to https://app.greptile.com, sign in with GitHub, and install the Greptile GitHub App on `machmoon/graph`.
+2. Let it finish indexing the repo (a few minutes).
+3. `greptile.json` in the repo root configures the review: it asks Greptile to tag findings with `[critical|high|medium|low]` and to list downstream files/services in backticks — the report script parses those.
+
+### Files
+```
+greptile.json                          # Greptile review config (severity tags, downstream-impact section)
+scripts/component-map.json             # path prefix -> ARCH_NODES / MOD_NODES id
+scripts/greptile-report.mjs            # GitHub API -> reports/<pr>.json
+.github/workflows/greptile-report.yml  # runs the script whenever a review/comment lands on a PR
+reports/<pr>.json                      # generated output, committed to main
+```
+
+### Run locally
+```bash
+GITHUB_TOKEN=ghp_... node scripts/greptile-report.mjs 42            # defaults to machmoon/graph
+GITHUB_TOKEN=ghp_... node scripts/greptile-report.mjs 42 owner/repo
+```
+
+### Report shape
+`impact.arch` / `impact.mod` are keyed by the same node IDs the visualizer uses, so they can be merged straight into a `PRS` entry:
+```json
+"impact": { "arch": { "order": { "files": ["demo-repo/order-service/order.ts"], "findings": 2, "maxSeverity": "high", "add": 18, "del": 6, "downstream": false } } }
+```
+`findings[]` carries each Greptile inline comment with `path`, `line`, `severity`, `body`, plus `mentions[]` — other files Greptile says are affected, already mapped to node IDs. `summary.downstream[]` is the parsed "Downstream impact" section. `unmapped[]` lists changed paths with no rule in `component-map.json`.
